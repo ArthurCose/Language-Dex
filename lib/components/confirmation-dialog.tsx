@@ -6,10 +6,34 @@ import { Span } from "./text";
 import { useState } from "react";
 import { logError } from "../log";
 
+type DiscardDialogProps = {
+  open: boolean;
+  onConfirm: () => Promise<void>;
+  onCancel: () => void;
+};
+
+export function DiscardDialog({
+  open,
+  onConfirm,
+  onCancel,
+}: DiscardDialogProps) {
+  const [t] = useTranslation();
+
+  return (
+    <ConfirmationDialog
+      title={t("Discard_Changes")}
+      description={t("Discard_Changes_Desc")}
+      open={open}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+    />
+  );
+}
+
 type Props = {
   title: string;
   description: string;
-  confirmationText: string;
+  confirmationText?: string;
   open: boolean;
   onConfirm: () => Promise<void>;
   onCancel: () => void;
@@ -70,7 +94,9 @@ export default function ConfirmationDialog({
           android_ripple={theme.ripples.transparentButton}
           disabled={pending}
         >
-          <Span style={actionStyles}>{confirmationText}</Span>
+          <Span style={actionStyles}>
+            {confirmationText != undefined ? confirmationText : t("Confirm")}
+          </Span>
         </Pressable>
       </View>
     </Dialog>

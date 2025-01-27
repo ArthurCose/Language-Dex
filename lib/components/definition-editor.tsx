@@ -16,14 +16,20 @@ import {
 } from "@/lib/hooks/use-word-definitions";
 import { useUserDataContext } from "@/lib/contexts/user-data";
 import PartOfSpeechDropdown from "@/lib/components/part-of-speech-dropdown";
-import ConfirmationDialog from "@/lib/components/confirmation-dialog";
+import ConfirmationDialog, {
+  DiscardDialog,
+} from "@/lib/components/confirmation-dialog";
 import {
   deleteDefinition,
   updateStatistics,
   upsertDefinition,
 } from "@/lib/data";
-import { logError } from "../log";
-import SubMenuTopNav, { SubMenuActions } from "./sub-menu-top-nav";
+import { logError } from "@/lib/log";
+import SubMenuTopNav, {
+  SubMenuActions,
+} from "@/lib/components/sub-menu-top-nav";
+import useBackHandler from "@/lib/hooks/use-back-handler";
+import { usePendingChangesDetection } from "@/lib/hooks/use-pending-changes-detection";
 
 type Props = {
   lowerCaseWord?: string;
@@ -45,6 +51,8 @@ export default function DefinitionEditor(props: Props) {
 
   const [saving, setSaving] = useState(false);
   const [deleteRequested, setDeleteRequested] = useState(false);
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
+
   const [spelling, setSpelling] = useState(props.lowerCaseWord ?? "");
   const [partOfSpeech, setPartOfSpeech] = useState<number | undefined>(
     definitionData?.partOfSpeech
@@ -64,12 +72,37 @@ export default function DefinitionEditor(props: Props) {
     }
   }, [definitionData]);
 
+  // detecting pending changes
+  const [hasPendingChanges, setHasPendingChanges] = usePendingChangesDetection([
+    spelling,
+    partOfSpeech,
+    definition,
+    example,
+    notes,
+  ]);
+
+  useBackHandler(() => {
+    if (hasPendingChanges) {
+      setDiscardDialogOpen(true);
+      return true;
+    }
+  }, [hasPendingChanges]);
+
   const inputLabelStyles = [theme.styles.inputLabel, styles.inputLabel];
 
   return (
     <>
       <SubMenuTopNav>
-        <SubMenuIconButton icon={ArrowLeftIcon} onPress={() => router.back()} />
+        <SubMenuIconButton
+          icon={ArrowLeftIcon}
+          onPress={() => {
+            if (hasPendingChanges) {
+              setDiscardDialogOpen(true);
+            } else {
+              router.back();
+            }
+          }}
+        />
 
         <SubMenuActions>
           {props.definitionId != undefined && (
@@ -87,10 +120,12 @@ export default function DefinitionEditor(props: Props) {
               saving ||
               !definitionLoaded ||
               definition.trim().length == 0 ||
-              spelling.length == 0
+              spelling.length == 0 ||
+              !hasPendingChanges
             }
             onPress={async () => {
               setSaving(true);
+              setHasPendingChanges(false);
 
               try {
                 const lowerCaseSpelling = spelling.toLowerCase();
@@ -244,6 +279,15 @@ export default function DefinitionEditor(props: Props) {
           });
 
           setDeleteRequested(false);
+          router.back();
+        }}
+      />
+
+      <DiscardDialog
+        open={discardDialogOpen}
+        onCancel={() => setDiscardDialogOpen(false)}
+        onConfirm={async () => {
+          setDiscardDialogOpen(false);
           router.back();
         }}
       />

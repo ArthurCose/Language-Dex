@@ -71,8 +71,12 @@ i18n
 
           // dialogs
           Cancel: "Cancel",
+          Confirm: "Confirm",
           Delete: "Delete",
           Delete_Title: "Delete {{name}}?",
+
+          Discard_Changes: "Discard Changes",
+          Discard_Changes_Desc: "You have pending changes, discard?",
 
           Delete_Part_of_Speech_Desc:
             "This will reset Part of Speech for matching definitions to unknown.",
