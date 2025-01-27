@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    height: 44,
+    height: 48,
   },
   plainItem: {
     paddingLeft: 16,
