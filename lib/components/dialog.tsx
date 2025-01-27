@@ -88,7 +88,9 @@ export default function Dialog({ open, onClose, children }: Props) {
           <Animated.View
             style={[styles.dialog, theme.styles.dialog, dialogStyle]}
           >
-            <Pressable>{!closed && children}</Pressable>
+            <Pressable style={styles.innerPressable}>
+              {!closed && children}
+            </Pressable>
           </Animated.View>
         </Pressable>
       </Animated.View>
@@ -115,5 +117,10 @@ const styles = StyleSheet.create({
   },
   dialog: {
     overflow: "hidden",
+    maxHeight: "80%",
+  },
+  innerPressable: {
+    flexGrow: 1,
+    flexShrink: 1,
   },
 });

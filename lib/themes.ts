@@ -98,7 +98,6 @@ function createSimpleTheme(colors: Palette): Theme {
         backgroundColor: colors.definitionBackground,
         borderRadius: 8,
         margin: 16,
-        maxHeight: "80%",
       },
       bottomSheet: {
         backgroundColor: colors.bottomNav,

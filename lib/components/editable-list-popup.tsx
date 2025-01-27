@@ -160,7 +160,9 @@ export default function EditableListPopup<T>({
             onPress={() => setEditing(!editing)}
           />
         </View>
+
         <View style={theme.styles.separator} />
+
         {editing ? (
           <ReorderableList
             ListHeaderComponent={
