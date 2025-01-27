@@ -151,7 +151,13 @@ export default function EditableListPopup<T>({
         </View>
       </Pressable>
 
-      <Dialog open={open} onClose={() => setOpen(false)}>
+      <Dialog
+        open={open}
+        onClose={() => {
+          setOpen(false);
+          setEditing(false);
+        }}
+      >
         <View style={styles.headerStyle}>
           <Span>{name}</Span>
 
