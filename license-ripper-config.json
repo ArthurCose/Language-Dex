@@ -1,0 +1,94 @@
+{
+  "includeDev": false,
+  "exclude": [
+    "password-prompt",
+    "expo-cli",
+    "client-only",
+    "server-only",
+    "babel-core",
+    "@expo/cli",
+    "@expo/devcert",
+    "@expo/sdk-runtime-versions",
+    "metro",
+    "lightningcss-linux-x64-musl",
+    "lightningcss-linux-x64-gnu",
+    "@react-native/debugger-frontend"
+  ],
+  "overrides": {
+    "fs.realpath": {
+      "licenseExpression": "(ISC AND MIT)"
+    },
+    "flow-parser": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/flow-parser.txt" }]
+    },
+    "fb-watchman": {
+      "licenseExpression": "MIT"
+    },
+    "babel-preset-expo": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "@expo/plist": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "@expo/server": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "@expo/metro-runtime": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-asset": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-blur": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-clipboard": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-constants": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-file-system": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-font": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-haptics": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-keep-awake": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-linking": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-localization": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-modules-autolinking": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-modules-core": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-router": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-splash-screen": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-sqlite": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-status-bar": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
+    "expo-system-ui": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    }
+  }
+}

@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "go": "expo start --go",
     "test": "jest --watchAll",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "licenses": "license-ripper --config license-ripper-config.json --output -licenses.json --compress"
   },
   "jest": {
     "preset": "jest-expo"
@@ -41,9 +42,7 @@
     "expo-splash-screen": "~0.29.21",
     "expo-sqlite": "^15.0.6",
     "expo-status-bar": "~2.0.1",
-    "expo-symbols": "~0.2.1",
     "expo-system-ui": "~4.0.7",
-    "expo-web-browser": "~14.0.2",
     "i18next": "*",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -61,17 +60,15 @@
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.1.6",
     "@eslint/js": "^9.19.0",
-    "@types/jest": "^29.5.12",
     "@types/react": "~18.3.12",
     "@types/react-test-renderer": "^18.3.0",
     "eslint": "^9.19.0",
     "eslint-plugin-react": "^7.37.4",
     "globals": "^15.14.0",
-    "jest": "^29.2.1",
-    "jest-expo": "~52.0.3",
     "react-test-renderer": "18.3.1",
     "typescript": "^5.3.3",
-    "typescript-eslint": "^8.21.0"
+    "typescript-eslint": "^8.21.0",
+    "license-ripper": "0.8.3"
   },
   "private": true
 }
