@@ -88,6 +88,9 @@ i18n
 
           point_one: "point",
           point_other: "points",
+
+          // attribution
+          version: "version",
         },
       },
     },

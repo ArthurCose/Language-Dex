@@ -4,14 +4,13 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "go": "expo start --go",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "licenses": "license-ripper --config license-ripper-config.json --output -licenses.json --compress"
+    "licenses": "license-ripper --config license-ripper-config.json --output -licenses.json --compress; npx tsx license-post-rip.ts"
   },
   "jest": {
     "preset": "jest-expo"
@@ -43,6 +42,7 @@
     "expo-sqlite": "^15.0.6",
     "expo-status-bar": "~2.0.1",
     "expo-system-ui": "~4.0.7",
+    "expo-web-browser": "^14.0.2",
     "i18next": "*",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -53,7 +53,6 @@
     "react-native-reorderable-list": "^0.9.0",
     "react-native-safe-area-context": "4.12.0",
     "react-native-screens": "~4.4.0",
-    "react-native-webview": "13.12.5",
     "uuid": "^11.0.5"
   },
   "devDependencies": {
@@ -65,10 +64,11 @@
     "eslint": "^9.19.0",
     "eslint-plugin-react": "^7.37.4",
     "globals": "^15.14.0",
+    "license-ripper": "0.10",
     "react-test-renderer": "18.3.1",
+    "tsx": "^4.19.2",
     "typescript": "^5.3.3",
-    "typescript-eslint": "^8.21.0",
-    "license-ripper": "0.8.3"
+    "typescript-eslint": "^8.21.0"
   },
   "private": true
 }

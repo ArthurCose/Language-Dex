@@ -110,3 +110,7 @@ export function DragVerticalLongIcon(props: IconProps) {
 export function LockIcon(props: IconProps) {
   return <MaterialDesignIcons name="lock" {...props} />;
 }
+
+export function LinkIcon(props: IconProps) {
+  return <MaterialDesignIcons name="link-variant" {...props} />;
+}
