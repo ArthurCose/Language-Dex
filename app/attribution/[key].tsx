@@ -7,7 +7,6 @@ import SubMenuTopNav, {
   SubMenuBackButton,
   SubMenuTitle,
 } from "@/lib/components/sub-menu-top-nav";
-import RouteRoot from "@/lib/components/route-root";
 import {
   styles as attributionStyles,
   AttributionRow,
@@ -54,7 +53,7 @@ export default function () {
       : packageList.find((p) => p.name == name && p.version == version)!;
 
   return (
-    <RouteRoot>
+    <>
       <SubMenuTopNav>
         <SubMenuBackButton />
 
@@ -99,7 +98,7 @@ export default function () {
           </ScrollView>
         </>
       )}
-    </RouteRoot>
+    </>
   );
 }
 

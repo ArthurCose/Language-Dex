@@ -1,4 +1,4 @@
-import RouteRoot from "@/lib/components/route-root";
+import React from "react";
 import SubMenuTopNav, {
   SubMenuBackButton,
   SubMenuTitle,
@@ -32,7 +32,7 @@ export default function () {
   const [userData, setUserData] = useUserDataContext();
 
   return (
-    <RouteRoot>
+    <>
       <SubMenuTopNav>
         <SubMenuBackButton />
         <SubMenuTitle>{t("Settings")}</SubMenuTitle>
@@ -69,7 +69,7 @@ export default function () {
       </Pressable>
 
       <View style={theme.styles.separator} />
-    </RouteRoot>
+    </>
   );
 }
 

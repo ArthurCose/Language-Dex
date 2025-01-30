@@ -9,6 +9,7 @@ export type Theme = {
   colors: Palette;
   styles: {
     root: ViewStyle;
+    wordsRoot: ViewStyle;
     text: TextStyle;
     disabledText: TextStyle;
     poppingText: TextStyle;
@@ -86,6 +87,10 @@ function createSimpleTheme(colors: Palette): Theme {
       root: {
         flex: 1,
         backgroundColor: colors.body,
+      },
+      wordsRoot: {
+        flex: 1,
+        backgroundColor: colors.definitionBackground,
       },
       text: {
         color: colors.text,

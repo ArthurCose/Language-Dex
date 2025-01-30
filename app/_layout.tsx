@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useColorScheme as useSystemColorScheme } from "react-native";
+import { useColorScheme as useSystemColorScheme, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -13,6 +13,8 @@ import { PortalHost } from "@rn-primitives/portal";
 import "@/lib/i18n";
 import { useTranslation } from "react-i18next";
 import { logError } from "@/lib/log";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import KeyboardDismisser from "@/lib/components/keyboard-dismisser";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync().catch(logError);
@@ -74,23 +76,28 @@ export default function RootLayout() {
         <GestureHandlerRootView style={theme.styles.root}>
           <StatusBar translucent={false} />
 
-          <Stack
-            screenOptions={{
-              navigationBarColor:
-                typeof theme.colors.bottomNav == "string"
-                  ? theme.colors.bottomNav
-                  : undefined,
-              statusBarBackgroundColor:
-                typeof theme.colors.body == "string"
-                  ? theme.colors.body
-                  : undefined,
-              statusBarStyle: colorScheme == "light" ? "dark" : "light",
-              headerShown: false,
-              animation: "fade",
-            }}
-          />
+          <BottomSheetModalProvider>
+            <KeyboardDismisser>
+              <Stack
+                screenOptions={{
+                  navigationBarColor:
+                    typeof theme.colors.bottomNav == "string"
+                      ? theme.colors.bottomNav
+                      : undefined,
+                  statusBarBackgroundColor:
+                    typeof theme.colors.body == "string"
+                      ? theme.colors.body
+                      : undefined,
+                  statusBarStyle: colorScheme == "light" ? "dark" : "light",
+                  headerShown: false,
+                  contentStyle: theme.styles.root,
+                  animation: "fade",
+                }}
+              />
 
-          <PortalHost />
+              <PortalHost />
+            </KeyboardDismisser>
+          </BottomSheetModalProvider>
         </GestureHandlerRootView>
       </UserDataContext.Provider>
     </ThemeContext.Provider>

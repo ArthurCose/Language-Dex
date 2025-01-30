@@ -1,6 +1,5 @@
 import React from "react";
 import { FlatList } from "react-native";
-import RouteRoot from "@/lib/components/route-root";
 import {
   styles as attributionStyles,
   AttributionRow,
@@ -26,7 +25,7 @@ export default function () {
   const [t] = useTranslation();
 
   return (
-    <RouteRoot>
+    <>
       <SubMenuTopNav>
         <SubMenuBackButton />
         <SubMenuTitle>{t("Third_Party_Licenses")}</SubMenuTitle>
@@ -38,6 +37,6 @@ export default function () {
         renderItem={renderItem}
         keyExtractor={keyExtractor}
       />
-    </RouteRoot>
+    </>
   );
 }

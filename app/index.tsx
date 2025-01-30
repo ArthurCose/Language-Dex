@@ -15,7 +15,6 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import RouteRoot from "@/lib/components/route-root";
 
 import Dictionary from "@/lib/components/pseudo-pages/dictionary";
 import Scan from "@/lib/components/pseudo-pages/scan";
@@ -49,7 +48,7 @@ export default function () {
   const widthStyle = { width: dimensions.width };
 
   return (
-    <RouteRoot>
+    <>
       <TopNav>
         <TopNavDictionaryStack />
       </TopNav>
@@ -124,7 +123,7 @@ export default function () {
           />
         ))}
       </BottomNav>
-    </RouteRoot>
+    </>
   );
 }
 

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useLocalSearchParams, useNavigation } from "expo-router";
-import RouteRoot from "@/lib/components/route-root";
 import { useWordDefinition } from "@/lib/hooks/use-word-definitions";
 import { useUserDataContext } from "@/lib/contexts/user-data";
 import DefinitionEditor from "@/lib/components/definition-editor";
@@ -42,13 +41,11 @@ export default function () {
   }, [definitionLoaded, definitionData]);
 
   return (
-    <RouteRoot style={theme.styles.definitionBackground}>
-      <DefinitionEditor
-        lowerCaseWord={word}
-        setLowerCaseWord={setWord}
-        definitionId={definitionId}
-        setDefinitionId={setDefinitionId}
-      />
-    </RouteRoot>
+    <DefinitionEditor
+      lowerCaseWord={word}
+      setLowerCaseWord={setWord}
+      definitionId={definitionId}
+      setDefinitionId={setDefinitionId}
+    />
   );
 }

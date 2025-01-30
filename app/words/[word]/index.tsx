@@ -6,7 +6,6 @@ import {
   PlusIcon,
   TrashIcon,
 } from "@/lib/components/icons";
-import RouteRoot from "@/lib/components/route-root";
 import SubMenuTopNav, {
   SubMenuActions,
   SubMenuBackButton,
@@ -120,7 +119,7 @@ export default function Word() {
   }, [definitionData?.definitionsResult]);
 
   return (
-    <RouteRoot style={theme.styles.definitionBackground}>
+    <>
       <SubMenuTopNav>
         <SubMenuBackButton />
 
@@ -195,7 +194,7 @@ export default function Word() {
           router.back();
         }}
       />
-    </RouteRoot>
+    </>
   );
 }
 
