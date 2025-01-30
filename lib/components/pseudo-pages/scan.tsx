@@ -74,6 +74,7 @@ const styles = StyleSheet.create({
     flex: 1,
     display: "flex",
     flexDirection: "column",
+    marginBottom: 8,
   },
   textInput: {
     flex: 1,
@@ -86,7 +87,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 8,
-    marginTop: 8,
   },
   circleButton: {
     padding: 8,
