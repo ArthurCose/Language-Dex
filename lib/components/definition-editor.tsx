@@ -194,14 +194,12 @@ export default function DefinitionEditor(props: Props) {
       <View style={theme.styles.separator} />
 
       <ScrollView style={theme.styles.definitionBackground}>
-        <View style={styles.row}>
-          <CustomTextInput
-            style={[styles.textInput, styles.word]}
-            placeholder={t("word")}
-            value={spelling}
-            onChangeText={setSpelling}
-          />
-        </View>
+        <CustomTextInput
+          style={[styles.textInput, styles.word]}
+          placeholder={t("word")}
+          value={spelling}
+          onChangeText={setSpelling}
+        />
 
         <View style={theme.styles.separator} />
 
