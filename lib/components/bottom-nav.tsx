@@ -23,7 +23,7 @@ export function BottomNavItem({
 
   return (
     <Pressable onPress={onPress} style={styles.bottomNavItem}>
-      <IconComponent color={color} size={32} />
+      <IconComponent color={color} size={28} />
       <Text style={{ color }}>{label}</Text>
     </Pressable>
   );
@@ -47,5 +47,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "column",
     alignItems: "center",
+    paddingTop: 4,
   },
 });
