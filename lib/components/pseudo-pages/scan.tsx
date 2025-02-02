@@ -34,8 +34,11 @@ export default function Scan() {
       )}
 
       {!keyboardVisible && (
-        <View style={styles.circleButtonContainer}>
-          {/* <CircleButton style={[styles.circleButton, styles.hidden]}>
+        <View style={styles.circleButtonBlock}>
+          {/* <CircleButton
+            style={[styles.circleButton, styles.hidden]} 
+            containerStyle={styles.circleButtonContainer}
+          >
             <HistoryIcon size={40} color="white" />
           </CircleButton> */}
           <View style={styles.circleButtonBlank} />
@@ -43,6 +46,7 @@ export default function Scan() {
           {confirmed && (
             <CircleButton
               style={styles.circleButton}
+              containerStyle={styles.circleButtonContainer}
               onPress={() => {
                 setText("");
                 setConfirmed(false);
@@ -54,6 +58,7 @@ export default function Scan() {
 
           <CircleButton
             style={styles.circleButton}
+            containerStyle={styles.circleButtonContainer}
             onPress={() => setConfirmed(!confirmed)}
             disabled={text.length == 0}
           >
@@ -81,17 +86,19 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
     padding: 0,
   },
-  circleButtonContainer: {
+  circleButtonBlock: {
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 8,
   },
-  circleButton: {
-    padding: 8,
+  circleButtonContainer: {
     marginHorizontal: 8,
     marginBottom: 8,
+  },
+  circleButton: {
+    padding: 8,
   },
   circleButtonBlank: {
     marginHorizontal: 16,

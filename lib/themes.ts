@@ -154,7 +154,6 @@ function createSimpleTheme(colors: Palette): Theme {
       searchOptionSeparator: {},
       circleButton: {
         backgroundColor: colors.primary.default,
-        borderRadius: "50%",
       },
       circleButtonDisabled: {
         backgroundColor: "#aaa",
