@@ -288,10 +288,16 @@ export default function () {
       const endCallback = () => {
         setGameState((gameState) => {
           // use setGameState to get the latest data for .over
-          if (!gameState.over) {
-            gameState.timer.resume();
-            gameState.totalTimer.resume();
+          if (gameState.over) {
+            return gameState;
           }
+
+          gameState.totalTimer.resume();
+
+          if (gameState.maxTime != Infinity) {
+            gameState.timer.resume();
+          }
+
           return gameState;
         });
       };
@@ -313,8 +319,12 @@ export default function () {
     }
 
     // transition to next round
-    gameState.timer.pause();
+    // pause the time during the transition
     gameState.totalTimer.pause();
+
+    if (gameState.maxTime != Infinity) {
+      gameState.timer.pause();
+    }
 
     const middleCallback = () => {
       // setup next round while the board isn't visible
