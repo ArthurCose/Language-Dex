@@ -51,11 +51,28 @@ i18n
           Add_Definition: "Add Definition",
           Copy: "Copy",
 
+          // games
+          Match: "Match",
+          Unscramble: "Unscramble",
+          Crosswords: "Crosswords",
+
+          mode_endless: "Endless",
+          mode_timed: "Timed",
+          mode_rush: "Rush",
+
+          Results: "Results",
+          Top_Score: "Top Score",
+          Total_Time: "Total Time",
+          Score: "Score",
+          Replay: "Replay",
+          Quit: "Quit",
+
           // statistics
           Overall: "Overall",
           Total_Definitions: "Total Definitions",
           Words_Scanned: "Words Scanned",
           Total_Scans: "Total Scans",
+          Words_Matched: "Words Matched",
 
           // definition editor
           Word: "Word",

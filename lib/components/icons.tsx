@@ -15,6 +15,10 @@ export function ScanIcon(props: IconProps) {
   return <MaterialDesignIcons name="text-search" {...props} />;
 }
 
+export function PuzzleIcon(props: IconProps) {
+  return <MaterialDesignIcons name="puzzle" {...props} />;
+}
+
 export function StatisticsIcon(props: IconProps) {
   return <MaterialDesignIcons name="chart-bar" {...props} />;
 }
@@ -113,4 +117,8 @@ export function LockIcon(props: IconProps) {
 
 export function LinkIcon(props: IconProps) {
   return <MaterialDesignIcons name="link-variant" {...props} />;
+}
+
+export function TimerIcon(props: IconProps) {
+  return <MaterialDesignIcons name="timer-outline" {...props} />;
 }

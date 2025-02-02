@@ -12,7 +12,7 @@ import useBackHandler from "../hooks/use-back-handler";
 
 type Props = {
   open: boolean;
-  onClose: () => void;
+  onClose?: () => void;
 } & React.PropsWithChildren;
 
 let idCounter = 0;
@@ -26,7 +26,7 @@ export default function Dialog({ open, onClose, children }: Props) {
   const closing = useSharedValue(false);
 
   useBackHandler(() => {
-    if (open) {
+    if (open && onClose) {
       onClose();
       return true;
     }

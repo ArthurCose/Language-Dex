@@ -25,6 +25,7 @@ export default tseslint.config([
       "react/display-name": "off",
       "no-empty": "warn",
       "@typescript-eslint/no-unused-vars": "off",
+      "no-unused-private-class-members": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/require-await": "off",
       "@typescript-eslint/strict-boolean-expressions": [

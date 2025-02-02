@@ -17,6 +17,7 @@ type Props<T> = {
   list: T[];
   getItemText: (item: T) => string;
   keyExtractor: (item: T) => string;
+  centerItems?: boolean;
 } & (
   | {
       defaultItemText?: undefined;
@@ -35,12 +36,17 @@ export default function ListPopup<T>({
   list,
   getItemText,
   keyExtractor,
+  centerItems,
   defaultItemText,
   onSelect,
   children,
 }: Props<T>) {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
+  const rowStyles: StyleProp<ViewStyle> = [
+    styles.rowStyle,
+    centerItems && { justifyContent: "center" },
+  ];
 
   return (
     <>
@@ -57,7 +63,7 @@ export default function ListPopup<T>({
           ListHeaderComponent={
             defaultItemText != undefined ? (
               <Pressable
-                style={styles.rowStyle}
+                style={rowStyles}
                 android_ripple={theme.ripples.transparentButton}
                 onPress={() => {
                   onSelect?.();
@@ -72,7 +78,7 @@ export default function ListPopup<T>({
           getItem={(_, i) => list[i]}
           renderItem={({ item }) => (
             <Pressable
-              style={styles.rowStyle}
+              style={rowStyles}
               android_ripple={theme.ripples.transparentButton}
               onPress={() => {
                 onSelect?.(item);

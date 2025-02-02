@@ -1,5 +1,4 @@
 import {
-  ColorValue,
   PressableAndroidRippleConfig,
   TextStyle,
   ViewStyle,
@@ -39,6 +38,7 @@ export type Theme = {
     partOfSpeech: TextStyle;
     example: TextStyle;
     separator: ViewStyle;
+    gameListing: ViewStyle;
     topNav: ViewStyle;
     subMenuTopNav: ViewStyle;
     subMenuTitle: TextStyle;
@@ -52,31 +52,31 @@ export type Theme = {
 };
 
 type Palette = {
-  body: ColorValue;
-  bottomNav: ColorValue;
-  popup: ColorValue;
-  scanInput: ColorValue;
-  definitionBackground: ColorValue;
-  text: ColorValue;
-  label: ColorValue;
-  disabledText: ColorValue;
-  oldWord: ColorValue;
-  partOfSpeech: ColorValue;
-  example: ColorValue;
-  iconButton: ColorValue;
-  subMenuIconButton: ColorValue;
-  subMenuIconButtonDisabled: ColorValue;
-  borders: ColorValue;
-  definitionBorder: ColorValue;
+  body: string;
+  bottomNav: string;
+  popup: string;
+  scanInput: string;
+  definitionBackground: string;
+  text: string;
+  label: string;
+  disabledText: string;
+  oldWord: string;
+  partOfSpeech: string;
+  example: string;
+  iconButton: string;
+  subMenuIconButton: string;
+  subMenuIconButtonDisabled: string;
+  borders: string;
+  definitionBorder: string;
   primary: {
-    default: ColorValue;
-    light: ColorValue;
-    contrast: ColorValue;
+    default: string;
+    light: string;
+    contrast: string;
   };
   ripples: {
-    popup: ColorValue;
-    primaryButton: ColorValue;
-    transparentButton: ColorValue;
+    popup: string;
+    primaryButton: string;
+    transparentButton: string;
   };
 };
 
@@ -160,7 +160,6 @@ function createSimpleTheme(colors: Palette): Theme {
         backgroundColor: "#aaa",
       },
       scanTextInput: {
-        borderStyle: "solid",
         borderColor: colors.borders,
         borderWidth: 1,
         marginLeft: 8,
@@ -183,7 +182,6 @@ function createSimpleTheme(colors: Palette): Theme {
         color: colors.primary.default,
       },
       scanWord: {
-        borderStyle: "solid",
         borderBottomWidth: 2,
         borderColor: "transparent",
         transform: [{ translateY: 8 }],
@@ -215,6 +213,11 @@ function createSimpleTheme(colors: Palette): Theme {
         borderColor: colors.borders,
         borderBottomWidth: 1,
         width: "100%",
+      },
+      gameListing: {
+        borderColor: colors.borders,
+        borderWidth: 1,
+        backgroundColor: colors.scanInput,
       },
       topNav: {
         paddingBottom: -4,

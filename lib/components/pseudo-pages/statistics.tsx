@@ -11,6 +11,7 @@ const statsList: [string, keyof DictionaryStats][] = [
   ["Total_Definitions", "definitions"],
   ["Words_Scanned", "wordsScanned"],
   ["Total_Scans", "totalScans"],
+  ["Words_Matched", "definitionsMatched"],
 ];
 
 function StatsBlock({
@@ -27,7 +28,9 @@ function StatsBlock({
       {statsList.map(([label, key]) => (
         <Span key={key}>
           {t("label", { label: t(label) })}{" "}
-          <Span style={theme.styles.poppingText}>{stats[key] ?? 0}</Span>
+          <Span style={theme.styles.poppingText}>
+            {typeof stats[key] == "number" ? stats[key] : 0}
+          </Span>
         </Span>
       ))}
     </>

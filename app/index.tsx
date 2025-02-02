@@ -8,6 +8,7 @@ import {
   DictionaryIcon,
   StatisticsIcon,
   ScanIcon,
+  PuzzleIcon,
 } from "@/lib/components/icons";
 import { useTranslation } from "react-i18next";
 import Animated, {
@@ -18,6 +19,7 @@ import Animated, {
 
 import Dictionary from "@/lib/components/pseudo-pages/dictionary";
 import Scan from "@/lib/components/pseudo-pages/scan";
+import Puzzles from "@/lib/components/pseudo-pages/puzzles";
 import Statistics from "@/lib/components/pseudo-pages/statistics";
 
 type PercentString = `${number}%`;
@@ -25,6 +27,7 @@ type PercentString = `${number}%`;
 const pages = [
   { label: "Dictionary", iconComponent: DictionaryIcon, component: Dictionary },
   { label: "Scan", iconComponent: ScanIcon, component: Scan },
+  { label: "Puzzles", iconComponent: PuzzleIcon, component: Puzzles },
   { label: "Statistics", iconComponent: StatisticsIcon, component: Statistics },
 ];
 

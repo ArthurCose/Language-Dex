@@ -10,10 +10,12 @@ export type DictionaryStats = {
   earnedPoints?: number;
   wordsScanned?: number;
   totalScans?: number;
+  definitionsMatched?: number;
+  definitionMatchBest?: { [mode: string]: number };
   definitions?: number;
   documentedMaxConfidence?: number;
   totalImages?: number;
-  totalAudio?: number;
+  totalPronounced?: number;
   totalWords?: number;
 };
 
@@ -21,7 +23,7 @@ export const negatableStats: (keyof DictionaryStats)[] = [
   "definitions",
   "documentedMaxConfidence",
   "totalImages",
-  "totalAudio",
+  "totalPronounced",
   "totalWords",
 ];
 
@@ -259,16 +261,38 @@ export async function deletePartOfSpeech(
 
 export type WordOrder = "alphabetical" | "latest" | "confidence" | "longest";
 
+export type GameWord = {
+  spelling: string;
+  orderKey: number;
+};
+
+export async function listGameWords(dictionaryId: number) {
+  if (!db) {
+    throw new Error("DB closed");
+  }
+
+  // build query
+  const query = [
+    "SELECT spelling, orderKey FROM word_definition_data word_def",
+    "INNER JOIN word_shared_data word ON word_def.sharedId = word.id",
+    "WHERE word_def.dictionaryId = $dictionaryId",
+    "ORDER BY word_def.confidence ASC, word_def.createdAt DESC",
+  ];
+
+  return await db.getAllAsync<{ spelling: string; orderKey: number }>(
+    query.join(" "),
+    { $dictionaryId: dictionaryId }
+  );
+}
+
 export async function listWords(
   dictionaryId: number,
   ascending: boolean,
   orderBy: WordOrder,
   partOfSpeech?: number
 ) {
-  const output: string[] = [];
-
   if (!db) {
-    return output;
+    throw new Error("DB closed");
   }
 
   // build query
@@ -287,14 +311,18 @@ export async function listWords(
   }
 
   let ordering = "DESC";
+  let invOrdering = "ASC";
 
   if (ascending) {
     ordering = "ASC";
+    invOrdering = "DESC";
   }
 
   switch (orderBy) {
     case "confidence":
-      query.push(`ORDER BY word.minConfidence ${ordering}`);
+      query.push(
+        `ORDER BY word.minConfidence ${ordering}, word.createdAt ${invOrdering}`
+      );
       break;
     case "latest":
       query.push(`ORDER BY word.createdAt ${ordering}`);
@@ -319,6 +347,8 @@ export async function listWords(
     query.join(" "),
     bindParams
   );
+
+  const output: string[] = [];
 
   for await (const row of results) {
     output.push(row.spelling);
