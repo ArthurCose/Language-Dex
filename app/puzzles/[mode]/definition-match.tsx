@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
-import { GameWord, listGameWords, updateStatistics } from "@/lib/data";
+import {
+  GameWord,
+  listGameWords,
+  updateStatistics,
+  UserData,
+} from "@/lib/data";
 import { useUserDataContext } from "@/lib/contexts/user-data";
 import { logError } from "@/lib/log";
 import useWordDefinitions from "@/lib/hooks/use-word-definitions";
@@ -131,6 +136,22 @@ function setupNextRound(gameState: GameState) {
   } else if (gameState.mode == "endless") {
     gameState.bagWords.push(...leftWords);
   }
+}
+
+function updateGameStats(userData: UserData, gameState: GameState) {
+  return updateStatistics(userData, (stats) => {
+    stats.definitionsMatched =
+      (stats.definitionsMatched ?? 0) + gameState.totalMatched;
+
+    if (!stats.definitionMatchBest) {
+      stats.definitionMatchBest = {};
+    }
+
+    stats.definitionMatchBest[gameState.mode] = Math.max(
+      stats.definitionMatchBest[gameState.mode] ?? 0,
+      gameState.score
+    );
+  });
 }
 
 type CardProps = {
@@ -360,23 +381,7 @@ export default function () {
     }));
 
     // update stats
-    setUserData((userData) => {
-      userData = updateStatistics(userData, (stats) => {
-        stats.definitionsMatched =
-          (stats.definitionsMatched ?? 0) + gameState.totalMatched;
-
-        if (!stats.definitionMatchBest) {
-          stats.definitionMatchBest = {};
-        }
-
-        stats.definitionMatchBest[gameState.mode] = Math.max(
-          stats.definitionMatchBest[gameState.mode] ?? 0,
-          gameState.score
-        );
-      });
-
-      return userData;
-    });
+    setUserData((userData) => updateGameStats(userData, gameState));
   }, [gameOver]);
 
   if (gameState.loading) {
