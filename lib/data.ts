@@ -571,7 +571,7 @@ export async function upsertDefinition(
 
     if (oldDataResult) {
       setList.push("orderKey");
-      params.$orderKey = await resolveNewOrderKey(oldDataResult.sharedId);
+      params.$orderKey = await resolveNewOrderKey(sharedId);
     }
 
     await db.runAsync(
