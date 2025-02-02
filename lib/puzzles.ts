@@ -1,6 +1,7 @@
 import {
   AnimatableValue,
   Easing,
+  runOnJS,
   SharedValue,
   withSequence,
   withTiming,
@@ -57,7 +58,7 @@ export function getDefinition(
     ?.definitions[gameWord.orderKey];
 }
 
-const fadeTimingConfig = {
+export const fadeTimingConfig = {
   duration: 500,
   easing: Easing.inOut(Easing.quad),
 };
@@ -75,9 +76,14 @@ export function flash<T extends AnimatableValue>(
 
 export function fadeTo<T extends AnimatableValue>(
   sharedValue: SharedValue<T>,
-  final: T
+  final: T,
+  callback?: (finished: boolean | undefined) => void
 ) {
-  sharedValue.value = withTiming(final, fadeTimingConfig);
+  sharedValue.value = withTiming(final, fadeTimingConfig, (finished) => {
+    if (callback) {
+      runOnJS(callback)(finished);
+    }
+  });
 }
 
 export class Timer {

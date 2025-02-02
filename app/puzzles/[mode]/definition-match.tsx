@@ -33,8 +33,6 @@ import {
 } from "@/lib/components/puzzles/info";
 import { useTranslation } from "react-i18next";
 import Animated, {
-  Easing,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -58,11 +56,6 @@ export const definitionMatchModeList: DefinitionMatchGameMode[] = [
 
 const TIMED_MAX_S = 60;
 const RUSH_MAX_S = 10;
-
-const fadeTimingConfig = {
-  duration: 500,
-  easing: Easing.inOut(Easing.quad),
-};
 
 type GameState = {
   mode: DefinitionMatchGameMode;
@@ -114,7 +107,7 @@ function initGameState(words: GameWord[], mode: DefinitionMatchGameMode) {
   return gameState;
 }
 
-function setupNextRound(gameState: GameState) {
+function setUpNextRound(gameState: GameState) {
   const leftWords = pluckNBiased(gameState.bagWords, 3);
   const rightWords = cloneAndShuffle(leftWords);
 
@@ -278,7 +271,7 @@ export default function () {
         const updatedGameState = { ...gameState };
         updatedGameState.loading = false;
         updatedGameState.bagWords = [...words];
-        setupNextRound(updatedGameState);
+        setUpNextRound(updatedGameState);
         setGameState(updatedGameState);
       })
       .catch(logError);
@@ -321,9 +314,7 @@ export default function () {
         }
       };
 
-      opacity.value = withTiming(1, fadeTimingConfig, () => {
-        runOnJS(endCallback)();
-      });
+      fadeTo(opacity, 1, endCallback);
     }
   }, [gameState.roundStarted]);
 
@@ -349,15 +340,13 @@ export default function () {
       // setup next round while the board isn't visible
       setGameState((gameState) => {
         gameState = { ...gameState };
-        setupNextRound(gameState);
+        setUpNextRound(gameState);
         return gameState;
       });
     };
 
     // start transition
-    opacity.value = withTiming(0, fadeTimingConfig, () => {
-      runOnJS(middleCallback)();
-    });
+    fadeTo(opacity, 0, middleCallback);
   }, [gameState.correctSet.size]);
 
   const gameOver =
@@ -504,14 +493,14 @@ export default function () {
               // start next round when everything is cleaned up
               const newState = initGameState([...allWords!], gameState.mode);
               newState.loading = false;
-              setupNextRound(newState);
+              setUpNextRound(newState);
               setGameState(newState);
             };
 
             // hide current cards
-            opacity.value = withTiming(0, fadeTimingConfig, (finished) => {
+            fadeTo(opacity, 0, (finished) => {
               if (finished) {
-                runOnJS(complete)();
+                complete();
               }
             });
 
