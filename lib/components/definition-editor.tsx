@@ -5,7 +5,7 @@ import CustomTextInput, {
   CustomMultilineTextInput,
 } from "@/lib/components/custom-text-input";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, ScrollView } from "react-native";
 import {
   ArrowLeftIcon,
   DefinitionIcon,
@@ -16,7 +16,6 @@ import {
   TrashIcon,
 } from "@/lib/components/icons";
 import { SubMenuIconButton } from "@/lib/components/icon-button";
-import { ScrollView } from "react-native-gesture-handler";
 import {
   invalidateWordDefinitions,
   useWordDefinition,
