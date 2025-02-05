@@ -131,11 +131,11 @@ export default function DictionaryDropdown({
 }
 
 function subStat(
-  a: DictionaryStats,
-  b: DictionaryStats,
-  key: keyof DictionaryStats
+  a: { [key: string]: unknown },
+  b: { [key: string]: unknown },
+  key: string
 ) {
-  if (a[key] != undefined && b[key] != undefined) {
+  if (typeof a[key] == "number" && typeof b[key] == "number") {
     a[key] -= b[key];
   }
 }
