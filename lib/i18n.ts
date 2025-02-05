@@ -111,6 +111,7 @@ i18n
 
           // settings
           Settings: "Settings",
+          Default_View: "Default View",
           Theme: "Theme",
           System: "System",
           Light: "Light",

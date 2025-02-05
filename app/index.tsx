@@ -21,10 +21,11 @@ import Dictionary from "@/lib/components/pseudo-pages/dictionary";
 import Scan from "@/lib/components/pseudo-pages/scan";
 import Puzzles from "@/lib/components/pseudo-pages/puzzles";
 import Statistics from "@/lib/components/pseudo-pages/statistics";
+import { useUserDataContext } from "@/lib/contexts/user-data";
 
 type PercentString = `${number}%`;
 
-const pages = [
+export const pages = [
   { label: "Dictionary", iconComponent: DictionaryIcon, component: Dictionary },
   { label: "Scan", iconComponent: ScanIcon, component: Scan },
   { label: "Puzzles", iconComponent: PuzzleIcon, component: Puzzles },
@@ -32,9 +33,18 @@ const pages = [
 ];
 
 export default function () {
+  const [userData] = useUserDataContext();
   const [animating, setAnimating] = useState(false);
   const [prevPage, setPrevPage] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(() => {
+    const index = pages.findIndex((p) => p.label == userData.home);
+
+    if (index == -1) {
+      return 0;
+    }
+
+    return index;
+  });
   const theme = useTheme();
   const dimensions = useWindowDimensions();
   const [t] = useTranslation();

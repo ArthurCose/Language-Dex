@@ -12,6 +12,7 @@ import ListPopup from "@/lib/components/list-popup";
 import { useUserDataContext } from "@/lib/contexts/user-data";
 import { UserData } from "@/lib/data";
 import { TFunction } from "i18next";
+import { pages } from "./index";
 
 function getColorSchemeText(
   t: TFunction<"translation", undefined>,
@@ -30,6 +31,8 @@ export default function () {
   const theme = useTheme();
   const [t] = useTranslation();
   const [userData, setUserData] = useUserDataContext();
+
+  const pageList = pages.map((page) => page.label);
 
   return (
     <>
@@ -55,6 +58,29 @@ export default function () {
         <Span style={styles.label}>{t("Theme")}</Span>
         <Span style={[styles.value, theme.styles.disabledText]}>
           {getColorSchemeText(t, userData.colorScheme)}
+        </Span>
+      </ListPopup>
+
+      <View style={theme.styles.separator} />
+
+      <ListPopup
+        style={styles.row}
+        list={pageList}
+        getItemText={(value) => t(value)}
+        keyExtractor={(value) => value}
+        onSelect={(value?: string) => {
+          if (value != userData.colorScheme) {
+            const updatedData = { ...userData };
+            updatedData.home = value;
+            setUserData(updatedData);
+          }
+        }}
+      >
+        <Span style={styles.label}>{t("Default_View")}</Span>
+        <Span style={[styles.value, theme.styles.disabledText]}>
+          {userData.home != undefined && pageList.includes(userData.home)
+            ? t(userData.home)
+            : t("Dictionary")}
         </Span>
       </ListPopup>
 

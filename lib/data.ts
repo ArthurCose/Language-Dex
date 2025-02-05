@@ -52,6 +52,7 @@ export function namePartOfSpeech(
 
 export type UserData = {
   version: number;
+  home?: string;
   theme?: string;
   colorScheme?: "dark" | "light";
   disabledFeatures: {
