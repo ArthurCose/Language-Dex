@@ -37,3 +37,6 @@ yarn-error.*
 
 # custom
 -*
+
+.idea
+/android

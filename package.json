@@ -4,8 +4,9 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "build-android": "cd android && ./gradlew app:bundleRelease",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "go": "expo start --go",
     "test": "jest --watchAll",
