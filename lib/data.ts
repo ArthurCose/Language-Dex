@@ -3,6 +3,7 @@ import * as FileSystem from "expo-file-system";
 import * as SQLite from "expo-sqlite";
 import { logError } from "./log";
 import Unistring from "@akahuku/unistring";
+import db from "./db";
 
 type FileName = string;
 
@@ -126,13 +127,7 @@ type WordDefinitionUpsertData = Omit<
 
 // local database operations
 
-let db: SQLite.SQLiteDatabase | undefined;
-
 async function initDb() {
-  if (!db) {
-    db = await SQLite.openDatabaseAsync("db");
-  }
-
   await db.execAsync(`
 PRAGMA journal_mode = WAL;
 
@@ -144,15 +139,31 @@ CREATE TABLE IF NOT EXISTS word_shared_data (
   graphemeCount       INTEGER NOT NULL,
   scanCount           INTEGER NOT NULL,
   minConfidence       REAL NOT NULL,
+  latestAt            INTEGER NOT NULL,
   createdAt           INTEGER NOT NULL,
   updatedAt           INTEGER NOT NULL
 );
-CREATE INDEX IF NOT EXISTS word_shared_data_index ON word_shared_data(
+
+CREATE INDEX IF NOT EXISTS word_shared_data_spelling_index ON word_shared_data(
   dictionaryId,
-  spelling,
+  spelling
+);
+
+CREATE INDEX IF NOT EXISTS word_shared_data_latest_index ON word_shared_data(
+  dictionaryId,
+  latestAt
+);
+
+CREATE INDEX IF NOT EXISTS word_shared_data_length_index ON word_shared_data(
+  dictionaryId,
   graphemeCount,
-  minConfidence,
-  updatedAt
+  spelling
+);
+
+CREATE INDEX IF NOT EXISTS word_shared_data_confidence_index ON word_shared_data(
+  dictionaryId,
+  minConfidence ASC,
+  latestAt DESC
 );
 
 CREATE TABLE IF NOT EXISTS word_definition_data (
@@ -172,6 +183,12 @@ CREATE TABLE IF NOT EXISTS word_definition_data (
   updatedAt             INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS word_definition_data_index ON word_definition_data(dictionaryId, sharedId);
+
+CREATE INDEX IF NOT EXISTS word_definition_data_confidence_index ON word_definition_data(
+  dictionaryId,
+  confidence ASC,
+  createdAt DESC
+);
 `);
 
   // CREATE TABLE IF NOT EXISTS word_relations (
@@ -201,10 +218,6 @@ function unpackFileList(s: string): FileName[] {
 }
 
 export async function deleteDictionary(id: number) {
-  if (!db) {
-    throw new Error("DB closed");
-  }
-
   // delete associated files
   const results = db.getEachAsync<{
     pronunciationAudio?: string | null;
@@ -249,10 +262,6 @@ export async function deletePartOfSpeech(
   dictionaryId: number,
   partOfSpeech: number
 ) {
-  if (!db) {
-    throw new Error("DB closed");
-  }
-
   await db.runAsync(
     "UPDATE word_definition_data SET partOfSpeech = NULL WHERE dictionaryId = $dictionaryId AND partOfSpeech = $partOfSpeech",
     { $dictionaryId: dictionaryId, $partOfSpeech: partOfSpeech }
@@ -270,10 +279,6 @@ export async function listGameWords(
   dictionaryId: number,
   options?: { minLength?: number; limit?: number }
 ) {
-  if (!db) {
-    throw new Error("DB closed");
-  }
-
   const params: SQLite.SQLiteBindParams = { $dictionaryId: dictionaryId };
 
   // build query
@@ -310,10 +315,6 @@ export async function listWords(
     limit?: number;
   }
 ) {
-  if (!db) {
-    throw new Error("DB closed");
-  }
-
   // build query
   const query = ["SELECT spelling FROM word_shared_data word"];
 
@@ -353,11 +354,11 @@ export async function listWords(
   switch (options.orderBy) {
     case "confidence":
       query.push(
-        `ORDER BY word.minConfidence ${ordering}, word.createdAt ${invOrdering}`
+        `ORDER BY word.minConfidence ${ordering}, word.latestAt ${invOrdering}`
       );
       break;
     case "latest":
-      query.push(`ORDER BY word.createdAt ${ordering}`);
+      query.push(`ORDER BY word.latestAt ${ordering}`);
       break;
     case "longest":
       query.push(
@@ -406,10 +407,6 @@ export async function getWordDefinitions(
   lowerCaseSpelling: string
 ) {
   const definitions: WordDefinitionData[] = [];
-
-  if (!db) {
-    throw new Error("DB closed");
-  }
 
   const wordResult = await db.getFirstAsync<{ id: number; spelling: string }>(
     "SELECT id, spelling FROM word_shared_data WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $spelling",
@@ -467,10 +464,6 @@ async function getOrCreateWordId(
   word: string,
   options?: { confidence: number; time: number }
 ) {
-  if (!db) {
-    throw new Error("DB closed");
-  }
-
   const lowerCaseWord = word.toLowerCase();
 
   const wordRow = await db.getFirstAsync<{ id: number }>(
@@ -492,6 +485,7 @@ async function getOrCreateWordId(
     "graphemeCount",
     "scanCount",
     "minConfidence",
+    "latestAt",
     "createdAt",
     "updatedAt",
   ];
@@ -513,6 +507,7 @@ async function getOrCreateWordId(
       $graphemeCount: Unistring(lowerCaseWord).length,
       $scanCount: 0,
       $minConfidence: options?.confidence ?? 0,
+      $latestAt: time,
       $createdAt: time,
       $updatedAt: time,
     }
@@ -522,29 +517,35 @@ async function getOrCreateWordId(
 }
 
 async function updateSharedData(sharedId: number) {
-  if (!db) {
-    throw new Error("DB closed");
-  }
-
-  const result = await db.getFirstAsync<{ "MIN(confidence)": number }>(
-    "SELECT MIN(confidence) FROM word_definition_data WHERE sharedId = $sharedId",
+  const result = await db.getFirstAsync<{
+    "MIN(confidence)": number;
+    "MAX(createdAt)": number;
+  }>(
+    "SELECT MIN(confidence), MAX(createdAt) FROM word_definition_data WHERE sharedId = $sharedId",
     { $sharedId: sharedId }
   );
 
+  const sharedDataResult = await db.getFirstAsync<{
+    createdAt: number;
+  }>("SELECT createdAt FROM word_shared_data WHERE id = $id", {
+    $id: sharedId,
+  });
+
+  if (!sharedDataResult) {
+    return;
+  }
+
   await db.runAsync(
-    "UPDATE word_shared_data SET minConfidence = $minConfidence WHERE id = $id",
+    "UPDATE word_shared_data SET minConfidence = $minConfidence, latestAt = $latestAt WHERE id = $id",
     {
       $id: sharedId,
       $minConfidence: result?.["MIN(confidence)"] ?? 0,
+      $latestAt: result?.["MAX(createdAt)"] ?? sharedDataResult.createdAt,
     }
   );
 }
 
 async function resolveNewOrderKey(sharedId: number) {
-  if (!db) {
-    throw new Error("DB closed");
-  }
-
   const countResult = await db.getFirstAsync<{ "COUNT(*)": number }>(
     "SELECT COUNT(*) FROM word_definition_data WHERE sharedId = $sharedId",
     { $sharedId: sharedId }
@@ -558,10 +559,6 @@ export async function upsertDefinition(
   word: string,
   definition: WordDefinitionUpsertData
 ) {
-  if (!db) {
-    throw new Error("DB closed");
-  }
-
   const time = Date.now();
 
   const copyList: (keyof WordDefinitionUpsertData)[] = [
@@ -660,10 +657,6 @@ export async function upsertDefinition(
 }
 
 export async function updateDefinitionOrderKey(id: number, orderKey: number) {
-  if (!db) {
-    throw new Error("DB closed");
-  }
-
   await db.runAsync(
     "UPDATE word_definition_data SET orderKey = $orderKey WHERE id = $id",
     {
@@ -674,10 +667,6 @@ export async function updateDefinitionOrderKey(id: number, orderKey: number) {
 }
 
 async function shiftOrderKeys(sharedId: number, greaterThanOrderKey: number) {
-  if (!db) {
-    throw new Error("DB closed");
-  }
-
   await db.runAsync(
     "UPDATE word_definition_data SET orderKey = orderKey - 1 WHERE sharedId = $sharedId AND orderKey > $orderKey",
     {
@@ -688,10 +677,6 @@ async function shiftOrderKeys(sharedId: number, greaterThanOrderKey: number) {
 }
 
 export async function deleteDefinition(id: number) {
-  if (!db) {
-    throw new Error("DB closed");
-  }
-
   const result = await db.getFirstAsync<{
     sharedId: number;
     orderKey: number;
@@ -743,10 +728,6 @@ function deleteAssociatedFiles(result: {
 }
 
 export async function deleteWord(dictionaryId: number, word: string) {
-  if (!db) {
-    throw new Error("DB closed");
-  }
-
   word = word.toLowerCase();
 
   const result = await db.getFirstAsync<{ id: number }>(
@@ -847,4 +828,18 @@ async function loadFileObject(id: string): Promise<any> {
 
 function deleteFileObject(id: string) {
   return FileSystem.deleteAsync(FILE_OBJECT_DIR + id);
+}
+
+// debug
+
+function explainQueryPlan(queryString: string) {
+  db.getAllAsync("EXPLAIN QUERY PLAN " + queryString)
+    .then((results) => {
+      console.log(
+        queryString,
+        "\n  ",
+        results.map((value) => JSON.stringify(value)).join("\n   ")
+      );
+    })
+    .catch(logError);
 }
