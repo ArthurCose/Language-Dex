@@ -15,23 +15,23 @@ export function pickIndexBiased<T>(list: T[]) {
   return Math.floor(value * value * list.length);
 }
 
-export function pluckBiased<T>(list: T[]) {
+export function pluckBiased<T>(list: T[]): T | undefined {
   const [item] = list.splice(pickIndexBiased(list), 1);
   return item;
 }
 
-export function pluckNBiased<T>(list: T[], n: number) {
+export function pluckNBiased<T>(list: T[], n: number): T[] {
   const total = Math.min(list.length, n);
   const output = [];
 
   for (let i = 0; i < total; i++) {
-    output.push(pluckBiased(list));
+    output.push(pluckBiased(list)!);
   }
 
   return output;
 }
 
-function shuffle<T>(list: T[]) {
+export function shuffle<T>(list: T[]) {
   for (let i = 0; i < list.length - 1; i++) {
     const remaining = list.length - i;
     const offset = Math.floor(Math.random() * remaining);

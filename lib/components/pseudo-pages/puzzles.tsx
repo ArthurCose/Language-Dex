@@ -11,8 +11,10 @@ import { useTranslation } from "react-i18next";
 import { Span } from "../text";
 import { Theme } from "@/lib/themes";
 import { Href, router } from "expo-router";
-import { definitionMatchModeList } from "@/app/puzzles/[mode]/definition-match";
 import ListPopup from "../list-popup";
+
+import { definitionMatchModeList } from "@/app/puzzles/[mode]/definition-match";
+import { unscrambleModeList } from "@/app/puzzles/[mode]/unscramble";
 
 type GameListingProps = {
   style: StyleProp<ViewStyle>;
@@ -92,7 +94,12 @@ export default function () {
           {t("Match")}
         </GameListing>
 
-        <GameListing style={listingStyles} theme={theme}>
+        <GameListing
+          style={listingStyles}
+          theme={theme}
+          modes={unscrambleModeList}
+          onSelect={(mode) => router.navigate(`/puzzles/${mode}/unscramble`)}
+        >
           {t("Unscramble")}
         </GameListing>
       </View>

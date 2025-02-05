@@ -73,6 +73,7 @@ i18n
           Words_Scanned: "Words Scanned",
           Total_Scans: "Total Scans",
           Words_Matched: "Words Matched",
+          Words_Unscrambled: "Words Unscrambled",
 
           // definition editor
           Word: "Word",

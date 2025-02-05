@@ -129,6 +129,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     backgroundColor: "rgba(0,0,0,0.3)",
+    zIndex: 2,
   },
   backdropButton: {
     width: "100%",

@@ -1,4 +1,4 @@
-import uuid from "uuid";
+import uuid from "react-native-uuid";
 import * as FileSystem from "expo-file-system";
 import * as SQLite from "expo-sqlite";
 import { logError } from "./log";
@@ -12,6 +12,8 @@ export type DictionaryStats = {
   totalScans?: number;
   definitionsMatched?: number;
   definitionMatchBest?: { [mode: string]: number };
+  unscrambled?: number;
+  unscrambleBest?: { [mode: string]: number };
   definitions?: number;
   documentedMaxConfidence?: number;
   totalImages?: number;
@@ -121,8 +123,6 @@ type WordDefinitionUpsertData = Omit<
   "id" | "createdAt" | "updatedAt" | "orderKey"
 > & { id?: number };
 
-const IS_SYNONYM = 0;
-
 // local database operations
 
 let db: SQLite.SQLiteDatabase | undefined;
@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS word_shared_data (
   dictionaryId        INTEGER NOT NULL,
   spelling            TEXT NOT NULL,
   insensitiveSpelling TEXT NOT NULL,
-  graphemeCount       TEXT NOT NULL,
+  graphemeCount       INTEGER NOT NULL,
   scanCount           INTEGER NOT NULL,
   minConfidence       REAL NOT NULL,
   createdAt           INTEGER NOT NULL,
@@ -172,12 +172,11 @@ CREATE TABLE IF NOT EXISTS word_definition_data (
 );
 CREATE INDEX IF NOT EXISTS word_definition_data_index ON word_definition_data(dictionaryId, sharedId);
 
-CREATE TABLE IF NOT EXISTS word_synonyms_and_antonyms (
-  groupId          INTEGER NOT NULL,
+CREATE TABLE IF NOT EXISTS word_relations (
+  groupId          INTEGER PRIMARY KEY NOT NULL,
   wordDefinitionId INTEGER NOT NULL REFERENCES word_definition_data(id) ON DELETE CASCADE,
   type             INTEGER
 );
-CREATE INDEX IF NOT EXISTS word_synonyms_and_antonyms_index ON word_synonyms_and_antonyms(groupId);
 
 CREATE TABLE IF NOT EXISTS scan_history (
   id            INTEGER PRIMARY KEY NOT NULL,
@@ -266,22 +265,33 @@ export type GameWord = {
   orderKey: number;
 };
 
-export async function listGameWords(dictionaryId: number) {
+export async function listGameWords(
+  dictionaryId: number,
+  options?: { minLength: number }
+) {
   if (!db) {
     throw new Error("DB closed");
   }
+
+  const params: SQLite.SQLiteBindParams = { $dictionaryId: dictionaryId };
 
   // build query
   const query = [
     "SELECT spelling, orderKey FROM word_definition_data word_def",
     "INNER JOIN word_shared_data word ON word_def.sharedId = word.id",
     "WHERE word_def.dictionaryId = $dictionaryId",
-    "ORDER BY word_def.confidence ASC, word_def.createdAt DESC",
   ];
+
+  if (options?.minLength != undefined) {
+    query.push("AND word.graphemeCount >= $minLength");
+    params.$minLength = options.minLength;
+  }
+
+  query.push("ORDER BY word_def.confidence ASC, word_def.createdAt DESC");
 
   return await db.getAllAsync<{ spelling: string; orderKey: number }>(
     query.join(" "),
-    { $dictionaryId: dictionaryId }
+    params
   );
 }
 

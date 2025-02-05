@@ -38,6 +38,7 @@ export type Theme = {
     partOfSpeech: TextStyle;
     example: TextStyle;
     separator: ViewStyle;
+    borders: ViewStyle;
     gameListing: ViewStyle;
     topNav: ViewStyle;
     subMenuTopNav: ViewStyle;
@@ -212,6 +213,9 @@ function createSimpleTheme(colors: Palette): Theme {
         borderColor: colors.borders,
         borderBottomWidth: 1,
         width: "100%",
+      },
+      borders: {
+        borderColor: colors.borders,
       },
       gameListing: {
         borderColor: colors.borders,

@@ -7,11 +7,16 @@ import { useUserDataContext } from "@/lib/contexts/user-data";
 import { DictionaryStats } from "@/lib/data";
 import { Theme } from "@/lib/themes";
 
-const statsList: [string, keyof DictionaryStats][] = [
-  ["Total_Definitions", "definitions"],
-  ["Words_Scanned", "wordsScanned"],
-  ["Total_Scans", "totalScans"],
-  ["Words_Matched", "definitionsMatched"],
+const statsLists: [string, keyof DictionaryStats][][] = [
+  [
+    ["Total_Definitions", "definitions"],
+    ["Words_Scanned", "wordsScanned"],
+    ["Total_Scans", "totalScans"],
+  ],
+  [
+    ["Words_Matched", "definitionsMatched"],
+    ["Words_Unscrambled", "unscrambled"],
+  ],
 ];
 
 function StatsBlock({
@@ -25,14 +30,20 @@ function StatsBlock({
 
   return (
     <>
-      {statsList.map(([label, key]) => (
-        <Span key={key}>
-          {t("label", { label: t(label) })}{" "}
-          <Span style={theme.styles.poppingText}>
-            {typeof stats[key] == "number" ? stats[key] : 0}
-          </Span>
-        </Span>
-      ))}
+      <View style={styles.lists}>
+        {statsLists.map((list, i) => (
+          <View key={i}>
+            {list.map(([label, key]) => (
+              <Span key={key}>
+                {t("label", { label: t(label) })}{" "}
+                <Span style={theme.styles.poppingText}>
+                  {typeof stats[key] == "number" ? stats[key] : 0}
+                </Span>
+              </Span>
+            ))}
+          </View>
+        ))}
+      </View>
     </>
   );
 }
@@ -72,5 +83,8 @@ const styles = StyleSheet.create({
     padding: 8,
     paddingHorizontal: 16,
     gap: 24,
+  },
+  lists: {
+    gap: 8,
   },
 });

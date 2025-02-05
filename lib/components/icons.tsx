@@ -75,6 +75,10 @@ export function ArrowLeftIcon(props: IconProps) {
   return <MaterialDesignIcons name="arrow-left" {...props} />;
 }
 
+export function ArrowRightIcon(props: IconProps) {
+  return <MaterialDesignIcons name="arrow-right" {...props} />;
+}
+
 export function TextboxIcon(props: IconProps) {
   return <MaterialDesignIcons name="form-textbox" {...props} />;
 }
@@ -121,4 +125,8 @@ export function LinkIcon(props: IconProps) {
 
 export function TimerIcon(props: IconProps) {
   return <MaterialDesignIcons name="timer-outline" {...props} />;
+}
+
+export function ShuffleIcon(props: IconProps) {
+  return <MaterialDesignIcons name="shuffle" {...props} />;
 }
