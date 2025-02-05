@@ -76,11 +76,14 @@ i18n
 
           // statistics
           Overall: "Overall",
+          Longest_Word: "Longest_Word",
           Total_Definitions: "Total Definitions",
           Words_Scanned: "Words Scanned",
           Total_Scans: "Total Scans",
           Words_Matched: "Words Matched",
           Words_Unscrambled: "Words Unscrambled",
+
+          NA: "N/A",
 
           // definition editor
           Word: "Word",

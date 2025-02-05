@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/lib/contexts/theme";
 import { Span } from "../text";
 import { useUserDataContext } from "@/lib/contexts/user-data";
-import { DictionaryStats } from "@/lib/data";
+import { DictionaryStats, listWords } from "@/lib/data";
 import { Theme } from "@/lib/themes";
+import { logError } from "@/lib/log";
+import { useDictionaryVersioning } from "@/lib/hooks/use-word-definitions";
 
 const statsLists: [string, keyof DictionaryStats][][] = [
   [
@@ -21,18 +23,42 @@ const statsLists: [string, keyof DictionaryStats][][] = [
 
 function StatsBlock({
   theme,
+  version,
+  dictionaryId,
   stats,
 }: {
   theme: Theme;
+  version: number;
+  dictionaryId: number | null;
   stats: DictionaryStats;
 }) {
   const [t] = useTranslation();
+  const [longestWord, setLongestWord] = useState<string | undefined>();
+
+  useEffect(() => {
+    listWords(dictionaryId, {
+      ascending: false,
+      orderBy: "longest",
+      limit: 1,
+    })
+      .then((words) => setLongestWord(words[0]))
+      .catch(logError);
+  }, [dictionaryId, version]);
 
   return (
     <>
       <View style={styles.lists}>
         {statsLists.map((list, i) => (
           <View key={i}>
+            {i == 0 && (
+              <Span>
+                {t("label", { label: t("Longest Word") })}{" "}
+                <Span style={theme.styles.poppingText}>
+                  {longestWord != undefined ? longestWord : t("NA")}
+                </Span>
+              </Span>
+            )}
+
             {list.map(([label, key]) => (
               <Span key={key}>
                 {t("label", { label: t(label) })}{" "}
@@ -56,6 +82,8 @@ export default function Statistics() {
     (d) => d.id == userData.activeDictionary
   )!;
 
+  const version = useDictionaryVersioning();
+
   return (
     <>
       <View style={styles.content}>
@@ -63,14 +91,24 @@ export default function Statistics() {
           <Span style={theme.styles.poppingText}>
             {t("label", { label: dictionary.name })}
           </Span>
-          <StatsBlock theme={theme} stats={dictionary.stats} />
+          <StatsBlock
+            theme={theme}
+            version={version}
+            dictionaryId={userData.activeDictionary}
+            stats={dictionary.stats}
+          />
         </View>
 
         <View>
           <Span style={theme.styles.poppingText}>
             {t("label", { label: t("Overall") })}
           </Span>
-          <StatsBlock theme={theme} stats={userData.stats} />
+          <StatsBlock
+            theme={theme}
+            version={version}
+            dictionaryId={null}
+            stats={userData.stats}
+          />
         </View>
       </View>
     </>

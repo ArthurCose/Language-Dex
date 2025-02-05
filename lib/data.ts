@@ -302,7 +302,7 @@ export async function listGameWords(
 }
 
 export async function listWords(
-  dictionaryId: number,
+  dictionaryId: number | null,
   options: {
     ascending?: boolean;
     orderBy: WordOrder;
@@ -323,10 +323,23 @@ export async function listWords(
     );
   }
 
-  query.push("WHERE word.dictionaryId = $dictionaryId");
+  const whereIndex = query.length;
+  query.push("WHERE");
+
+  let usedWhere = false;
+
+  if (dictionaryId != undefined) {
+    query.push("word.dictionaryId = $dictionaryId");
+    usedWhere = true;
+  }
 
   if (options.partOfSpeech != undefined) {
     query.push("AND word_definition_data.partOfSpeech = $partOfSpeech");
+    usedWhere = true;
+  }
+
+  if (!usedWhere) {
+    query.splice(whereIndex, 1);
   }
 
   let ordering = "DESC";
@@ -360,7 +373,11 @@ export async function listWords(
   }
 
   // build bind params
-  const bindParams: SQLite.SQLiteBindParams = { $dictionaryId: dictionaryId };
+  const bindParams: SQLite.SQLiteBindParams = {};
+
+  if (dictionaryId != undefined) {
+    bindParams.$dictionaryId = dictionaryId;
+  }
 
   if (options.limit != undefined) {
     bindParams.$limit = options.limit;
