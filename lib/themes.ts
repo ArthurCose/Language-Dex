@@ -258,7 +258,7 @@ export const themeConstructors: {
         body: "#09090b",
         bottomNav: "#1a1a1f",
         popup: "#1f1f24",
-        scanInput: "#1a1a1d",
+        scanInput: "#1a1a1f",
         definitionBackground: "#1a1a1f",
         text: "#bbb",
         label: "#aaa",
