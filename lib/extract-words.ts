@@ -22,6 +22,21 @@ const COMMON_SCRIPT_PROP = Unistring.SCRIPT["Common"];
 export default function extractWords(text: string) {
   const unistringSegments = Unistring.getWords(text.toLowerCase(), true);
 
+  const scriptPropCache: { [codePoint: number]: number } = {};
+
+  function getScriptProp(codePoint: number) {
+    let prop = scriptPropCache[codePoint];
+
+    if (prop != undefined) {
+      return prop;
+    }
+
+    prop = Unistring.getScriptProp(codePoint);
+    scriptPropCache[codePoint] = prop;
+
+    return prop;
+  }
+
   return unistringSegments.flatMap((segment, i) => {
     if (!SCRIPT_WHITELIST_MAP[segment.type]) {
       return [];
@@ -32,10 +47,7 @@ export default function extractWords(text: string) {
     if (segment.type == UNKNOWN_OR_KANJI) {
       const codePoint = Unistring.getCodePointArray(segment.text)[0];
 
-      if (
-        codePoint &&
-        Unistring.getScriptProp(codePoint) == COMMON_SCRIPT_PROP
-      ) {
+      if (getScriptProp(codePoint) == COMMON_SCRIPT_PROP) {
         return [];
       }
     } else if (segment.type == HIRAGANA && lastType == UNKNOWN_OR_KANJI) {
