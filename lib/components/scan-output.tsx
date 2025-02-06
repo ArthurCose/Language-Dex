@@ -71,7 +71,11 @@ export default function ScanOutput({ text }: Props) {
     return <Text style={theme.styles.scanOutput}>{renderedText}</Text>;
   }, [segments]);
 
-  return <ScrollView>{textElement}</ScrollView>;
+  return <ScrollView style={styles.scrollView}>{textElement}</ScrollView>;
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  scrollView: {
+    marginBottom: 8,
+  },
+});
