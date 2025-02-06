@@ -120,9 +120,10 @@ export default function Dictionary() {
           return;
         }
 
-        if (orderBy == "alphabetical") {
+        if (orderBy == "alphabetical" || orderBy == "confidence") {
           // flip alphabetical to match what a user would expect:
           // a-z is going down the list and not up
+          // lowest confidence at the top
           words.reverse();
         }
 
