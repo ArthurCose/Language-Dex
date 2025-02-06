@@ -25,6 +25,7 @@ import {
   ConfirmationDialogAction,
   ConfirmationDialogActions,
 } from "../confirmation-dialog";
+import { GameTitle } from "../puzzles/info";
 
 type GameListingProps = {
   label: string;
@@ -180,62 +181,69 @@ export default function () {
   };
 
   return (
-    <View style={styles.list}>
-      <View style={styles.row}>
-        <GameListing
-          label="Match"
-          style={listingStyles}
-          theme={theme}
-          modes={definitionMatchModeList}
-          lockStatus={matchStatus}
-          setLockDescription={lockCallback}
-          onSelect={(mode) =>
-            router.navigate(`/puzzles/${mode}/definition-match`)
-          }
-        />
+    <View style={styles.content}>
+      <GameTitle>{t("Puzzles")}</GameTitle>
 
-        <GameListing
-          label="Unscramble"
-          style={listingStyles}
-          theme={theme}
-          lockStatus={unscrambleStatus}
-          setLockDescription={lockCallback}
-          modes={unscrambleModeList}
-          onSelect={(mode) => router.navigate(`/puzzles/${mode}/unscramble`)}
-        />
+      <View style={styles.list}>
+        <View style={styles.row}>
+          <GameListing
+            label="Match"
+            style={listingStyles}
+            theme={theme}
+            modes={definitionMatchModeList}
+            lockStatus={matchStatus}
+            setLockDescription={lockCallback}
+            onSelect={(mode) =>
+              router.navigate(`/puzzles/${mode}/definition-match`)
+            }
+          />
+
+          <GameListing
+            label="Unscramble"
+            style={listingStyles}
+            theme={theme}
+            lockStatus={unscrambleStatus}
+            setLockDescription={lockCallback}
+            modes={unscrambleModeList}
+            onSelect={(mode) => router.navigate(`/puzzles/${mode}/unscramble`)}
+          />
+        </View>
+
+        <View style={styles.row}>
+          <GameListing
+            label="Crosswords"
+            style={listingStyles}
+            theme={theme}
+            lockStatus={crosswordsStatus}
+            setLockDescription={lockCallback}
+          />
+
+          <View style={styles.spacer} />
+        </View>
+
+        <Dialog open={lockedDialogOpen} onClose={closeLockDialog}>
+          <DialogTitle>{t("Locked")}</DialogTitle>
+          <DialogDescription>{lockDescription}</DialogDescription>
+
+          <ConfirmationDialogActions>
+            <ConfirmationDialogAction onPress={closeLockDialog}>
+              {t("Close")}
+            </ConfirmationDialogAction>
+          </ConfirmationDialogActions>
+        </Dialog>
       </View>
-
-      <View style={styles.row}>
-        <GameListing
-          label="Crosswords"
-          style={listingStyles}
-          theme={theme}
-          lockStatus={crosswordsStatus}
-          setLockDescription={lockCallback}
-        />
-
-        <View style={styles.spacer} />
-      </View>
-
-      <Dialog open={lockedDialogOpen} onClose={closeLockDialog}>
-        <DialogTitle>{t("Locked")}</DialogTitle>
-        <DialogDescription>{lockDescription}</DialogDescription>
-
-        <ConfirmationDialogActions>
-          <ConfirmationDialogAction onPress={closeLockDialog}>
-            {t("Close")}
-          </ConfirmationDialogAction>
-        </ConfirmationDialogActions>
-      </Dialog>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  content: {
+    gap: 16,
+    padding: 8,
+  },
   list: {
     flexWrap: "wrap",
     gap: 4,
-    padding: 8,
   },
   row: {
     flexDirection: "row",

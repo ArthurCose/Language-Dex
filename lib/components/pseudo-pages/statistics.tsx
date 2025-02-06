@@ -8,6 +8,7 @@ import { DictionaryStats, listWords } from "@/lib/data";
 import { Theme } from "@/lib/themes";
 import { logError } from "@/lib/log";
 import { useDictionaryVersioning } from "@/lib/hooks/use-word-definitions";
+import { GameTitle } from "../puzzles/info";
 
 const statsLists: [string, keyof DictionaryStats][][] = [
   [
@@ -84,34 +85,40 @@ export default function Statistics() {
 
   const version = useDictionaryVersioning();
 
-  return (
-    <>
-      <View style={styles.content}>
-        <View>
-          <Span style={theme.styles.poppingText}>
-            {t("label", { label: dictionary.name })}
-          </Span>
-          <StatsBlock
-            theme={theme}
-            version={version}
-            dictionaryId={userData.activeDictionary}
-            stats={dictionary.stats}
-          />
-        </View>
+  const blockStyles = [
+    theme.styles.definitionBackground,
+    theme.styles.definitionBorders,
+    styles.block,
+  ];
 
-        <View>
-          <Span style={theme.styles.poppingText}>
-            {t("label", { label: t("Overall") })}
-          </Span>
-          <StatsBlock
-            theme={theme}
-            version={version}
-            dictionaryId={null}
-            stats={userData.stats}
-          />
-        </View>
+  return (
+    <View style={styles.content}>
+      <GameTitle>{t("Statistics")}</GameTitle>
+
+      <View style={blockStyles}>
+        <Span style={theme.styles.poppingText}>
+          {t("label", { label: dictionary.name })}
+        </Span>
+        <StatsBlock
+          theme={theme}
+          version={version}
+          dictionaryId={userData.activeDictionary}
+          stats={dictionary.stats}
+        />
       </View>
-    </>
+
+      <View style={blockStyles}>
+        <Span style={theme.styles.poppingText}>
+          {t("label", { label: t("Overall") })}
+        </Span>
+        <StatsBlock
+          theme={theme}
+          version={version}
+          dictionaryId={null}
+          stats={userData.stats}
+        />
+      </View>
+    </View>
   );
 }
 
@@ -119,10 +126,16 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 8,
-    paddingHorizontal: 16,
-    gap: 24,
+    gap: 16,
   },
   lists: {
     gap: 8,
+  },
+  block: {
+    paddingVertical: 6,
+    paddingBottom: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
   },
 });
