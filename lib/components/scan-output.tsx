@@ -106,7 +106,7 @@ export default function ScanOutput({ text }: Props) {
         ListFooterComponent={() => <View style={styles.footer} />}
       />
     );
-  }, [segments]);
+  }, [segments, userData.activeDictionary]);
 
   return textElement;
 }
