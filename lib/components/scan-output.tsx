@@ -29,49 +29,49 @@ export default function ScanOutput({ text }: Props) {
     });
   }, [segments]);
 
-  // render segments into list
-  const renderedText: React.ReactNode[] = [];
-  let textI = 0;
+  const textElement = useMemo(() => {
+    // render segments into list
+    const renderedText: React.ReactNode[] = [];
+    let textI = 0;
 
-  for (const segment of segments) {
-    if (textI < segment.rawIndex) {
-      // render text between words
+    for (const segment of segments) {
+      if (textI < segment.rawIndex) {
+        // render text between words
+        renderedText.push(
+          <Text key={textI} style={theme.styles.scanText}>
+            {text.slice(textI, segment.rawIndex)}
+          </Text>
+        );
+      }
+
+      renderedText.push(
+        <ScannedWord
+          key={segment.rawIndex}
+          dictionaryId={userData.activeDictionary}
+          text={text.slice(
+            segment.rawIndex,
+            segment.rawIndex + segment.text.length
+          )}
+          lowercase={segment.text}
+        />
+      );
+
+      textI = segment.rawIndex + segment.text.length;
+    }
+
+    // render remaining text
+    if (textI < text.length) {
       renderedText.push(
         <Text key={textI} style={theme.styles.scanText}>
-          {text.slice(textI, segment.rawIndex)}
+          {text.slice(textI)}
         </Text>
       );
     }
 
-    renderedText.push(
-      <ScannedWord
-        key={segment.rawIndex}
-        dictionaryId={userData.activeDictionary}
-        text={text.slice(
-          segment.rawIndex,
-          segment.rawIndex + segment.text.length
-        )}
-        lowercase={segment.text}
-      />
-    );
+    return <Text style={theme.styles.scanOutput}>{renderedText}</Text>;
+  }, [segments]);
 
-    textI = segment.rawIndex + segment.text.length;
-  }
-
-  // render remaining text
-  if (textI < text.length) {
-    renderedText.push(
-      <Text key={textI} style={theme.styles.scanText}>
-        {text.slice(textI)}
-      </Text>
-    );
-  }
-
-  return (
-    <ScrollView>
-      <Text style={theme.styles.scanOutput}>{renderedText}</Text>
-    </ScrollView>
-  );
+  return <ScrollView>{textElement}</ScrollView>;
 }
 
 const styles = StyleSheet.create({});
