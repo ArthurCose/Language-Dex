@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { Pressable, StyleSheet, View } from "react-native";
+import {
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewStyle,
+} from "react-native";
 import {
   GameWord,
   listGameWords,
@@ -149,18 +155,20 @@ function updateGameStats(userData: UserData, gameState: GameState) {
 }
 
 type CardProps = {
+  style: StyleProp<ViewStyle>;
+  theme: Theme;
   selected: boolean;
   correct: boolean;
   incorrect: boolean;
-  theme: Theme;
   onPress: () => void;
 } & React.PropsWithChildren;
 
 function Card({
+  style,
+  theme,
   selected,
   correct,
   incorrect,
-  theme,
   onPress,
   children,
 }: CardProps) {
@@ -227,7 +235,7 @@ function Card({
   }, [correct, incorrect]);
 
   return (
-    <Animated.View style={[styles.card, animatedStyle]}>
+    <Animated.View style={[style, styles.card, animatedStyle]}>
       <Pressable
         style={styles.pressable}
         onPressIn={onPress}
@@ -251,6 +259,7 @@ export default function () {
   )!;
 
   const [allWords, setAllWords] = useState<GameWord[] | null>(null);
+  const [cardSizeStyle, setCardSizeStyle] = useState({ width: 0 });
 
   const [gameState, setGameState, getGameState] = useGettableState<GameState>(
     () => initGameState([], params.mode as DefinitionMatchGameMode)
@@ -435,10 +444,26 @@ export default function () {
         </ScoreRow>
       )}
 
-      <Animated.ScrollView contentContainerStyle={[styles.rows, opacityStyle]}>
+      <Animated.View
+        style={[styles.rows, opacityStyle]}
+        onLayout={(e) => {
+          e.target.measure((_x, _y, w, h) => {
+            w -= ROWS_PADDING + HORIZONTAL_GAP;
+            h -= ROWS_PADDING + VERTICAL_GAP * 2;
+
+            const width = (w - HORIZONTAL_GAP) / 2;
+            const height = (h - VERTICAL_GAP) / 2;
+
+            setCardSizeStyle({
+              width: Math.min(width, height),
+            });
+          });
+        }}
+      >
         {gameState.rows.map(([left, right], i) => (
           <View key={i} style={styles.row}>
             <Card
+              style={cardSizeStyle}
               theme={theme}
               correct={gameState.correctSet.has(left)}
               incorrect={
@@ -462,6 +487,7 @@ export default function () {
             </Card>
 
             <Card
+              style={cardSizeStyle}
               theme={theme}
               correct={gameState.correctSet.has(right)}
               incorrect={
@@ -531,30 +557,35 @@ export default function () {
             />
           </ResultsRow>
         </ResultsDialog>
-      </Animated.ScrollView>
+      </Animated.View>
     </>
   );
 }
 
+// used to calculate card size
+const HORIZONTAL_GAP = 24;
+const VERTICAL_GAP = 12;
+const ROWS_PADDING = 16;
+
 const styles = StyleSheet.create({
   rows: {
-    gap: 12,
-    padding: 8,
     flex: 1,
+    gap: VERTICAL_GAP,
+    padding: ROWS_PADDING,
     justifyContent: "center",
   },
   row: {
     flexDirection: "row",
-    gap: 24,
+    justifyContent: "space-between",
+    flexShrink: 1,
   },
   card: {
-    flex: 1,
     aspectRatio: 1,
     borderWidth: 1,
   },
   pressable: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    flex: 1,
   },
 });
