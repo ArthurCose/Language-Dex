@@ -203,9 +203,9 @@ const styles = StyleSheet.create({
   word: {
     fontSize: 24,
     fontWeight: "bold",
-    paddingTop: 0,
-    paddingBottom: 12,
+    paddingTop: 4,
     paddingLeft: 16,
+    height: 48,
   },
   drag: {
     display: "flex",

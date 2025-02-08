@@ -83,7 +83,7 @@ function EditableRow({ theme, text, onRename, onDelete }: EditableRowProps) {
   return (
     <View style={styles.rowStyle}>
       <Pressable style={styles.drag} onTouchStart={drag}>
-        <DragVerticalIcon size={24} />
+        <DragVerticalIcon size={24} color={theme.colors.iconButton} />
       </Pressable>
 
       {onRename ? (

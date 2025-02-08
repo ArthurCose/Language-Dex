@@ -185,7 +185,7 @@ export default function Dictionary() {
             />
           )
         }
-        style={styles.wordList}
+        style={[styles.wordList, theme.styles.backgroundDefinitionBorder]}
         data={finalWords}
         getItemCount={getRowCount}
         getItem={getRowWords}
@@ -193,7 +193,9 @@ export default function Dictionary() {
         renderItem={({ item }) => <WordRow item={item} />}
       />
 
-      <View style={styles.optionsRows}>
+      <View
+        style={[styles.optionsRows, theme.styles.backgroundDefinitionBorder]}
+      >
         <View style={styles.optionsRow}>
           <View style={[styles.searchBar, theme.styles.searchInputContainer]}>
             <CustomTextInput
@@ -213,30 +215,37 @@ export default function Dictionary() {
 
         <View style={[styles.optionsRow, styles.dropdownsRow]}>
           <BottomListPopup
-            style={[theme.styles.searchOptionContainer, styles.dropdown]}
+            style={[
+              theme.styles.searchOption,
+              styles.searchOption,
+              styles.dropdown,
+            ]}
             label={resolveWordFilterLabel(partOfSpeechFilter)}
             items={partOfSpeechOptions}
             mapItem={resolveWordFilterLabel}
             onChange={setPartOfSpeechFilter}
           />
 
-          <View style={[theme.styles.searchOptionContainer, styles.dropdown]}>
-            <BottomListPopup
-              label={t(orderBy)}
-              items={wordOrderOptions}
-              mapItem={(value) => t(value)}
-              onChange={setOrderBy}
-            />
-          </View>
+          <BottomListPopup
+            style={[
+              theme.styles.searchOption,
+              styles.searchOption,
+              styles.dropdown,
+            ]}
+            label={t(orderBy)}
+            items={wordOrderOptions}
+            mapItem={(value) => t(value)}
+            onChange={setOrderBy}
+          />
 
           <Pressable
-            style={theme.styles.searchOptionContainer}
+            style={[theme.styles.searchOption, styles.searchOption]}
             onPress={() => setAscending(!ascending)}
           >
             {!ascending ? (
-              <ArrowUpIcon color={theme.colors.text} size={20} />
+              <ArrowUpIcon color={theme.colors.iconButton} size={24} />
             ) : (
-              <ArrowDownIcon color={theme.colors.text} size={20} />
+              <ArrowDownIcon color={theme.colors.iconButton} size={24} />
             )}
           </Pressable>
         </View>
@@ -256,28 +265,35 @@ const styles = StyleSheet.create({
   wordButton: {
     display: "flex",
     alignItems: "center",
-    padding: 8,
+    height: 48,
+    justifyContent: "center",
     width: `${100 / COLUMNS}%`,
   },
   addWordButton: {
     display: "flex",
     alignItems: "center",
-    padding: 8,
+    justifyContent: "center",
+    paddingHorizontal: 8,
     margin: 8,
+    height: 44,
     marginTop: 0,
     flex: 0,
   },
   searchInput: {
     flex: 1,
+    fontSize: 16,
+    height: 40,
+    paddingHorizontal: 16,
   },
   searchBar: {
     flex: 1,
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
+    paddingRight: 10,
   },
   optionsRows: {
-    margin: 8,
+    padding: 8,
   },
   optionsRow: {
     display: "flex",
@@ -286,6 +302,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     marginTop: 8,
+  },
+  searchOption: {
+    paddingHorizontal: 10,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
   },
   dropdown: { flex: 1 },
   dropdownsRow: {},

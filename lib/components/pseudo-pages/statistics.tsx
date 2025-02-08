@@ -135,11 +135,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   block: {
-    paddingVertical: 8,
+    paddingVertical: 12,
     paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
     gap: 2,
-    marginBottom: 8,
+    marginBottom: 16,
   },
 });

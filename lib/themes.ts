@@ -14,15 +14,13 @@ export type Theme = {
     poppingText: TextStyle;
     dialog: ViewStyle;
     bottomSheet: ViewStyle;
-    bottomSheetItem: ViewStyle;
     dictionaryAddWordButton: ViewStyle;
     dictionaryAddWordButtonText: TextStyle;
     dictionaryWordButton: ViewStyle;
     dictionaryWordButtonText: TextStyle;
     searchInputContainer: ViewStyle;
     searchInput: TextStyle;
-    searchOptionContainer: ViewStyle;
-    searchOptionSeparator: ViewStyle;
+    searchOption: ViewStyle;
     circleButton: ViewStyle;
     circleButtonDisabled: ViewStyle;
     scanTextInput: ViewStyle;
@@ -38,6 +36,7 @@ export type Theme = {
     example: TextStyle;
     separator: ViewStyle;
     borders: ViewStyle;
+    backgroundDefinitionBorder: ViewStyle;
     gameListing: ViewStyle;
     topNav: ViewStyle;
     subMenuTopNav: ViewStyle;
@@ -111,16 +110,13 @@ function createSimpleTheme(colors: Palette): Theme {
         borderTopLeftRadius: 16,
         borderTopRightRadius: 16,
       },
-      bottomSheetItem: {
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-      },
       dictionaryAddWordButton: {
         backgroundColor: colors.primary.default,
         borderRadius: 8,
       },
       dictionaryAddWordButtonText: {
         color: colors.primary.contrast,
+        fontSize: 17,
       },
       dictionaryWordButton: {
         backgroundColor: colors.definitionBackground,
@@ -137,21 +133,17 @@ function createSimpleTheme(colors: Palette): Theme {
         borderColor: colors.bottomNav,
         borderWidth: 1,
         borderRadius: 25,
-        paddingHorizontal: 10,
         backgroundColor: colors.bottomNav,
       },
       searchInput: {
         padding: 8,
       },
-      searchOptionContainer: {
+      searchOption: {
         borderColor: colors.bottomNav,
         borderWidth: 1,
         borderRadius: 5,
         backgroundColor: colors.bottomNav,
-        paddingVertical: 6,
-        paddingHorizontal: 10,
       },
-      searchOptionSeparator: {},
       circleButton: {
         backgroundColor: colors.primary.default,
       },
@@ -195,6 +187,9 @@ function createSimpleTheme(colors: Palette): Theme {
       },
       definitionBackground: {
         backgroundColor: colors.definitionBackground,
+      },
+      backgroundDefinitionBorder: {
+        backgroundColor: colors.definitionBorder,
       },
       partOfSpeech: {
         color: colors.partOfSpeech,
@@ -281,10 +276,10 @@ export const themeConstructors: {
 
     return createSimpleTheme({
       primary,
-      body: "#f0f0f0",
+      body: "#eeeef2",
       popup: "white",
       bottomNav: "white",
-      scanInput: "#e5e5e5",
+      scanInput: "#e8e8ec",
       definitionBackground: "white",
       text: "black",
       label: "#aaa",
@@ -296,7 +291,7 @@ export const themeConstructors: {
       subMenuIconButton: "#444",
       subMenuIconButtonDisabled: "#999",
       borders: "lightgrey",
-      definitionBorder: "lightgrey",
+      definitionBorder: "#eeeef2",
       ripples: {
         popup: "rgba(0,0,0,0.05)",
         primaryButton: "rgba(255,255,255,0.3)",

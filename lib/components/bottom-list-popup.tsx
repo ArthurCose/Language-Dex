@@ -117,7 +117,7 @@ export default function BottomListPopup<T>({
                   bottomSheetModalRef.current?.close();
                   onChange(value);
                 }}
-                style={theme.styles.bottomSheetItem}
+                style={styles.row}
                 android_ripple={theme.ripples.popup}
               >
                 <Span>{label}</Span>
@@ -138,5 +138,10 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginLeft: "auto",
+  },
+  row: {
+    paddingHorizontal: 20,
+    height: 48,
+    justifyContent: "center",
   },
 });

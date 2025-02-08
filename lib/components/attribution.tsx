@@ -67,13 +67,14 @@ export const styles = StyleSheet.create({
     padding: 8,
   },
   row: {
-    borderRadius: 20,
+    borderRadius: 48,
     overflow: "hidden",
   },
   pressable: {
     flexDirection: "row",
     flexWrap: "nowrap",
-    padding: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
   },
   name: {
     flexShrink: 1,

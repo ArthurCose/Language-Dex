@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, View, StyleProp, ViewStyle } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/lib/contexts/theme";
@@ -687,21 +687,24 @@ const styles = StyleSheet.create({
     gap: 2,
     marginHorizontal: "auto",
     alignItems: "center",
+    flexWrap: "wrap",
+    justifyContent: "center",
   },
   slot: {
     borderRadius: 5,
-    height: 40,
-    width: 30,
+    height: 48,
+    width: 36,
   },
   chip: {
     borderRadius: 5,
-    height: 40,
-    width: 30,
-    borderLeftWidth: 2,
-    borderRightWidth: 2,
-    borderTopWidth: 3,
-    borderBottomWidth: 3,
+    height: 48,
+    width: 36,
+    borderLeftWidth: 3,
+    borderRightWidth: 3,
+    borderTopWidth: 4,
+    borderBottomWidth: 4,
     alignItems: "center",
+    justifyContent: "center",
   },
   chipText: {
     fontSize: 24,

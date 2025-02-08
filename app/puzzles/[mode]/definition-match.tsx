@@ -167,7 +167,7 @@ function Card({
   const scale = useSharedValue(1);
   const color = useSharedValue(theme.colors.text);
   const backgroundColor = useSharedValue(theme.colors.definitionBackground);
-  const borderColor = useSharedValue(theme.colors.definitionBorder);
+  const borderColor = useSharedValue(theme.colors.borders);
   const prevCorrect = useRef(correct);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -189,7 +189,7 @@ function Card({
         duration: 200,
       });
     } else {
-      borderColor.value = withTiming(theme.colors.definitionBorder, {
+      borderColor.value = withTiming(theme.colors.borders, {
         duration: 200,
       });
     }
@@ -214,12 +214,12 @@ function Card({
       flash(
         borderColor,
         sharedStyles.mistakeContainer.borderColor,
-        theme.colors.definitionBorder
+        theme.colors.borders
       );
     } else if (prevCorrect.current) {
       color.value = theme.colors.text;
       backgroundColor.value = theme.colors.definitionBackground;
-      borderColor.value = theme.colors.definitionBorder;
+      borderColor.value = theme.colors.borders;
       scale.value = 1;
     }
 
