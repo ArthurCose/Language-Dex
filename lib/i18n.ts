@@ -125,7 +125,7 @@ i18n
           // settings
           Settings: "Settings",
           Default_View: "Default View",
-          Default_Sorting: "Default Sorting",
+          Default_Order: "Default Order",
           Theme: "Theme",
           System: "System",
           Light: "Light",
@@ -135,6 +135,9 @@ i18n
           Export_Dictionaries: "Export Dictionaries",
           Exporting: "Exporting",
           All: "All",
+
+          Dictionaries: "Dictionaries",
+          Development: "Development",
 
           // logs
           View_Logs: "View Logs",

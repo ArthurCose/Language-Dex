@@ -112,6 +112,10 @@ export default function () {
 
       <View style={theme.styles.separator} />
 
+      <Span style={[styles.sectionHeader, theme.styles.poppingText]}>
+        {t("Dictionaries")}
+      </Span>
+
       <ListPopup
         style={styles.row}
         list={wordOrderOptions}
@@ -125,7 +129,7 @@ export default function () {
           }
         }}
       >
-        <Span style={styles.label}>{t("Default_Sorting")}</Span>
+        <Span style={styles.label}>{t("Default_Order")}</Span>
         <Span style={[styles.value, theme.styles.disabledText]}>
           {userData.dictionaryOrder != undefined &&
           wordOrderOptions.includes(userData.dictionaryOrder)
@@ -200,6 +204,10 @@ export default function () {
 
       <View style={theme.styles.separator} />
 
+      <Span style={[styles.sectionHeader, theme.styles.poppingText]}>
+        {t("Development")}
+      </Span>
+
       <Pressable
         style={styles.row}
         android_ripple={theme.ripples.transparentButton}
@@ -252,6 +260,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     padding: 16,
+    paddingLeft: 24,
   },
   label: {
     fontSize: 20,
@@ -259,5 +268,9 @@ const styles = StyleSheet.create({
   value: {
     fontSize: 20,
     marginLeft: "auto",
+  },
+  sectionHeader: {
+    marginTop: 8,
+    marginLeft: 16,
   },
 });
