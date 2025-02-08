@@ -136,6 +136,6 @@ function subStat(
   key: string
 ) {
   if (typeof a[key] == "number" && typeof b[key] == "number") {
-    a[key] -= b[key];
+    a[key] = Math.max(a[key] - b[key], 0);
   }
 }

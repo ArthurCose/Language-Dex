@@ -183,7 +183,8 @@ export default function Word() {
           setUserData((userData) => {
             userData = updateStatistics(userData, (stats) => {
               if (stats.definitions != undefined) {
-                stats.definitions -= savedDefinitions?.length ?? 0;
+                const count = savedDefinitions?.length ?? 0;
+                stats.definitions = Math.max(stats.definitions - count, 0);
               }
             });
 

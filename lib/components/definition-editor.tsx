@@ -290,7 +290,7 @@ export default function DefinitionEditor(props: Props) {
             setUserData((userData) => {
               userData = updateStatistics(userData, (stats) => {
                 if (stats.definitions != undefined) {
-                  stats.definitions -= 1;
+                  stats.definitions = Math.max(stats.definitions - 1, 0);
                 }
               });
 
