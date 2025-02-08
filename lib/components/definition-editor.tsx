@@ -115,7 +115,6 @@ export default function DefinitionEditor(props: Props) {
           example,
           notes,
           confidence: definitionData?.confidence ?? 0,
-          images: [],
         }
       );
 

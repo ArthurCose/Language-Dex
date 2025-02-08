@@ -19,14 +19,12 @@ export type DictionaryStats = {
   // words
   definitions?: number;
   documentedMaxConfidence?: number;
-  totalImages?: number;
   totalPronounced?: number;
 };
 
 export const negatableStats: (keyof DictionaryStats)[] = [
   "definitions",
   "documentedMaxConfidence",
-  "totalImages",
   "totalPronounced",
 ];
 
@@ -60,7 +58,6 @@ export type UserData = {
   disabledFeatures: {
     confidence?: boolean;
     pronunciationAudio?: boolean;
-    images?: boolean;
     relation?: boolean;
   };
   points: number;
@@ -116,7 +113,6 @@ export type WordDefinitionData = {
   definition: string;
   example: string;
   notes: string;
-  images: FileName[];
   createdAt: number;
   updatedAt: number;
 };
@@ -178,7 +174,6 @@ CREATE TABLE IF NOT EXISTS word_definition_data (
   definition            TEXT NOT NULL,
   example               TEXT NOT NULL,
   notes                 TEXT NOT NULL,
-  images                TEXT NOT NULL,
   synonymsAndAntonymsId INTEGER,
   createdAt             INTEGER NOT NULL,
   updatedAt             INTEGER NOT NULL
@@ -206,25 +201,12 @@ CREATE INDEX IF NOT EXISTS word_definition_data_confidence_index ON word_definit
   // );
 }
 
-function packFileList(list: FileName[]): string {
-  return list.join(",");
-}
-
-function unpackFileList(s: string): FileName[] {
-  if (!s) {
-    return [];
-  }
-
-  return s.split(",");
-}
-
 export async function deleteDictionary(id: number) {
   // delete associated files
   const results = db.getEachAsync<{
     pronunciationAudio?: string | null;
-    images: string;
   }>(
-    "SELECT pronunciationAudio,images FROM word_definition_data WHERE dictionaryId = $dictionaryId",
+    "SELECT pronunciationAudio FROM word_definition_data WHERE dictionaryId = $dictionaryId",
     {
       $dictionaryId: id,
     }
@@ -235,10 +217,6 @@ export async function deleteDictionary(id: number) {
 
     if (row.pronunciationAudio != undefined) {
       promises.push(deleteFileObject(row.pronunciationAudio));
-    }
-
-    for (const path of unpackFileList(row.images)) {
-      promises.push(deleteFileObject(path));
     }
 
     await Promise.all(promises);
@@ -425,7 +403,6 @@ export async function getWordDefinitions(
     definition: string;
     example: string;
     notes: string;
-    images: string;
     createdAt: number;
     updatedAt: number;
   };
@@ -447,7 +424,6 @@ export async function getWordDefinitions(
       definition: row.definition,
       example: row.example,
       notes: row.notes,
-      images: unpackFileList(row.images),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     });
@@ -567,7 +543,6 @@ export async function upsertDefinition(
     "definition",
     "example",
     "notes",
-    "images",
   ];
 
   const setList = ["sharedId", "updatedAt"];
@@ -577,14 +552,10 @@ export async function upsertDefinition(
 
   // copy values from definition data into params and append to the set list
   for (const key of copyList) {
-    let value = definition[key];
+    const value = definition[key];
 
     if (value == undefined) {
       continue;
-    }
-
-    if (Array.isArray(value)) {
-      value = packFileList(value);
     }
 
     params["$" + key] = value;
@@ -680,9 +651,8 @@ export async function deleteDefinition(id: number) {
     sharedId: number;
     orderKey: number;
     pronunciationAudio?: string | null;
-    images: string;
   }>(
-    "SELECT sharedId,orderKey,pronunciationAudio,images FROM word_definition_data WHERE id = $id",
+    "SELECT sharedId,orderKey,pronunciationAudio FROM word_definition_data WHERE id = $id",
     {
       $id: id,
     }
@@ -697,10 +667,6 @@ export async function deleteDefinition(id: number) {
     deleteFileObject(result.pronunciationAudio).catch(logError);
   }
 
-  for (const path of unpackFileList(result.images)) {
-    deleteFileObject(path).catch(logError);
-  }
-
   // delete words
   await db.runAsync("DELETE FROM word_definition_data WHERE id = $id", {
     $id: id,
@@ -712,17 +678,10 @@ export async function deleteDefinition(id: number) {
   await updateSharedData(result.sharedId);
 }
 
-function deleteAssociatedFiles(result: {
-  pronunciationAudio?: string;
-  images: string;
-}) {
+function deleteAssociatedFiles(result: { pronunciationAudio?: string }) {
   // delete associated files
   if (result.pronunciationAudio != undefined) {
     deleteFileObject(result.pronunciationAudio).catch(logError);
-  }
-
-  for (const path of unpackFileList(result.images)) {
-    deleteFileObject(path).catch(logError);
   }
 }
 
@@ -740,8 +699,8 @@ export async function deleteWord(dictionaryId: number, word: string) {
 
   const sharedId = result.id;
 
-  const rows = db.getEachAsync<{ pronunciationAudio?: string; images: string }>(
-    "SELECT pronunciationAudio,images FROM word_definition_data WHERE sharedId = $sharedId",
+  const rows = db.getEachAsync<{ pronunciationAudio?: string }>(
+    "SELECT pronunciationAudio FROM word_definition_data WHERE sharedId = $sharedId",
     { $sharedId: sharedId }
   );
 
