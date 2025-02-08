@@ -163,19 +163,19 @@ CREATE INDEX IF NOT EXISTS word_shared_data_confidence_index ON word_shared_data
 );
 
 CREATE TABLE IF NOT EXISTS word_definition_data (
-  id                    INTEGER PRIMARY KEY NOT NULL,
-  dictionaryId          INTEGER NOT NULL,
-  sharedId              INTEGER NOT NULL REFERENCES word_shared_data(id),
-  orderKey              INTEGER NOT NULL,
-  confidence            INTEGER NOT NULL,
-  partOfSpeech          INTEGER,
-  pronunciationAudio    TEXT,
-  definition            TEXT NOT NULL,
-  example               TEXT NOT NULL,
-  notes                 TEXT NOT NULL,
-  synonymsAndAntonymsId INTEGER,
-  createdAt             INTEGER NOT NULL,
-  updatedAt             INTEGER NOT NULL
+  id                 INTEGER PRIMARY KEY NOT NULL,
+  dictionaryId       INTEGER NOT NULL,
+  sharedId           INTEGER NOT NULL REFERENCES word_shared_data(id),
+  orderKey           INTEGER NOT NULL,
+  confidence         INTEGER NOT NULL,
+  partOfSpeech       INTEGER,
+  pronunciationAudio TEXT,
+  definition         TEXT NOT NULL,
+  example            TEXT NOT NULL,
+  notes              TEXT NOT NULL,
+  synonymsId         INTEGER,
+  createdAt          INTEGER NOT NULL,
+  updatedAt          INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS word_definition_data_index ON word_definition_data(dictionaryId, sharedId);
 
