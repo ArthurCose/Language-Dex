@@ -11,6 +11,9 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet } from "react-native";
 import * as Clipboard from "expo-clipboard";
+import packageMeta from "../package.json";
+
+const logHeader = `version ${packageMeta.version}\n`;
 
 export default function () {
   const [t] = useTranslation();
@@ -27,7 +30,9 @@ export default function () {
           <SubMenuIconButton
             icon={CopyIcon}
             onPress={() =>
-              Clipboard.setStringAsync(logs.join("\n")).catch(logError)
+              Clipboard.setStringAsync(
+                logHeader + "\n" + logs.join("\n")
+              ).catch(logError)
             }
           />
           <SubMenuIconButton icon={TrashIcon} onPress={clearLog} />
@@ -35,6 +40,8 @@ export default function () {
       </SubMenuTopNav>
 
       <ScrollView contentContainerStyle={styles.logs}>
+        <Span>{logHeader}</Span>
+
         {logs.map((s, i) => (
           <Span key={i}>{s}</Span>
         ))}
