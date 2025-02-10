@@ -36,6 +36,8 @@ export default function ScanOutput({ text }: Props) {
     let latestBlock: React.ReactNode[] = textBlocks[0];
     let textI = 0;
 
+    const scanTextStyles = [theme.styles.scanText, theme.styles.text];
+
     for (const segment of segments) {
       if (textI < segment.rawIndex) {
         // render text between words
@@ -48,7 +50,7 @@ export default function ScanOutput({ text }: Props) {
 
           if (newLineIndex > 0) {
             latestBlock.push(
-              <Text key={textI} style={theme.styles.scanText}>
+              <Text key={textI} style={scanTextStyles}>
                 {betweenText.slice(0, newLineIndex)}
               </Text>
             );
@@ -58,14 +60,14 @@ export default function ScanOutput({ text }: Props) {
           textBlocks.push(latestBlock);
 
           latestBlock.push(
-            <Text key={textI + newLineIndex} style={theme.styles.scanText}>
+            <Text key={textI + newLineIndex} style={scanTextStyles}>
               {betweenText.slice(newLineIndex + 1)}
             </Text>
           );
         } else {
           // append to current block
           latestBlock.push(
-            <Text key={textI} style={theme.styles.scanText}>
+            <Text key={textI} style={scanTextStyles}>
               {betweenText}
             </Text>
           );
@@ -90,7 +92,7 @@ export default function ScanOutput({ text }: Props) {
     // render remaining text
     if (textI < text.length) {
       latestBlock.push(
-        <Text key={textI} style={theme.styles.scanText}>
+        <Text key={textI} style={scanTextStyles}>
           {text.slice(textI)}
         </Text>
       );
