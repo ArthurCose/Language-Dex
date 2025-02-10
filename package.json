@@ -30,7 +30,7 @@
     "@rn-primitives/portal": "^1.1.0",
     "@rn-primitives/slot": "^1.1.0",
     "@rn-primitives/types": "^1.1.0",
-    "expo": "~52.0.26",
+    "expo": "^52.0.31",
     "expo-blur": "~14.0.2",
     "expo-clipboard": "~7.0.1",
     "expo-constants": "~17.0.4",
