@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import packageMeta from "./package.json";
+import packageMeta from "../package.json";
 
 const gradleBuildFile = "./android/app/build.gradle";
 let data = fs.readFileSync(gradleBuildFile, "utf8");
