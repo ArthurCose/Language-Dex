@@ -13,8 +13,8 @@ import { GameTitle } from "../puzzles/info";
 const statsLists: [string, keyof DictionaryStats][][] = [
   [
     ["Total_Definitions", "definitions"],
-    ["Words_Scanned", "wordsScanned"],
-    ["Total_Scans", "totalScans"],
+    ["Words_Read", "wordsScanned"],
+    ["Excerpts_Read", "totalScans"],
   ],
   [
     ["Words_Matched", "definitionsMatched"],

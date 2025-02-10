@@ -18,7 +18,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import Dictionary from "@/lib/components/pseudo-pages/dictionary";
-import Scan from "@/lib/components/pseudo-pages/scan";
+import Read from "@/lib/components/pseudo-pages/read";
 import Puzzles from "@/lib/components/pseudo-pages/puzzles";
 import Statistics from "@/lib/components/pseudo-pages/statistics";
 import { useUserDataContext } from "@/lib/contexts/user-data";
@@ -28,7 +28,7 @@ type PercentString = `${number}%`;
 
 export const pages = [
   { label: "Dictionary", iconComponent: DictionaryIcon, component: Dictionary },
-  { label: "Scan", iconComponent: ScanIcon, component: Scan },
+  { label: "Read", iconComponent: ScanIcon, component: Read },
   { label: "Puzzles", iconComponent: PuzzleIcon, component: Puzzles },
   { label: "Statistics", iconComponent: StatisticsIcon, component: Statistics },
 ];

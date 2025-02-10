@@ -10,7 +10,7 @@ import useKeyboardVisible from "@/lib/hooks/use-keyboard-visible";
 
 const MAX_LEN = 2000;
 
-export default function Scan() {
+export default function Read() {
   const [t] = useTranslation();
   const theme = useTheme();
   const [text, setText] = useState("");

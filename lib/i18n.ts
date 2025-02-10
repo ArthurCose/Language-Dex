@@ -26,7 +26,7 @@ i18n
 
           // bottom nav
           Dictionary: "Dictionary",
-          Scan: "Scan",
+          Read: "Read",
           Statistics: "Statistics",
 
           // dictionary
@@ -83,8 +83,8 @@ i18n
           Overall: "Overall",
           Longest_Word: "Longest_Word",
           Total_Definitions: "Total Definitions",
-          Words_Scanned: "Words Scanned",
-          Total_Scans: "Total Scans",
+          Words_Read: "Words Read",
+          Excerpts_Read: "Excerpts Read",
           Words_Matched: "Words Matched",
           Words_Unscrambled: "Words Unscrambled",
           Words_Guessed: "Words Guessed",
