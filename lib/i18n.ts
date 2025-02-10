@@ -59,8 +59,8 @@ i18n
             "Requires at least three words longer than one letter.",
           Guess: "Guess",
           Guess_Requirements: "Requires at least ten unique words.",
-          Crosswords: "Crosswords",
-          Crosswords_Requirements:
+          Crossword: "Crossword",
+          Crossword_Requirements:
             "Requires at least twenty unique words longer than two letters.",
 
           Locked: "Locked",

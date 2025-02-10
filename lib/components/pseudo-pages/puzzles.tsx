@@ -149,7 +149,7 @@ export default function () {
   const [matchStatus, setMatchStatus] = useState({ locked: true });
   const [unscrambleStatus, setUnscrambleStatus] = useState({ locked: true });
   const [guessStatus, setGuessStatus] = useState({ locked: true });
-  const [crosswordsStatus, setCrosswordsStatus] = useState({ locked: true });
+  const [crosswordStatus, setCrosswordStatus] = useState({ locked: true });
   const [lockedDialogOpen, setLockedDialogOpen] = useState(false);
   const [lockDescription, setLockDescription] = useState("");
 
@@ -171,7 +171,7 @@ export default function () {
       limit: 10,
     });
 
-    testLock(setCrosswordsStatus, listWords, userData.activeDictionary, {
+    testLock(setCrosswordStatus, listWords, userData.activeDictionary, {
       ascending: false,
       orderBy: "longest",
       limit: 20,
@@ -228,10 +228,10 @@ export default function () {
           />
 
           <GameListing
-            label="Crosswords"
+            label="Crossword"
             style={listingStyles}
             theme={theme}
-            lockStatus={crosswordsStatus}
+            lockStatus={crosswordStatus}
             setLockDescription={lockCallback}
           />
         </View>
