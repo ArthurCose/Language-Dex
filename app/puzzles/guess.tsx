@@ -457,6 +457,7 @@ const styles = StyleSheet.create({
   inputControls: {
     flexDirection: "row",
     marginBottom: 12,
+    height: 48,
   },
   inputControlsKeyboardVisible: {
     flexDirection: "row",
@@ -465,6 +466,8 @@ const styles = StyleSheet.create({
   textInput: {
     fontSize: 20,
     paddingHorizontal: 16,
+    paddingTop: 0,
+    paddingBottom: 0,
     flex: 1,
   },
   submitButton: {
