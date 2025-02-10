@@ -50,7 +50,7 @@ export default function Read() {
           </CircleButton> */}
           <View style={styles.circleButtonBlank} />
 
-          {confirmed && (
+          {text != "" && (
             <CircleButton
               style={styles.circleButton}
               containerStyle={styles.circleButtonContainer}
