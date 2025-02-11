@@ -7,6 +7,7 @@ import {
   View,
   ViewStyle,
   StyleSheet,
+  Keyboard,
 } from "react-native";
 import {
   BottomSheetScrollView,
@@ -89,6 +90,7 @@ export default function BottomListPopup<T>({
       <Pressable
         style={[styles.button, style]}
         onPress={() => {
+          Keyboard.dismiss();
           bottomSheetModalRef.current?.present();
           setOpen(true);
         }}

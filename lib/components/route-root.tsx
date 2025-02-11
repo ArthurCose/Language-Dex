@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { Keyboard, StyleProp, View, ViewProps } from "react-native";
+import React from "react";
+import { StyleProp, View, ViewProps } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import KeyboardSpacer from "./keyboard-spacer";
 
 type RouteRootProps = {
   style?: StyleProp<ViewProps>;
@@ -8,22 +9,6 @@ type RouteRootProps = {
 
 export default function RouteRoot({ style, children }: RouteRootProps) {
   const insets = useSafeAreaInsets();
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-  useEffect(() => {
-    const showListener = Keyboard.addListener("keyboardDidShow", (e) => {
-      setKeyboardHeight(e.endCoordinates.height);
-    });
-
-    const hideListener = Keyboard.addListener("keyboardDidHide", () => {
-      setKeyboardHeight(0);
-    });
-
-    return () => {
-      showListener.remove();
-      hideListener.remove();
-    };
-  }, []);
 
   return (
     <View style={[style, { flex: 1 }]}>
@@ -31,7 +16,7 @@ export default function RouteRoot({ style, children }: RouteRootProps) {
 
       {children}
 
-      <View style={{ height: keyboardHeight }} />
+      <KeyboardSpacer />
     </View>
   );
 }

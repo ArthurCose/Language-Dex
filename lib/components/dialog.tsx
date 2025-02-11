@@ -11,6 +11,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 import useBackHandler from "../hooks/use-back-handler";
 import { Span } from "./text";
 import * as Progress from "react-native-progress";
+import KeyboardSpacer from "./keyboard-spacer";
 
 type Props = {
   open: boolean;
@@ -129,6 +130,8 @@ export default function Dialog({ open, onClose, children }: Props) {
               {!closed && children}
             </Pressable>
           </Animated.View>
+
+          <KeyboardSpacer />
         </Pressable>
       </Animated.View>
     </Portal>
