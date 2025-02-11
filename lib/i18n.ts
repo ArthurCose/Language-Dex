@@ -69,7 +69,7 @@ i18n
           mode_timed: "Timed",
           mode_rush: "Rush",
 
-          Guess_Here: "Guess Here",
+          Enter_Guess: "Enter Guess",
 
           Results: "Results",
           Top_Score: "Top Score",

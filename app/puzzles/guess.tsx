@@ -384,7 +384,7 @@ export default function () {
       >
         <CustomTextInput
           style={[theme.styles.definitionBackground, styles.textInput]}
-          placeholder={t("Guess_Here")}
+          placeholder={t("Enter_Guess")}
           onChangeText={setPendingGuess}
           submitBehavior="submit"
           onSubmitEditing={submit}
