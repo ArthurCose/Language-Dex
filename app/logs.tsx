@@ -1,5 +1,5 @@
 import { SubMenuIconButton } from "@/lib/components/icon-button";
-import { CopyIcon, TrashIcon } from "@/lib/components/icons";
+import { CopyIcon, ShareIcon, TrashIcon } from "@/lib/components/icons";
 import SubMenuTopNav, {
   SubMenuActions,
   SubMenuBackButton,
@@ -9,7 +9,7 @@ import { Span } from "@/lib/components/text";
 import { clearLog, logError, useLogs } from "@/lib/log";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StyleSheet } from "react-native";
+import { ScrollView, Share, StyleSheet } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import packageMeta from "../package.json";
 import RouteRoot from "@/lib/components/route-root";
@@ -28,6 +28,8 @@ export default function () {
         <SubMenuTitle>{t("Logs")}</SubMenuTitle>
 
         <SubMenuActions>
+          <SubMenuIconButton icon={TrashIcon} onPress={clearLog} />
+
           <SubMenuIconButton
             icon={CopyIcon}
             onPress={() =>
@@ -36,7 +38,15 @@ export default function () {
               ).catch(logError)
             }
           />
-          <SubMenuIconButton icon={TrashIcon} onPress={clearLog} />
+
+          <SubMenuIconButton
+            icon={ShareIcon}
+            onPress={() =>
+              Share.share({
+                message: logHeader + "\n" + logs.join("\n"),
+              }).catch(logError)
+            }
+          />
         </SubMenuActions>
       </SubMenuTopNav>
 
