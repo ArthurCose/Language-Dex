@@ -38,6 +38,11 @@ import {
   IncorrectIcon,
 } from "@/lib/components/icons";
 import RouteRoot from "@/lib/components/route-root";
+import {
+  DockedTextInput,
+  DockedTextInputContainer,
+  DockedTextInputSubmitButton,
+} from "@/lib/components/puzzles/docked-text-input";
 
 type Guess = { graphemes: Grapheme[]; pending: boolean; valid: boolean };
 
@@ -376,35 +381,18 @@ export default function () {
         ))}
       </ScrollView>
 
-      <View
-        style={[
-          styles.inputControls,
-          keyboardVisible && styles.inputControlsKeyboardVisible,
-        ]}
+      <DockedTextInputContainer
+        style={keyboardVisible && styles.inputControlsKeyboardVisible}
       >
-        <CustomTextInput
-          style={[theme.styles.definitionBackground, styles.textInput]}
+        <DockedTextInput
           placeholder={t("Enter_Guess")}
           onChangeText={setPendingGuess}
           submitBehavior="submit"
           onSubmitEditing={submit}
           value={pendingGuess}
         />
-
-        <Pressable
-          style={[
-            submitLocked
-              ? theme.styles.circleButtonDisabled
-              : theme.styles.circleButton,
-            styles.submitButton,
-          ]}
-          disabled={submitLocked}
-          onPress={submit}
-          android_ripple={theme.ripples.primaryButton}
-        >
-          <ConfirmReadyIcon color={theme.colors.primary.contrast} size={30} />
-        </Pressable>
-      </View>
+        <DockedTextInputSubmitButton disabled={submitLocked} onPress={submit} />
+      </DockedTextInputContainer>
 
       <ResultsDialog
         open={gameState.displayingResults}
@@ -457,25 +445,9 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
-  inputControls: {
-    flexDirection: "row",
-    marginBottom: 12,
-    height: 48,
-  },
   inputControlsKeyboardVisible: {
     flexDirection: "row",
     marginBottom: 0,
-  },
-  textInput: {
-    fontSize: 20,
-    paddingHorizontal: 16,
-    paddingTop: 0,
-    paddingBottom: 0,
-    flex: 1,
-  },
-  submitButton: {
-    justifyContent: "center",
-    paddingHorizontal: 12,
   },
 });
 
