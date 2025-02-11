@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ScrollView, StyleSheet, View, Pressable } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import { isValidWord, listWords, updateStatistics } from "@/lib/data";
 import Unistring, { Grapheme } from "@akahuku/unistring";
 import { pickIndexBiased } from "@/lib/puzzles/random";
 import { Timer } from "@/lib/puzzles/timer";
 import useGettableState from "@/lib/hooks/use-gettable-state";
 import SubMenuTopNav, {
+  SubMenuActions,
   SubMenuBackButton,
 } from "@/lib/components/sub-menu-top-nav";
 import { GameTitle } from "@/lib/components/puzzles/info";
@@ -27,15 +28,14 @@ import Animated, {
   withDelay,
   withTiming,
 } from "react-native-reanimated";
-import CustomTextInput from "@/lib/components/custom-text-input";
 import { useTheme } from "@/lib/contexts/theme";
 import useKeyboardVisible from "@/lib/hooks/use-keyboard-visible";
 import { Theme } from "@/lib/themes";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  ConfirmReadyIcon,
   IncorrectIcon,
+  PuzzleResultsIcon,
 } from "@/lib/components/icons";
 import RouteRoot from "@/lib/components/route-root";
 import {
@@ -43,10 +43,12 @@ import {
   DockedTextInputContainer,
   DockedTextInputSubmitButton,
 } from "@/lib/components/puzzles/docked-text-input";
+import { SubMenuIconButton } from "@/lib/components/icon-button";
 
 type Guess = { graphemes: Grapheme[]; pending: boolean; valid: boolean };
 
 type GameState = {
+  over: boolean;
   displayingResults: boolean;
   activeWord?: string;
   guesses: Guess[];
@@ -58,6 +60,7 @@ type GameState = {
 
 function initGameState() {
   const gameState: GameState = {
+    over: false,
     displayingResults: false,
     guesses: [],
     graphemes: [],
@@ -255,7 +258,8 @@ export default function () {
   );
   const [pendingGuess, setPendingGuess] = useState("");
   const [pendingGuessLocked, setPendingGuessLocked] = useState(false);
-  const submitLocked = pendingGuessLocked || pendingGuess.length == 0;
+  const submitLocked =
+    pendingGuessLocked || pendingGuess.length == 0 || gameState.over;
   const scrollViewRef = useRef<ScrollView>(null);
 
   const keyboardVisible = useKeyboardVisible();
@@ -343,7 +347,7 @@ export default function () {
 
         setTimeout(() => {
           const gameState = getGameState();
-          setGameState({ ...gameState, displayingResults: true });
+          setGameState({ ...gameState, over: true, displayingResults: true });
         }, delay);
 
         setUserData((userData) => {
@@ -359,6 +363,17 @@ export default function () {
     <RouteRoot>
       <SubMenuTopNav>
         <SubMenuBackButton />
+
+        <SubMenuActions>
+          {gameState.over && (
+            <SubMenuIconButton
+              icon={PuzzleResultsIcon}
+              onPress={() =>
+                setGameState({ ...gameState, displayingResults: true })
+              }
+            />
+          )}
+        </SubMenuActions>
       </SubMenuTopNav>
 
       <GameTitle>{t("Guess")}</GameTitle>
@@ -396,6 +411,7 @@ export default function () {
 
       <ResultsDialog
         open={gameState.displayingResults}
+        onClose={() => setGameState({ ...gameState, displayingResults: false })}
         onReplay={() => {
           const newState = initGameState();
           startGame(newState, allWords);

@@ -23,6 +23,7 @@ import { Timer, useTimerSeconds } from "@/lib/puzzles/timer";
 import useGettableState from "@/lib/hooks/use-gettable-state";
 import Unistring, { Grapheme } from "@akahuku/unistring";
 import SubMenuTopNav, {
+  SubMenuActions,
   SubMenuBackButton,
 } from "@/lib/components/sub-menu-top-nav";
 import {
@@ -34,7 +35,11 @@ import {
 import useWordDefinitions from "@/lib/hooks/use-word-definitions";
 import { Span } from "@/lib/components/text";
 import CircleButton from "@/lib/components/circle-button";
-import { ArrowRightIcon, ShuffleIcon } from "@/lib/components/icons";
+import {
+  ArrowRightIcon,
+  PuzzleResultsIcon,
+  ShuffleIcon,
+} from "@/lib/components/icons";
 import Animated, {
   runOnJS,
   SharedValue,
@@ -60,6 +65,7 @@ import {
   ResultsSpacer,
 } from "@/lib/components/puzzles/results";
 import RouteRoot from "@/lib/components/route-root";
+import { SubMenuIconButton } from "@/lib/components/icon-button";
 
 export type UnscrambleGameMode = "endless" | "timed" | "rush";
 export const unscrambleModeList: UnscrambleGameMode[] = [
@@ -555,6 +561,17 @@ export default function () {
     <RouteRoot>
       <SubMenuTopNav>
         <SubMenuBackButton />
+
+        <SubMenuActions>
+          {gameState.over && (
+            <SubMenuIconButton
+              icon={PuzzleResultsIcon}
+              onPress={() =>
+                setGameState({ ...gameState, displayingResults: true })
+              }
+            />
+          )}
+        </SubMenuActions>
       </SubMenuTopNav>
 
       <GameTitle>{t("Unscramble")}</GameTitle>
@@ -618,6 +635,7 @@ export default function () {
         <CircleButton
           style={styles.button}
           android_ripple={theme.ripples.transparentButton}
+          disabled={gameOver}
           onPress={checkSelection}
         >
           <ArrowRightIcon size={48} color={theme.colors.primary.contrast} />
@@ -626,6 +644,7 @@ export default function () {
 
       <ResultsDialog
         open={gameState.displayingResults}
+        onClose={() => setGameState({ ...gameState, displayingResults: false })}
         onReplay={() => {
           const complete = () => {
             // start next round when everything is cleaned up

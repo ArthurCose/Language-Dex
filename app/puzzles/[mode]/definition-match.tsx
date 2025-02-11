@@ -28,6 +28,7 @@ import useGettableState from "@/lib/hooks/use-gettable-state";
 import { Theme } from "@/lib/themes";
 import { useTheme } from "@/lib/contexts/theme";
 import SubMenuTopNav, {
+  SubMenuActions,
   SubMenuBackButton,
 } from "@/lib/components/sub-menu-top-nav";
 import {
@@ -53,6 +54,8 @@ import {
 } from "@/lib/components/puzzles/results";
 import RouteRoot from "@/lib/components/route-root";
 import { useColorScheme } from "@/lib/contexts/color-scheme";
+import { SubMenuIconButton } from "@/lib/components/icon-button";
+import { PuzzleResultsIcon } from "@/lib/components/icons";
 
 export type DefinitionMatchGameMode = "endless" | "timed" | "rush";
 export const definitionMatchModeList: DefinitionMatchGameMode[] = [
@@ -446,6 +449,17 @@ export default function () {
     <RouteRoot>
       <SubMenuTopNav>
         <SubMenuBackButton />
+
+        <SubMenuActions>
+          {gameState.over && (
+            <SubMenuIconButton
+              icon={PuzzleResultsIcon}
+              onPress={() =>
+                setGameState({ ...gameState, displayingResults: true })
+              }
+            />
+          )}
+        </SubMenuActions>
       </SubMenuTopNav>
 
       <GameTitle>{t("Match")}</GameTitle>
@@ -529,6 +543,9 @@ export default function () {
 
         <ResultsDialog
           open={gameState.displayingResults}
+          onClose={() =>
+            setGameState({ ...gameState, displayingResults: false })
+          }
           onReplay={() => {
             const complete = () => {
               // start next round when everything is cleaned up

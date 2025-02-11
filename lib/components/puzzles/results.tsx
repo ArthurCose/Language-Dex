@@ -6,11 +6,13 @@ import Dialog from "../dialog";
 
 type ResultsDialogProps = {
   open: boolean;
+  onClose?: () => void;
   onReplay?: () => void;
 } & React.PropsWithChildren;
 
 export function ResultsDialog({
   open,
+  onClose,
   onReplay,
   children,
 }: ResultsDialogProps) {
@@ -18,7 +20,7 @@ export function ResultsDialog({
   const [t] = useTranslation();
 
   return (
-    <Dialog open={open}>
+    <Dialog open={open} onClose={onClose}>
       <Text style={[styles.header, theme.styles.text]}>{t("Results")}</Text>
 
       <View style={styles.rows}>{children}</View>

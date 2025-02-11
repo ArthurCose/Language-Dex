@@ -142,3 +142,7 @@ export function IncorrectIcon(props: IconProps) {
 export function ShareIcon(props: IconProps) {
   return <MaterialDesignIcons name="share-variant" {...props} />;
 }
+
+export function PuzzleResultsIcon(props: IconProps) {
+  return <MaterialDesignIcons name="medal-outline" {...props} />;
+}
