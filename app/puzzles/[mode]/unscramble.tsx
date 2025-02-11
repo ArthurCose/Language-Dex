@@ -50,7 +50,7 @@ import {
 } from "react-native-gesture-handler";
 import { Portal } from "@rn-primitives/portal";
 import uuid from "react-native-uuid";
-import { sharedStyles } from "@/lib/components/puzzles/shared-styles";
+import usePuzzleColors, { PuzzleColors } from "@/lib/hooks/use-puzzle-colors";
 import {
   ResultsClock,
   ResultsDialog,
@@ -202,6 +202,7 @@ function overlappingGraphemeIndex(gameState: GameState, x: number, y: number) {
 
 type ChipSlotProps = {
   index: number;
+  puzzleColors: PuzzleColors;
   gameState: GameState;
   setGameState: (gameState: GameState) => void;
   getGameState: () => GameState;
@@ -215,6 +216,7 @@ const springConfig = {
 
 function ChipSlot({
   index,
+  puzzleColors,
   gameState,
   setGameState,
   getGameState,
@@ -261,14 +263,14 @@ function ChipSlot({
 
     if (gameState.correctList[index]) {
       // correct colors
-      targetColor = sharedStyles.correctText.color;
-      targetBackgroundColor = sharedStyles.correctContainer.backgroundColor;
-      targetBorderColor = sharedStyles.correctContainer.borderColor;
+      targetColor = puzzleColors.correct.color;
+      targetBackgroundColor = puzzleColors.correct.backgroundColor;
+      targetBorderColor = puzzleColors.correct.borderColor;
     } else {
       // incorrect colors
-      targetColor = sharedStyles.mistakeText.color;
-      targetBackgroundColor = sharedStyles.mistakeContainer.backgroundColor;
-      targetBorderColor = sharedStyles.mistakeContainer.borderColor;
+      targetColor = puzzleColors.mistake.color;
+      targetBackgroundColor = puzzleColors.mistake.backgroundColor;
+      targetBorderColor = puzzleColors.mistake.borderColor;
     }
 
     flash(color, targetColor, theme.colors.text);
@@ -384,6 +386,7 @@ function ChipSlot({
 export default function () {
   const params = useLocalSearchParams<{ mode: string }>();
   const theme = useTheme();
+  const puzzleColors = usePuzzleColors();
   const [t] = useTranslation();
   const [userData, setUserData] = useUserDataContext();
   const dictionary = userData.dictionaries.find(
@@ -586,6 +589,7 @@ export default function () {
             <ChipSlot
               index={i}
               key={grapheme.rawIndex}
+              puzzleColors={puzzleColors}
               gameState={gameState}
               setGameState={setGameState}
               getGameState={getGameState}

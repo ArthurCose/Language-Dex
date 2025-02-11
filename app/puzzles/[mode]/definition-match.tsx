@@ -42,7 +42,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { sharedStyles } from "@/lib/components/puzzles/shared-styles";
+import usePuzzleColors, { PuzzleColors } from "@/lib/hooks/use-puzzle-colors";
 import {
   ResultsClock,
   ResultsDialog,
@@ -52,6 +52,7 @@ import {
   ResultsSpacer,
 } from "@/lib/components/puzzles/results";
 import RouteRoot from "@/lib/components/route-root";
+import { useColorScheme } from "@/lib/contexts/color-scheme";
 
 export type DefinitionMatchGameMode = "endless" | "timed" | "rush";
 export const definitionMatchModeList: DefinitionMatchGameMode[] = [
@@ -165,6 +166,7 @@ function updateGameStats(userData: UserData, gameState: GameState) {
 type CardProps = {
   style: StyleProp<ViewStyle>;
   theme: Theme;
+  puzzleColors: PuzzleColors;
   selected: boolean;
   correct: boolean;
   incorrect: boolean;
@@ -174,6 +176,7 @@ type CardProps = {
 function Card({
   style,
   theme,
+  puzzleColors,
   selected,
   correct,
   incorrect,
@@ -214,22 +217,22 @@ function Card({
   useEffect(() => {
     if (correct) {
       // fade to correct colors
-      fadeTo(color, sharedStyles.correctText.color);
-      fadeTo(backgroundColor, sharedStyles.correctContainer.backgroundColor);
-      fadeTo(borderColor, sharedStyles.correctContainer.borderColor);
+      fadeTo(color, puzzleColors.correct.color);
+      fadeTo(backgroundColor, puzzleColors.correct.backgroundColor);
+      fadeTo(borderColor, puzzleColors.correct.borderColor);
 
       scale.value = withTiming(SMALL_SCALE, { duration: 300 });
     } else if (incorrect) {
       // flash incorrect colors
-      flash(color, sharedStyles.mistakeText.color, theme.colors.text);
+      flash(color, puzzleColors.mistake.color, theme.colors.text);
       flash(
         backgroundColor,
-        sharedStyles.mistakeContainer.backgroundColor,
+        puzzleColors.mistake.backgroundColor,
         theme.colors.definitionBackground
       );
       flash(
         borderColor,
-        sharedStyles.mistakeContainer.borderColor,
+        puzzleColors.mistake.borderColor,
         theme.colors.borders
       );
     } else if (prevCorrect.current) {
@@ -260,6 +263,7 @@ function Card({
 export default function () {
   const params = useLocalSearchParams<{ mode: string }>();
   const theme = useTheme();
+  const puzzleColors = usePuzzleColors();
   const [t] = useTranslation();
   const [userData, setUserData] = useUserDataContext();
   const dictionary = userData.dictionaries.find(
@@ -474,6 +478,7 @@ export default function () {
             <Card
               style={cardSizeStyle}
               theme={theme}
+              puzzleColors={puzzleColors}
               correct={gameState.correctSet.has(left)}
               incorrect={
                 gameState.leftSelection == i && gameState.selectionIncorrect
@@ -498,6 +503,7 @@ export default function () {
             <Card
               style={cardSizeStyle}
               theme={theme}
+              puzzleColors={puzzleColors}
               correct={gameState.correctSet.has(right)}
               incorrect={
                 gameState.rightSelection == i && gameState.selectionIncorrect
