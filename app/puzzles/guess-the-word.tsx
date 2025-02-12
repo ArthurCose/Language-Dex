@@ -17,7 +17,6 @@ import {
   ResultsLabel,
   ResultsRow,
   ResultsScore,
-  ResultsSpacer,
 } from "@/lib/components/puzzles/results";
 import { useUserDataContext } from "@/lib/contexts/user-data";
 import { logError } from "@/lib/log";
@@ -295,7 +294,7 @@ export default function () {
     setPendingGuess("");
     setPendingGuessLocked(true);
 
-    const lowerCaseGuess = pendingGuess.toLowerCase();
+    const lowerCaseGuess = pendingGuess.trimEnd().toLowerCase();
 
     const guesses = [
       ...gameState.guesses,
