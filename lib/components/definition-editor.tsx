@@ -8,18 +8,16 @@ import { useTranslation } from "react-i18next";
 import { StyleSheet, View, ScrollView, Text, Pressable } from "react-native";
 import {
   ArrowLeftIcon,
+  ConfidenceIcon,
   DefinitionIcon,
   EducationIcon,
   ExampleIcon,
-  HighConfidenceIcon,
-  LowConfidenceIcon,
-  NeutralConfidenceIcon,
   NotesIcon,
   PartOfSpeechIcon,
   SaveIcon,
   TrashIcon,
 } from "@/lib/components/icons";
-import IconButton, { SubMenuIconButton } from "@/lib/components/icon-button";
+import { SubMenuIconButton } from "@/lib/components/icon-button";
 import {
   invalidateWordDefinitions,
   useWordDefinition,
@@ -47,6 +45,33 @@ type Props = {
   definitionId?: number;
   setDefinitionId: (id: number) => void;
 };
+
+function ConfidenceButton({
+  confidence,
+  representedConfidence,
+  setConfidence,
+}: {
+  confidence: number;
+  representedConfidence: number;
+  setConfidence: (c: number) => void;
+}) {
+  return (
+    <Pressable
+      style={styles.confidencePressable}
+      onPress={() => setConfidence(representedConfidence)}
+    >
+      <ConfidenceIcon
+        confidence={representedConfidence}
+        style={
+          confidence == representedConfidence
+            ? undefined
+            : styles.transparentIcon
+        }
+        size={32}
+      />
+    </Pressable>
+  );
+}
 
 export default function DefinitionEditor(props: Props) {
   const theme = useTheme();
@@ -217,35 +242,26 @@ export default function DefinitionEditor(props: Props) {
           </Text>
 
           <View style={styles.confidenceGroup}>
-            <Pressable
-              style={styles.confidencePressable}
-              onPress={() => setConfidence(-1)}
-            >
-              <LowConfidenceIcon
-                style={confidence < 0 ? undefined : styles.transparentIcon}
-                size={32}
-              />
-            </Pressable>
-
-            <Pressable
-              style={styles.confidencePressable}
-              onPress={() => setConfidence(0)}
-            >
-              <NeutralConfidenceIcon
-                style={confidence == 0 ? undefined : styles.transparentIcon}
-                size={32}
-              />
-            </Pressable>
-
-            <Pressable
-              style={styles.confidencePressable}
-              onPress={() => setConfidence(1)}
-            >
-              <HighConfidenceIcon
-                style={confidence > 0 ? undefined : styles.transparentIcon}
-                size={32}
-              />
-            </Pressable>
+            <ConfidenceButton
+              confidence={confidence}
+              representedConfidence={-1}
+              setConfidence={setConfidence}
+            />
+            <ConfidenceButton
+              confidence={confidence}
+              representedConfidence={0}
+              setConfidence={setConfidence}
+            />
+            <ConfidenceButton
+              confidence={confidence}
+              representedConfidence={1}
+              setConfidence={setConfidence}
+            />
+            <ConfidenceButton
+              confidence={confidence}
+              representedConfidence={2}
+              setConfidence={setConfidence}
+            />
           </View>
         </View>
 

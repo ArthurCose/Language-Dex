@@ -169,6 +169,7 @@ export default function () {
       ascending: false,
       orderBy: "longest",
       limit: 10,
+      belowMaxConfidence: true,
     });
 
     testLock(setCrosswordStatus, listWords, userData.activeDictionary, {
@@ -176,6 +177,7 @@ export default function () {
       orderBy: "longest",
       limit: 20,
       minLength: 3,
+      belowMaxConfidence: true,
     });
   }, [userData.activeDictionary, dictionaryVersion]);
 

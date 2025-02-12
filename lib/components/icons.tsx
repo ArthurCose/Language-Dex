@@ -171,18 +171,23 @@ function createTextIcon(text: string) {
 
 export const LowConfidenceIcon = createTextIcon("😵‍💫");
 export const NeutralConfidenceIcon = createTextIcon("😶");
-export const HighConfidenceIcon = createTextIcon("🤓");
+export const HighConfidenceIcon = createTextIcon("😊");
+export const HighestConfidenceIcon = createTextIcon("🤓");
 
 export function ConfidenceIcon({
   confidence,
   ...props
 }: { confidence: number } & IconProps) {
-  let Icon = NeutralConfidenceIcon;
+  let Icon;
 
-  if (confidence < 0) {
+  if (confidence == 0) {
+    Icon = NeutralConfidenceIcon;
+  } else if (confidence < 0) {
     Icon = LowConfidenceIcon;
-  } else if (confidence > 0) {
+  } else if (confidence == 1) {
     Icon = HighConfidenceIcon;
+  } else {
+    Icon = HighestConfidenceIcon;
   }
 
   return <Icon {...props} />;

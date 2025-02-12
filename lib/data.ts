@@ -283,17 +283,23 @@ export async function isValidWord(dictionaryId: number, word: string) {
   return result != null && result["COUNT(*)"] != 0;
 }
 
+const maxConfidence = 2;
+
 export async function listGameWords(
   dictionaryId: number,
   options?: { minLength?: number; limit?: number }
 ) {
-  const params: SQLite.SQLiteBindParams = { $dictionaryId: dictionaryId };
+  const params: SQLite.SQLiteBindParams = {
+    $dictionaryId: dictionaryId,
+    $maxConfidence: maxConfidence,
+  };
 
   // build query
   const query = [
     "SELECT spelling, orderKey FROM word_definition_data word_def",
     "INNER JOIN word_shared_data word ON word_def.sharedId = word.id",
     "WHERE word_def.dictionaryId = $dictionaryId",
+    "AND word_def.confidence < $maxConfidence",
   ];
 
   if (options?.minLength != undefined) {
@@ -321,6 +327,7 @@ export async function listWords(
     orderBy: WordOrder;
     partOfSpeech?: number;
     minLength?: number;
+    belowMaxConfidence?: boolean;
     limit?: number;
   }
 ) {
@@ -349,6 +356,11 @@ export async function listWords(
   if (options.minLength != undefined) {
     whereClause.push("word.graphemeCount >= $minLength");
     bindParams.$minLength = options.minLength;
+  }
+
+  if (options.belowMaxConfidence != undefined) {
+    whereClause.push("word.minConfidence < $maxConfidence");
+    bindParams.$maxConfidence = maxConfidence;
   }
 
   if (whereClause.length > 0) {

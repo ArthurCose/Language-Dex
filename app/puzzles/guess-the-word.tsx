@@ -269,6 +269,7 @@ export default function () {
       ascending: true,
       orderBy: "confidence",
       minLength: 1,
+      belowMaxConfidence: true,
     })
       .then((words) => {
         setAllWords(words);

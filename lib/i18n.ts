@@ -54,15 +54,16 @@ i18n
           // games
           Definition_Match: "Definition Match",
           Definition_Match_Requirements:
-            "Requires at least three word definitions.",
+            "Requires at least three word definitions below max confidence.",
           Unscramble: "Unscramble",
           Unscramble_Requirements:
-            "Requires at least five words longer than one letter.",
+            "Requires at least five words longer than one letter below max confidence.",
           Guess_the_Word: "Guess the Word",
-          Guess_the_Word_Requirements: "Requires at least ten unique words.",
+          Guess_the_Word_Requirements:
+            "Requires at least ten unique words below max confidence.",
           Crossword: "Crossword",
           Crossword_Requirements:
-            "Requires at least twenty unique words longer than two letters.",
+            "Requires at least twenty unique words longer than two letters below max confidence.",
 
           Locked: "Locked",
 
