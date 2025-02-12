@@ -133,6 +133,7 @@ async function initDb() {
 
   await db.execAsync(`
 PRAGMA journal_mode = WAL;
+PRAGMA auto_vacuum = FULL;
 
 CREATE TABLE IF NOT EXISTS word_shared_data (
   id                  INTEGER PRIMARY KEY NOT NULL,
@@ -399,14 +400,14 @@ export async function listWords(
     bindParams.$limit = options.limit;
   }
 
-  const results = db.getEachAsync<{ spelling: string }>(
+  const results = await db.getAllAsync<{ spelling: string }>(
     query.join(" "),
     bindParams
   );
 
   const output: string[] = [];
 
-  for await (const row of results) {
+  for (const row of results) {
     output.push(row.spelling);
   }
 
