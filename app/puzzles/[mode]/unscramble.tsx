@@ -711,12 +711,13 @@ const styles = StyleSheet.create({
   chipsBlock: {
     flex: 1,
     display: "flex",
-    flexDirection: "row",
-    gap: 2,
     marginHorizontal: "auto",
-    alignItems: "center",
+    flexDirection: "row",
     flexWrap: "wrap",
+    alignItems: "center",
+    gap: 2,
     justifyContent: "center",
+    alignContent: "center",
   },
   slot: {
     borderRadius: 5,
