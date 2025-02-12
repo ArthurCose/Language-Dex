@@ -14,6 +14,7 @@ import {
   DictionaryData,
   exportData,
   importData,
+  upsertDefinition,
   UserData,
   wordOrderOptions,
 } from "@/lib/data";
@@ -223,6 +224,65 @@ export default function () {
       >
         <Span style={styles.label}>{t("View_Logs")}</Span>
       </Pressable>
+
+      {__DEV__ && (
+        <>
+          <View style={theme.styles.separator} />
+
+          <Pressable
+            style={styles.row}
+            android_ripple={theme.ripples.transparentButton}
+            onPress={() => {
+              const updatedData = { ...userData };
+              updatedData.dictionaries = [...updatedData.dictionaries];
+
+              const dictionaryId = updatedData.nextDictionaryId++;
+
+              updatedData.dictionaries.push({
+                name: "Generated",
+                id: dictionaryId,
+                partsOfSpeech: [],
+                nextPartOfSpeechId: 0,
+                stats: {},
+              });
+
+              setUserData(updatedData);
+
+              setLongTaskOpen(true);
+              setLongTaskName("Generating Dictionary");
+              setLongTaskCompletedMessage(undefined);
+
+              const longtask = async () => {
+                for (let i = 0; i < 50000; i++) {
+                  const length = Math.floor(Math.random() * 20) + 2;
+                  const chars = [];
+
+                  for (let j = 0; j < length; j++) {
+                    chars.push(
+                      String.fromCharCode(Math.floor(Math.random() * 26) + 65)
+                    );
+                  }
+
+                  const word = chars.join("");
+
+                  await upsertDefinition(dictionaryId, word, {
+                    confidence: 0,
+                    definition: word,
+                    example: "",
+                    notes: "",
+                  });
+                }
+
+                setLongTaskCompletedMessage("Success");
+              };
+
+              longtask().catch(logError);
+            }}
+          >
+            <Span style={styles.label}>Generate Large Dictionary</Span>
+          </Pressable>
+        </>
+      )}
 
       <View style={theme.styles.separator} />
 
