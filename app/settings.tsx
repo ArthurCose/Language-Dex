@@ -348,7 +348,11 @@ export default function () {
 
       <Dialog
         open={longTaskOpen}
-        onClose={longTaskCompleted ? () => setLongTaskOpen(false) : undefined}
+        onClose={() => {
+          if (longTaskCompleted) {
+            setLongTaskOpen(false);
+          }
+        }}
       >
         <DialogTitle>{longTaskName}</DialogTitle>
 
