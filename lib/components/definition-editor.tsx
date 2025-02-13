@@ -131,7 +131,7 @@ export default function DefinitionEditor(props: Props) {
     setHasPendingChanges(false);
 
     try {
-      const lowerCaseSpelling = spelling.toLowerCase();
+      const lowerCaseSpelling = spelling.toLowerCase().trim();
       const migratingWords =
         props.lowerCaseWord != lowerCaseSpelling &&
         props.definitionId != undefined;
