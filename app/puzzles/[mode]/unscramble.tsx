@@ -168,7 +168,7 @@ function setUpNextRound(gameState: GameState) {
   if (gameState.mode == "rush") {
     gameState.timer.reset();
   } else if (gameState.mode == "endless") {
-    gameState.bagWords.push(gameState.activeWord);
+    gameState.bagLen = gameState.bagWords.length;
   }
 
   gameState.roundStarted = true;
@@ -197,10 +197,10 @@ function overlappingGraphemeIndex(gameState: GameState, x: number, y: number) {
       continue;
     }
 
-    // half height
-    const hh = p.h / 2;
+    // extra height
+    const eh = p.h;
 
-    if (x >= p.x && x <= p.x + p.w && y >= p.y - hh && y <= p.y + p.h + hh) {
+    if (x >= p.x && x <= p.x + p.w && y >= p.y - eh && y <= p.y + p.h + eh) {
       return i;
     }
   }
