@@ -6,6 +6,7 @@ import {
   TextInputProps,
   View,
   ViewStyle,
+  Text,
 } from "react-native";
 import CustomTextInput from "../custom-text-input";
 import { ConfirmReadyIcon, HintIcon } from "../icons";
@@ -47,7 +48,7 @@ export function DockedTextInputSubmitButton({
         disabled
           ? theme.styles.circleButtonDisabled
           : theme.styles.circleButton,
-        styles.submitButton,
+        styles.button,
       ]}
       disabled={disabled}
       onPress={onPress}
@@ -59,9 +60,11 @@ export function DockedTextInputSubmitButton({
 }
 
 export function DockedTextInputHintButton({
+  hintsRemaining,
   disabled,
   onPress,
 }: {
+  hintsRemaining?: number;
   disabled?: boolean;
   onPress?: () => void;
 }) {
@@ -71,13 +74,17 @@ export function DockedTextInputHintButton({
     <Pressable
       style={[
         disabled ? theme.styles.circleButtonDisabled : theme.styles.hintButton,
-        styles.submitButton,
+        styles.button,
       ]}
       disabled={disabled}
       onPress={onPress}
       android_ripple={theme.ripples.primaryButton}
     >
-      <HintIcon color={theme.colors.primary.contrast} size={30} />
+      <HintIcon color="white" size={30} />
+
+      {hintsRemaining != undefined && (
+        <Text style={styles.hintsRemaining}>{hintsRemaining}</Text>
+      )}
     </Pressable>
   );
 }
@@ -94,8 +101,17 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     flex: 1,
   },
-  submitButton: {
+  button: {
     justifyContent: "center",
-    paddingHorizontal: 12,
+    alignItems: "center",
+    width: 56,
+  },
+  hintsRemaining: {
+    position: "absolute",
+    bottom: 0,
+    right: 4,
+    fontWeight: "bold",
+    fontSize: 16,
+    color: "white",
   },
 });

@@ -129,6 +129,9 @@ export default function () {
   const [wordGuessIndex, setWordGuessIndex] = useState<number | null>(null);
   const [hintDialogOpen, setHintDialogOpen] = useState(false);
 
+  const selectedWord =
+    wordGuessIndex != null ? gameState.board.words[wordGuessIndex] : null;
+
   useEffect(() => {
     listWords(userData.activeDictionary, {
       ascending: true,
@@ -303,22 +306,23 @@ export default function () {
         </View>
       )}
 
-      {wordGuessIndex != null && (
+      {selectedWord && wordGuessIndex != null && (
         <DockedTextInputContainer>
           <DockedTextInputHintButton
+            hintsRemaining={
+              selectedWord.hintUsed ? undefined : gameState.hintsRemaining
+            }
             onPress={() => {
-              const wordData = gameState.board.words[wordGuessIndex];
-
-              if (wordData.hintUsed) {
+              if (selectedWord.hintUsed) {
                 setHintDialogOpen(true);
                 return;
               }
 
               gameState.hintsRemaining--;
-              wordData.hintUsed = true;
+              selectedWord.hintUsed = true;
               setGameState({ ...gameState });
 
-              const word = wordData.word;
+              const word = selectedWord.word;
               getWordDefinitions(userData.activeDictionary, word.toLowerCase())
                 .then((result) => {
                   const gameState = { ...getGameState() };

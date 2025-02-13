@@ -151,6 +151,10 @@ export function HintIcon(props: IconProps) {
   return <MaterialDesignIcons name="lightbulb-on-outline" {...props} />;
 }
 
+export function UnlockedIcon(props: IconProps) {
+  return <MaterialDesignIcons name="lock-open-variant" {...props} />;
+}
+
 export function EducationIcon(props: IconProps) {
   return <MaterialDesignIcons name="school" {...props} />;
 }

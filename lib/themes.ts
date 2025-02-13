@@ -271,7 +271,7 @@ export const themeConstructors: {
         definitionBackground: "#1a1a1f",
         text: "#bbb",
         label: "#aaa",
-        disabledText: "#555",
+        disabledText: "#777",
         oldWord: "#bbb",
         partOfSpeech: "grey",
         example: "grey",
