@@ -5,7 +5,7 @@
   "versionCode": 12,
   "scripts": {
     "start": "expo start",
-    "android": "expo prebuild && expo run:android",
+    "android": "expo prebuild -p android && expo run:android",
     "build-android": "npm run licenses; npx tsx scripts/android-prebuild.ts && cd android && ./gradlew app:bundleRelease && echo bundle saved to android/app/build/outputs/bundle/release",
     "ios": "expo run:ios",
     "web": "expo start --web",
