@@ -6,6 +6,7 @@ import mobileAds, {
 } from "react-native-google-mobile-ads";
 import { logError } from "../log";
 import { useUserDataContext } from "../contexts/user-data";
+import { useEffect } from "react";
 
 let isMobileAdsStartCalled = false;
 
@@ -43,6 +44,12 @@ async function startGoogleMobileAdsSDK() {
 
 export function PuzzleAd({ onSizeChange }: { onSizeChange?: () => void }) {
   const [userData] = useUserDataContext();
+
+  useEffect(() => {
+    if (!isMobileAdsStartCalled || userData.removeAds) {
+      onSizeChange?.();
+    }
+  }, []);
 
   if (!isMobileAdsStartCalled || userData.removeAds) {
     return;
