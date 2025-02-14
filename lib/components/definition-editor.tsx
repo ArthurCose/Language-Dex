@@ -90,8 +90,8 @@ export default function DefinitionEditor(props: Props) {
 
   const [spelling, setSpelling] = useState(props.lowerCaseWord ?? "");
   const [confidence, setConfidence] = useState(definitionData?.confidence ?? 0);
-  const [partOfSpeech, setPartOfSpeech] = useState<number | undefined>(
-    definitionData?.partOfSpeech
+  const [partOfSpeech, setPartOfSpeech] = useState(
+    definitionData?.partOfSpeech ?? null
   );
   const [definition, setDefinition] = useState(
     definitionData?.definition ?? ""
@@ -102,7 +102,7 @@ export default function DefinitionEditor(props: Props) {
   useEffect(() => {
     if (definitionData) {
       setConfidence(definitionData.confidence);
-      setPartOfSpeech(definitionData.partOfSpeech);
+      setPartOfSpeech(definitionData.partOfSpeech ?? null);
       setDefinition(definitionData.definition);
       setExample(definitionData.example);
       setNotes(definitionData.notes);

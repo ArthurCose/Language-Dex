@@ -13,8 +13,8 @@ import ConfirmationDialog from "./confirmation-dialog";
 type Props = {
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
-  value?: number;
-  onChange: (id?: number) => void;
+  value?: number | null;
+  onChange: (id: number | null) => void;
 };
 
 export default function PartOfSpeechDropdown({
@@ -80,7 +80,7 @@ export default function PartOfSpeechDropdown({
           setDeleteItem(item);
           setDeleteRequested(true);
         }}
-        onSelect={(item?: PartOfSpeechData) => onChange(item?.id)}
+        onSelect={(item?: PartOfSpeechData) => onChange(item?.id ?? null)}
       />
 
       <ConfirmationDialog

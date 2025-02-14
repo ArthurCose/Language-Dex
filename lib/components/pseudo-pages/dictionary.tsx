@@ -12,7 +12,8 @@ import { router } from "expo-router";
 import { logError } from "@/lib/log";
 import { useDictionaryVersioning } from "@/lib/hooks/use-word-definitions";
 
-const wordFilters = [-1];
+const PART_OF_SPEECH_ALL = -1;
+const PART_OF_SPEECH_UNKNOWN = -2;
 
 const COLUMNS = 2;
 
@@ -71,7 +72,8 @@ export default function Dictionary() {
 
   const [allWords, setAllWords] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState("");
-  const [partOfSpeechFilter, setPartOfSpeechFilter] = useState(wordFilters[0]);
+  const [partOfSpeechFilter, setPartOfSpeechFilter] =
+    useState(PART_OF_SPEECH_ALL);
   const [orderBy, setOrderBy] = useState(() =>
     userData.dictionaryOrder != undefined &&
     wordOrderOptions.includes(userData.dictionaryOrder)
@@ -101,12 +103,17 @@ export default function Dictionary() {
   useEffect(() => {
     setAllWords([]);
 
-    let partOfSpeechId =
-      partOfSpeechFilter == -1 ? undefined : partOfSpeechFilter;
+    let partOfSpeechId: number | undefined | null = partOfSpeechFilter;
+
+    if (partOfSpeechId == PART_OF_SPEECH_ALL) {
+      partOfSpeechId = undefined;
+    } else if (partOfSpeechId == PART_OF_SPEECH_UNKNOWN) {
+      partOfSpeechId = null;
+    }
 
     if (activeDictionaryId != userData.activeDictionary) {
       setActiveDictionaryId(userData.activeDictionary);
-      setPartOfSpeechFilter(-1);
+      setPartOfSpeechFilter(PART_OF_SPEECH_ALL);
       partOfSpeechId = undefined;
     }
 
@@ -146,8 +153,9 @@ export default function Dictionary() {
   // resolve parts of speech list
   const [partOfSpeechOptions, resolveWordFilterLabel] = useMemo(() => {
     const partOfSpeechOptions = [
-      -1,
+      PART_OF_SPEECH_ALL,
       ...dictionary.partsOfSpeech.map((p) => p.id),
+      PART_OF_SPEECH_UNKNOWN,
     ];
 
     const partOfSpeechLabelMap: { [id: number]: string } = {};
@@ -157,8 +165,10 @@ export default function Dictionary() {
     }
 
     const resolveWordFilterLabel = (value: number) => {
-      if (value == -1) {
+      if (value == PART_OF_SPEECH_ALL) {
         return t("all");
+      } else if (value == PART_OF_SPEECH_UNKNOWN) {
+        return t("unknown");
       }
 
       return partOfSpeechLabelMap[value] || "undefined";

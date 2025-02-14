@@ -113,7 +113,7 @@ export type WordDefinitionData = {
   id: number;
   orderKey: number;
   confidence: number;
-  partOfSpeech?: number;
+  partOfSpeech?: number | null;
   pronunciationAudio?: FileName;
   definition: string;
   example: string;
@@ -328,7 +328,7 @@ export async function listWords(
   options: {
     ascending?: boolean;
     orderBy: WordOrder;
-    partOfSpeech?: number;
+    partOfSpeech?: number | null;
     minLength?: number;
     belowMaxConfidence?: boolean;
     limit?: number;
@@ -338,7 +338,7 @@ export async function listWords(
   const query = ["SELECT spelling FROM word_shared_data word"];
   const bindParams: SQLite.SQLiteBindParams = {};
 
-  if (options.partOfSpeech != undefined) {
+  if (options.partOfSpeech !== undefined) {
     query.push(
       "INNER JOIN word_definition_data ON word_definition_data.sharedId = word.id"
     );
@@ -354,6 +354,8 @@ export async function listWords(
   if (options.partOfSpeech != undefined) {
     whereClause.push("word_definition_data.partOfSpeech = $partOfSpeech");
     bindParams.$partOfSpeech = options.partOfSpeech;
+  } else if (options.partOfSpeech === null) {
+    whereClause.push("word_definition_data.partOfSpeech IS NULL");
   }
 
   if (options.minLength != undefined) {
@@ -589,7 +591,7 @@ export async function upsertDefinition(
   for (const key of copyList) {
     const value = definition[key];
 
-    if (value == undefined) {
+    if (value === undefined) {
       continue;
     }
 
