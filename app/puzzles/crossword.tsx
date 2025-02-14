@@ -130,9 +130,7 @@ export default function () {
   const [wordGuess, setWordGuess] = useState("");
   const [wordGuessIndex, setWordGuessIndex] = useState<number | null>(null);
   const [hintDialogOpen, setHintDialogOpen] = useState(false);
-
-  const selectedWord =
-    wordGuessIndex != null ? gameState.board.words[wordGuessIndex] : null;
+  const [hintIndex, setHintIndex] = useState(0);
 
   useEffect(() => {
     listWords(userData.activeDictionary, {
@@ -170,6 +168,41 @@ export default function () {
     const updatedGameState = { ...gameState };
     updateWordSubmission(updatedGameState, wordGuessIndex!, wordGuess);
     setGameState(updatedGameState);
+  };
+
+  const requestHint = (wordIndex: number) => {
+    const wordData = gameState.board.words[wordIndex];
+
+    setHintIndex(wordIndex);
+
+    if (wordData.hintUsed) {
+      setHintDialogOpen(true);
+      return;
+    }
+
+    if (!gameState.over) {
+      gameState.hintsRemaining--;
+    }
+
+    wordData.hintUsed = true;
+    setGameState({ ...gameState });
+
+    const word = wordData.word;
+    getWordDefinitions(userData.activeDictionary, word.toLowerCase())
+      .then((result) => {
+        const gameState = { ...getGameState() };
+        const wordData = gameState.board.words[wordIndex];
+
+        if (result && result.definitions.length > 0) {
+          const index = pickIndexWithLenUnbiased(result.definitions.length);
+          wordData.hint = result.definitions[index].definition;
+        } else {
+          wordData.hint = t("Missing_Definition_brack");
+        }
+
+        setHintDialogOpen(true);
+      })
+      .catch(logError);
   };
 
   return (
@@ -236,10 +269,16 @@ export default function () {
                         height: cellWidth,
                       },
                     ]}
-                    disabled={gameState.over || cell.words.length > 1}
+                    disabled={cell.words.length > 1}
                     onTouchEnd={(e) => e.stopPropagation()}
                     onPress={() => {
                       const { wordIndex } = cell.words[0];
+
+                      if (gameState.over) {
+                        requestHint(wordIndex);
+                        return;
+                      }
+
                       const word = gameState.board.words[wordIndex];
                       let textValue = "";
 
@@ -314,44 +353,15 @@ export default function () {
             </View>
           )}
 
-          {selectedWord && wordGuessIndex != null && (
+          {wordGuessIndex != null && (
             <DockedTextInputContainer>
               <DockedTextInputHintButton
                 hintsRemaining={
-                  selectedWord.hintUsed ? undefined : gameState.hintsRemaining
+                  gameState.board.words[wordGuessIndex].hintUsed
+                    ? undefined
+                    : gameState.hintsRemaining
                 }
-                onPress={() => {
-                  if (selectedWord.hintUsed) {
-                    setHintDialogOpen(true);
-                    return;
-                  }
-
-                  gameState.hintsRemaining--;
-                  selectedWord.hintUsed = true;
-                  setGameState({ ...gameState });
-
-                  const word = selectedWord.word;
-                  getWordDefinitions(
-                    userData.activeDictionary,
-                    word.toLowerCase()
-                  )
-                    .then((result) => {
-                      const gameState = { ...getGameState() };
-                      const wordData = gameState.board.words[wordGuessIndex];
-
-                      if (result && result.definitions.length > 0) {
-                        const index = pickIndexWithLenUnbiased(
-                          result.definitions.length
-                        );
-                        wordData.hint = result.definitions[index].definition;
-                      } else {
-                        wordData.hint = t("Missing_Definition_brack");
-                      }
-
-                      setHintDialogOpen(true);
-                    })
-                    .catch(logError);
-                }}
+                onPress={() => requestHint(wordGuessIndex)}
               />
               <DockedTextInput
                 autoFocus
@@ -372,7 +382,7 @@ export default function () {
             onClose={() => setHintDialogOpen(false)}
           >
             <Span style={styles.hintDialog}>
-              {gameState.board.words[wordGuessIndex!]?.hint}
+              {gameState.board.words[hintIndex].hint}
             </Span>
           </Dialog>
 
