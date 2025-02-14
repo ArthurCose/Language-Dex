@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { View } from "react-native";
 import mobileAds, {
   AdsConsent,
   BannerAd,
@@ -6,7 +8,7 @@ import mobileAds, {
 } from "react-native-google-mobile-ads";
 import { logError } from "../log";
 import { useUserDataContext } from "../contexts/user-data";
-import { useEffect } from "react";
+import { useTheme } from "../contexts/theme";
 
 let isMobileAdsStartCalled = false;
 
@@ -44,6 +46,7 @@ async function startGoogleMobileAdsSDK() {
 
 export function PuzzleAd({ onSizeChange }: { onSizeChange?: () => void }) {
   const [userData] = useUserDataContext();
+  const theme = useTheme();
 
   useEffect(() => {
     if (userData.removeAds) {
@@ -56,27 +59,29 @@ export function PuzzleAd({ onSizeChange }: { onSizeChange?: () => void }) {
   }
 
   return (
-    <BannerAd
-      requestOptions={{
-        requestNonPersonalizedAdsOnly: true,
-        keywords: [
-          "education",
-          "learn",
-          "learning",
-          "language",
-          "words",
-          "word",
-          "game",
-          "puzzle",
-        ],
-      }}
-      onSizeChange={onSizeChange}
-      unitId={
-        __DEV__ || !isMobileAdsStartCalled
-          ? TestIds.BANNER
-          : "ca-app-pub-1435328633777702/8919664433"
-      }
-      size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-    />
+    <View style={{ backgroundColor: theme.colors.borders }}>
+      <BannerAd
+        requestOptions={{
+          requestNonPersonalizedAdsOnly: true,
+          keywords: [
+            "education",
+            "learn",
+            "learning",
+            "language",
+            "words",
+            "word",
+            "game",
+            "puzzle",
+          ],
+        }}
+        onSizeChange={onSizeChange}
+        unitId={
+          __DEV__ || !isMobileAdsStartCalled
+            ? TestIds.BANNER
+            : "ca-app-pub-1435328633777702/8919664433"
+        }
+        size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+      />
+    </View>
   );
 }
