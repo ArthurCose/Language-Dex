@@ -189,16 +189,16 @@ export default function () {
         </SubMenuActions>
       </SubMenuTopNav>
 
+      <ScoreRow>
+        <IncorrectScore score={gameState.incorrectSubmissions} />
+        <HintScore score={gameState.hintsRemaining} />
+      </ScoreRow>
+
       {/* <GameTitle>{t("Crossword")}</GameTitle> */}
       <PuzzleAd onSizeChange={() => setResolvedAdSize(true)} />
 
       {resolvedAdSize && allWords && (
         <>
-          <ScoreRow>
-            <IncorrectScore score={gameState.incorrectSubmissions} />
-            <HintScore score={gameState.hintsRemaining} />
-          </ScoreRow>
-
           <ScrollView
             style={styles.outerScrollView}
             contentContainerStyle={styles.outerScrollViewContent}
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
   submitView: {
     alignItems: "center",
     marginVertical: 12,
-    marginBottom: 20,
+    marginBottom: 18,
   },
   submitButton: {
     padding: 8,
