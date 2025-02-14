@@ -23,7 +23,7 @@ import {
   useWordDefinition,
 } from "@/lib/hooks/use-word-definitions";
 import { useUserDataContext } from "@/lib/contexts/user-data";
-import PartOfSpeechDropdown from "@/lib/components/part-of-speech-dropdown";
+import PartOfSpeechDropdown from "@/lib/components/definitions/part-of-speech-dropdown";
 import ConfirmationDialog, {
   DiscardDialog,
 } from "@/lib/components/confirmation-dialog";

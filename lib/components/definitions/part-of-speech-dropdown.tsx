@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { StyleProp, TextStyle, ViewStyle } from "react-native";
 import { useTranslation } from "react-i18next";
-import EditableListPopup from "./editable-list-popup";
-import { useUserDataContext } from "../contexts/user-data";
+import EditableListPopup from "../editable-list-popup";
+import { useUserDataContext } from "../../contexts/user-data";
 import {
   deletePartOfSpeech,
   PartOfSpeechData,
   prepareDictionaryUpdate,
-} from "../data";
-import ConfirmationDialog from "./confirmation-dialog";
+} from "../../data";
+import ConfirmationDialog from "../confirmation-dialog";
 
 type Props = {
   style?: StyleProp<ViewStyle>;
