@@ -46,12 +46,12 @@ export function PuzzleAd({ onSizeChange }: { onSizeChange?: () => void }) {
   const [userData] = useUserDataContext();
 
   useEffect(() => {
-    if (!isMobileAdsStartCalled || userData.removeAds) {
+    if (userData.removeAds) {
       onSizeChange?.();
     }
   }, []);
 
-  if (!isMobileAdsStartCalled || userData.removeAds) {
+  if (userData.removeAds) {
     return;
   }
 
@@ -72,7 +72,9 @@ export function PuzzleAd({ onSizeChange }: { onSizeChange?: () => void }) {
       }}
       onSizeChange={onSizeChange}
       unitId={
-        __DEV__ ? TestIds.BANNER : "ca-app-pub-1435328633777702/8919664433"
+        __DEV__ || !isMobileAdsStartCalled
+          ? TestIds.BANNER
+          : "ca-app-pub-1435328633777702/8919664433"
       }
       size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
     />
