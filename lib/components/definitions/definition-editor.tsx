@@ -393,8 +393,9 @@ const styles = StyleSheet.create({
   word: {
     fontSize: 24,
     fontWeight: "bold",
-    paddingTop: 3,
+    paddingTop: 4,
     paddingLeft: 16,
+    textAlignVertical: "top",
     height: 48,
   },
   iconLabel: {
