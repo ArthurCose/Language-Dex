@@ -155,6 +155,7 @@ i18n
           exporting_definitions_stage: "Exporting Definitions...",
           Remove_Ads: "Remove Ads",
           Removed_Ads: "Removed Ads",
+          Show_Privacy_Options: "Show Privacy Options",
           All: "All",
 
           Ads: "Ads",

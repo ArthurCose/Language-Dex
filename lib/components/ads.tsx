@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { View } from "react-native";
 import mobileAds, {
   AdsConsent,
+  AdsConsentInfo,
+  AdsConsentPrivacyOptionsRequirementStatus,
   BannerAd,
   BannerAdSize,
   TestIds,
@@ -12,6 +14,15 @@ import { useTheme } from "../contexts/theme";
 import { UserData } from "../data";
 
 let isMobileAdsStartCalled = false;
+let adsConsentInfo: AdsConsentInfo | undefined;
+
+function handleConsentInfo(consentInfo: AdsConsentInfo) {
+  adsConsentInfo = consentInfo;
+
+  if (consentInfo.canRequestAds) {
+    startGoogleMobileAdsSDK().catch(logError);
+  }
+}
 
 export function initAds(userData: UserData) {
   if (!__DEV__ || userData.removeAds) {
@@ -24,14 +35,17 @@ export function initAds(userData: UserData) {
   [
     AdsConsent.gatherConsent({ tagForUnderAgeOfConsent: true }),
     AdsConsent.getConsentInfo(),
-  ].forEach((result) =>
-    result
-      .then(({ canRequestAds }) => {
-        if (canRequestAds) {
-          return startGoogleMobileAdsSDK();
-        }
-      })
-      .catch(logError)
+  ].forEach((result) => result.then(handleConsentInfo).catch(logError));
+}
+
+export function showPrivacyOptionsForm() {
+  AdsConsent.showPrivacyOptionsForm().then(handleConsentInfo).catch(logError);
+}
+
+export function isPrivacyOptionsFormRequired() {
+  return (
+    adsConsentInfo?.privacyOptionsRequirementStatus ==
+    AdsConsentPrivacyOptionsRequirementStatus.REQUIRED
   );
 }
 
@@ -59,12 +73,12 @@ export function PuzzleAd({ onSizeChange }: { onSizeChange?: () => void }) {
   const theme = useTheme();
 
   useEffect(() => {
-    if (!isMobileAdsStartCalled || userData.removeAds) {
+    if (adsConsentInfo?.canRequestAds || userData.removeAds) {
       onSizeChange?.();
     }
   }, []);
 
-  if (!isMobileAdsStartCalled || userData.removeAds) {
+  if (adsConsentInfo?.canRequestAds || userData.removeAds) {
     return;
   }
 

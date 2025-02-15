@@ -34,6 +34,10 @@ import * as DocumentPicker from "expo-document-picker";
 import { bumpDictionaryVersion } from "@/lib/hooks/use-word-definitions";
 import RouteRoot from "@/lib/components/route-root";
 import { requestAdRemoval } from "@/lib/in-app-purchases";
+import {
+  isPrivacyOptionsFormRequired,
+  showPrivacyOptionsForm,
+} from "@/lib/components/ads";
 
 function getColorSchemeText(
   t: TFunction<"translation", undefined>,
@@ -86,26 +90,6 @@ export default function () {
         <SubMenuBackButton />
         <SubMenuTitle>{t("Settings")}</SubMenuTitle>
       </SubMenuTopNav>
-
-      {/* <Pressable
-        style={styles.row}
-        android_ripple={theme.ripples.transparentButton}
-        onPress={requestAdRemoval}
-        disabled={userData.removeAds}
-      >
-        <Span
-          style={[
-            styles.label,
-            userData.removeAds && theme.styles.disabledText,
-          ]}
-        >
-          {userData.removeAds ? t("Removed_Ads") : t("Remove_Ads")}
-        </Span>
-
-        {userData.removeAds && <Span style={styles.value}>✅</Span>}
-      </Pressable>
-
-      <View style={theme.styles.separator} /> */}
 
       <ListPopup
         style={styles.row}
@@ -268,6 +252,44 @@ export default function () {
       >
         <Span style={styles.label}>{t("Export_Dictionaries")}</Span>
       </ListPopup>
+
+      <View style={theme.styles.separator} />
+
+      {/* <Span style={[styles.sectionHeader, theme.styles.poppingText]}>
+        {t("Ads")}
+      </Span>
+
+      <Pressable
+        style={styles.row}
+        android_ripple={theme.ripples.transparentButton}
+        onPress={requestAdRemoval}
+        disabled={userData.removeAds}
+      >
+        <Span
+          style={[
+            styles.label,
+            userData.removeAds && theme.styles.disabledText,
+          ]}
+        >
+          {userData.removeAds ? t("Removed_Ads") : t("Remove_Ads")}
+        </Span>
+
+        {userData.removeAds && <Span style={styles.value}>✅</Span>}
+      </Pressable>
+
+      {isPrivacyOptionsFormRequired() && (
+        <>
+          <View style={theme.styles.separator} />
+
+          <Pressable
+            style={styles.row}
+            android_ripple={theme.ripples.transparentButton}
+            onPress={showPrivacyOptionsForm}
+          >
+            <Span style={styles.label}>{t("Show_Privacy_Options")}</Span>
+          </Pressable>
+        </>
+      )} */}
 
       <View style={theme.styles.separator} />
 
