@@ -98,6 +98,8 @@ i18n
           NA: "N/A",
 
           // definition editor
+          Pronunciation: "Pronunciation",
+          Recording_number: "Recording {{count}}",
           Confidence_paren: "(Confidence)",
           Word: "Word",
           Part_of_Speech: "Part of Speech",
@@ -114,6 +116,7 @@ i18n
           Confirm: "Confirm",
           Close: "Close",
           Discard: "Discard",
+          None: "None",
           Save_Changes: "Save Changes",
           Delete: "Delete",
           Delete_Title: "Delete {{name}}?",

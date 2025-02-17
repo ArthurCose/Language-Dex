@@ -155,6 +155,22 @@ export function UnlockedIcon(props: IconProps) {
   return <MaterialDesignIcons name="lock-open-variant" {...props} />;
 }
 
+export function MicrophoneIcon(props: IconProps) {
+  return <MaterialDesignIcons name="microphone" {...props} />;
+}
+
+export function PlayAudioIcon(props: IconProps) {
+  return <MaterialDesignIcons name="volume-high" {...props} />;
+}
+
+export function RecordIcon(props: IconProps) {
+  return <MaterialDesignIcons name="microphone" {...props} />;
+}
+
+export function StopRecordingIcon(props: IconProps) {
+  return <MaterialDesignIcons name="stop" {...props} />;
+}
+
 export function EducationIcon(props: IconProps) {
   return <MaterialDesignIcons name="school" {...props} />;
 }

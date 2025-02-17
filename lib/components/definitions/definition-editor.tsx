@@ -38,6 +38,7 @@ import SubMenuTopNav, {
 } from "@/lib/components/sub-menu-top-nav";
 import useBackHandler from "@/lib/hooks/use-back-handler";
 import { usePendingChangesDetection } from "@/lib/hooks/use-pending-changes-detection";
+import PronunciationEditor from "./pronunciation-editor";
 
 type Props = {
   lowerCaseWord?: string;
@@ -221,12 +222,18 @@ export default function DefinitionEditor(props: Props) {
       </SubMenuTopNav>
 
       <ScrollView>
-        <CustomTextInput
-          style={styles.word}
-          placeholder={t("word")}
-          value={spelling}
-          onChangeText={setSpelling}
-        />
+        <View style={styles.row}>
+          <CustomTextInput
+            style={[styles.input, styles.word]}
+            placeholder={t("word")}
+            value={spelling}
+            onChangeText={setSpelling}
+          />
+
+          <View style={styles.pronunciationGroup}>
+            <PronunciationEditor />
+          </View>
+        </View>
 
         <View style={theme.styles.separator} />
 
@@ -414,6 +421,11 @@ const styles = StyleSheet.create({
   row: {
     display: "flex",
     flexDirection: "row",
+  },
+  pronunciationGroup: {
+    flex: 0,
+    flexDirection: "row",
+    marginRight: 4,
   },
   confidenceGroup: {
     marginLeft: "auto",
