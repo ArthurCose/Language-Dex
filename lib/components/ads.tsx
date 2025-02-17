@@ -6,6 +6,7 @@ import mobileAds, {
   AdsConsentPrivacyOptionsRequirementStatus,
   BannerAd,
   BannerAdSize,
+  MaxAdContentRating,
   TestIds,
 } from "react-native-google-mobile-ads";
 import { logError } from "../log";
@@ -53,6 +54,18 @@ async function startGoogleMobileAdsSDK() {
   if (isMobileAdsStartCalled) return;
   isMobileAdsStartCalled = true;
 
+  await mobileAds().setRequestConfiguration({
+    // Update all future requests suitable for parental guidance
+    maxAdContentRating: MaxAdContentRating.G,
+
+    // Indicates that you want your content treated as child-directed for purposes of COPPA.
+    tagForChildDirectedTreatment: true,
+
+    // Indicates that you want the ad request to be handled in a
+    // manner suitable for users under the age of consent.
+    tagForUnderAgeOfConsent: true,
+  });
+
   // (Optional, iOS) Handle Apple's App Tracking Transparency manually.
   const gdprApplies = await AdsConsent.getGdprApplies();
   const hasConsentForPurposeOne =
@@ -73,12 +86,12 @@ export function PuzzleAd({ onSizeChange }: { onSizeChange?: () => void }) {
   const theme = useTheme();
 
   useEffect(() => {
-    if (adsConsentInfo?.canRequestAds || userData.removeAds) {
+    if (!adsConsentInfo?.canRequestAds || userData.removeAds) {
       onSizeChange?.();
     }
   }, []);
 
-  if (adsConsentInfo?.canRequestAds || userData.removeAds) {
+  if (!adsConsentInfo?.canRequestAds || userData.removeAds) {
     return;
   }
 
