@@ -135,12 +135,13 @@ function EditableRowDummy({
   onDelete,
   onBlur,
 }: EditableRowProps & BlurProps) {
+  const theme = useTheme();
   const [currentText, setCurrentText] = useState(text);
 
   return (
     <View style={styles.rowStyle}>
       <View style={styles.drag}>
-        <DragVerticalIcon size={24} />
+        <DragVerticalIcon size={24} color={theme.colors.iconButton} />
       </View>
 
       <CustomTextInput
