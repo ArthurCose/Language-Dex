@@ -132,15 +132,15 @@ function GuessCharacter({
     }
 
     // resolve background color
-    let backgroundColor = incorrectBackground;
+    let backgroundColor = colors.incorrectBackground;
     const correctGrapheme = correctGraphemes[index];
 
     if (correctGrapheme?.rawString == grapheme.rawString) {
-      backgroundColor = correctBackground;
+      backgroundColor = colors.correctBackground;
     } else if (
       correctGraphemes.some((g) => grapheme.rawString == g.rawString)
     ) {
-      backgroundColor = incorrectPositionBackground;
+      backgroundColor = colors.incorrectPositionBackground;
     }
 
     // animate
@@ -465,6 +465,8 @@ const styles = StyleSheet.create({
   },
 });
 
-const incorrectBackground = "#555";
-const correctBackground = "#1aba1f";
-const incorrectPositionBackground = "#eeaa1f";
+export const colors = {
+  incorrectBackground: "#555",
+  correctBackground: "#1aba1f",
+  incorrectPositionBackground: "#eeaa1f",
+};

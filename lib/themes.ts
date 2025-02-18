@@ -58,6 +58,7 @@ type Palette = {
   bottomNav: string;
   popup: string;
   scanInput: string;
+  gameListing: string;
   definitionBackground: string;
   text: string;
   label: string;
@@ -223,7 +224,7 @@ function createSimpleTheme(colors: Palette): Theme {
       gameListing: {
         borderColor: colors.borders,
         borderWidth: 1,
-        backgroundColor: colors.scanInput,
+        backgroundColor: colors.gameListing,
       },
       topNav: {
         paddingBottom: -4,
@@ -269,6 +270,7 @@ export const themeConstructors: {
         popup: "#1f1f24",
         scanInput: "#1a1a1f",
         definitionBackground: "#1a1a1f",
+        gameListing: "transparent",
         text: "#bbb",
         label: "#aaa",
         disabledText: "#777",
@@ -296,6 +298,7 @@ export const themeConstructors: {
       popup: "white",
       bottomNav: "white",
       scanInput: "#e8e8ec",
+      gameListing: "#e8e8ec",
       definitionBackground: "white",
       text: "black",
       label: "#aaa",

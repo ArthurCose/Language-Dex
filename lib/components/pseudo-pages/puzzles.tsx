@@ -27,9 +27,16 @@ import {
   ConfirmationDialogActions,
 } from "../confirmation-dialog";
 import { GameTitle } from "../puzzles/info";
+import {
+  CrosswordIcon,
+  DefinitionMatchIcon,
+  GuessTheWordIcon,
+  UnscrambleIcon,
+} from "../puzzles/puzzle-icons";
 
 type GameListingProps = {
   label: string;
+  icon?: React.ComponentType;
   style: StyleProp<ViewStyle>;
   theme: Theme;
   lockStatus: LockStatus;
@@ -49,6 +56,7 @@ type GameListingProps = {
 
 function GameListing({
   label,
+  icon: Icon,
   style,
   theme,
   href,
@@ -59,6 +67,14 @@ function GameListing({
 }: GameListingProps) {
   const [t] = useTranslation();
 
+  const x = (
+    <>
+      <View style={styles.iconContainer}>{Icon && <Icon />}</View>
+
+      <Span style={styles.label}>{t(label)}</Span>
+    </>
+  );
+
   if (lockStatus.locked) {
     return (
       <View style={style}>
@@ -67,14 +83,14 @@ function GameListing({
           android_ripple={theme.ripples.transparentButton}
           onPress={() => setLockDescription(t(label + "_Requirements"))}
         >
+          {x}
+
           <View style={styles.lock}>
             <Span style={theme.styles.poppingText}>
               {lockStatus.obtained ?? "?"}/{lockStatus.required ?? "?"}
             </Span>
             <LockIcon size={24} color={theme.colors.iconButton} />
           </View>
-
-          <Span>{t(label)}</Span>
         </Pressable>
       </View>
     );
@@ -91,7 +107,7 @@ function GameListing({
           centerItems
           onSelect={onSelect}
         >
-          <Span>{t(label)}</Span>
+          {x}
         </ListPopup>
       ) : (
         <Pressable
@@ -103,7 +119,7 @@ function GameListing({
             }
           }}
         >
-          <Span>{t(label)}</Span>
+          {x}
         </Pressable>
       )}
     </View>
@@ -198,6 +214,7 @@ export default function () {
         <View style={styles.row}>
           <GameListing
             label="Definition_Match"
+            icon={DefinitionMatchIcon}
             style={listingStyles}
             theme={theme}
             modes={definitionMatchModeList}
@@ -210,6 +227,7 @@ export default function () {
 
           <GameListing
             label="Unscramble"
+            icon={UnscrambleIcon}
             style={listingStyles}
             theme={theme}
             lockStatus={unscrambleStatus}
@@ -222,6 +240,7 @@ export default function () {
         <View style={styles.row}>
           <GameListing
             label="Guess_the_Word"
+            icon={GuessTheWordIcon}
             style={listingStyles}
             theme={theme}
             lockStatus={guessStatus}
@@ -231,6 +250,7 @@ export default function () {
 
           <GameListing
             label="Crossword"
+            icon={CrosswordIcon}
             style={listingStyles}
             theme={theme}
             lockStatus={crosswordStatus}
@@ -277,10 +297,18 @@ const styles = StyleSheet.create({
     alignItems: "stretch",
     flexBasis: "50%",
   },
+  iconContainer: {
+    flex: 1,
+    padding: 16,
+    paddingTop: 32,
+    width: "100%",
+    alignItems: "center",
+  },
+  label: { paddingBottom: 8 },
   lock: {
     position: "absolute",
     right: 2,
-    top: 4,
+    top: 3,
     flexDirection: "row",
     alignItems: "flex-end",
   },
