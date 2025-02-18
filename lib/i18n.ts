@@ -88,6 +88,7 @@ i18n
           Overall: "Overall",
           Longest_Word: "Longest_Word",
           Total_Definitions: "Total Definitions",
+          Total_Pronounced: "Total Pronunciations",
           Words_Read: "Words Read",
           Excerpts_Read: "Excerpts Read",
           Words_Matched: "Words Matched",

@@ -227,6 +227,18 @@ export default function Word() {
                 const count = savedDefinitions?.length ?? 0;
                 stats.definitions = Math.max(stats.definitions - count, 0);
               }
+
+              if (stats.totalPronounced != undefined) {
+                const count =
+                  savedDefinitions?.filter(
+                    (d) => d.pronunciationAudio != undefined
+                  ).length ?? 0;
+
+                stats.totalPronounced = Math.max(
+                  stats.totalPronounced - count,
+                  0
+                );
+              }
             });
 
             return userData;

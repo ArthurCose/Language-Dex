@@ -202,15 +202,31 @@ export default function DefinitionEditor(props: Props) {
       await Promise.all(fileTasks.map((task) => task()));
 
       // update statistics
-      if (props.definitionId == undefined) {
-        setUserData((userData) => {
-          userData = updateStatistics(userData, (stats) => {
-            stats.definitions = (stats.definitions ?? 0) + 1;
-          });
+      const newDefinition = props.definitionId == undefined;
+      const hadPronunciation = prevPronunciationUri != undefined;
+      const hasNewPronunciation = pronunciationAudio != undefined;
+      let pronunciationIncrease = 0;
 
-          return userData;
-        });
+      if (hadPronunciation && !hasNewPronunciation) {
+        pronunciationIncrease = -1;
+      } else if (!hadPronunciation && hasNewPronunciation) {
+        pronunciationIncrease = 1;
       }
+
+      setUserData((userData) => {
+        userData = updateStatistics(userData, (stats) => {
+          if (newDefinition) {
+            stats.definitions = (stats.definitions ?? 0) + 1;
+          }
+
+          stats.totalPronounced = Math.max(
+            (stats.totalPronounced ?? 0) + pronunciationIncrease,
+            0
+          );
+        });
+
+        return userData;
+      });
 
       // keep identifiers in sync
       props.setLowerCaseWord(lowerCaseSpelling);
@@ -436,6 +452,16 @@ export default function DefinitionEditor(props: Props) {
               userData = updateStatistics(userData, (stats) => {
                 if (stats.definitions != undefined) {
                   stats.definitions = Math.max(stats.definitions - 1, 0);
+                }
+
+                if (
+                  definitionData?.pronunciationAudio != undefined &&
+                  stats.totalPronounced != undefined
+                ) {
+                  stats.totalPronounced = Math.max(
+                    stats.totalPronounced - 1,
+                    0
+                  );
                 }
               });
 

@@ -22,8 +22,9 @@ import { ShareIcon } from "../icons";
 const statsLists: [string, keyof DictionaryStats][][] = [
   [
     ["Total_Definitions", "definitions"],
-    ["Words_Read", "wordsScanned"],
+    ["Total_Pronounced", "totalPronounced"],
     ["Excerpts_Read", "totalScans"],
+    ["Words_Read", "wordsScanned"],
   ],
   [
     ["Words_Matched", "definitionsMatched"],
