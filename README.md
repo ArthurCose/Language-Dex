@@ -15,7 +15,6 @@ yarn
 cd modules/recording-module
 yarn
 cd ../..
-npm link ./modules/recording-module
 
 npm run liceneses
 ```

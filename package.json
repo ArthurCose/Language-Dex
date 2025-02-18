@@ -58,7 +58,8 @@
     "react-native-safe-area-context": "4.12.0",
     "react-native-screens": "~4.4.0",
     "react-native-svg": "15.8.0",
-    "react-native-uuid": "^2.0.3"
+    "react-native-uuid": "^2.0.3",
+    "recording-module": "./modules/recording-module"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
