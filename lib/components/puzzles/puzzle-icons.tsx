@@ -90,7 +90,7 @@ const unscrambleStyles = StyleSheet.create({
   definition: {
     height: "30%",
     width: "50%",
-    borderRadius: "10%",
+    borderRadius: 5,
     borderWidth: 1,
   },
   row: {
@@ -101,7 +101,7 @@ const unscrambleStyles = StyleSheet.create({
   chip: {
     aspectRatio: 2 / 3,
     borderWidth: 1,
-    borderRadius: "10%/10%",
+    borderRadius: 3,
   },
 });
 
