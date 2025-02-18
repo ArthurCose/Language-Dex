@@ -45,7 +45,7 @@ import {
   Crossword,
   generateCrossword,
 } from "@/lib/puzzles/crossword-generation";
-import { toGraphemeStrings } from "@/lib/puzzles/words";
+import { isRTL, toGraphemeStrings } from "@/lib/puzzles/words";
 import CircleButton from "@/lib/components/circle-button";
 import useKeyboardVisible from "@/lib/hooks/use-keyboard-visible";
 import { pickIndexWithLenUnbiased } from "@/lib/puzzles/random";
@@ -101,9 +101,27 @@ function updateWordSubmission(
   const selectedWord = board.words[wordIndex];
 
   const submittedGraphemes = toGraphemeStrings(text.toLowerCase());
+  const rtl =
+    submittedGraphemes[0] != undefined
+      ? isRTL(submittedGraphemes[0])
+      : undefined;
+
+  const rtlStart = rtl
+    ? selectedWord.cells.length - submittedGraphemes.length
+    : 0;
+  const reversedSpace = Math.max(rtlStart, 0);
+
+  for (let i = 0; i < reversedSpace; i++) {
+    const cellKey = selectedWord.cells[i];
+    const cell = board.cellMap[cellKey];
+
+    if (!cell.locked) {
+      cell.submitted = undefined;
+    }
+  }
 
   // iterate over cells to update submissions even on crossing words
-  for (let i = 0; i < selectedWord.cells.length; i++) {
+  for (let i = reversedSpace; i < selectedWord.cells.length; i++) {
     const cellKey = selectedWord.cells[i];
     const cell = board.cellMap[cellKey];
 
@@ -111,10 +129,8 @@ function updateWordSubmission(
       continue;
     }
 
-    const submittedGrapheme = submittedGraphemes[i] as string | undefined;
-
     // update the text submitted to this cell
-    cell.submitted = submittedGrapheme;
+    cell.submitted = submittedGraphemes[i - rtlStart];
   }
 }
 
@@ -282,7 +298,14 @@ export default function () {
                       const word = gameState.board.words[wordIndex];
                       let textValue = "";
 
-                      for (const hash of word.cells) {
+                      let cells = word.cells;
+
+                      // handle rtl
+                      if (isRTL(word.graphemes[0])) {
+                        cells = cells.toReversed();
+                      }
+
+                      for (const hash of cells) {
                         const cell = gameState.board.cellMap[hash];
                         if (cell.submitted == undefined) {
                           break;

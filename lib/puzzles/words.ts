@@ -44,6 +44,6 @@ export function joinGraphemeStrings(graphemes: string[]) {
   return graphemes.join("");
 }
 
-function isRTL(text: string): boolean {
+export function isRTL(text: string): boolean {
   return false;
 }
