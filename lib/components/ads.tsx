@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { View } from "react-native";
 import mobileAds, {
   AdsConsent,
@@ -81,44 +81,46 @@ async function startGoogleMobileAdsSDK() {
   // Request an ad...
 }
 
-export function PuzzleAd({ onSizeChange }: { onSizeChange?: () => void }) {
-  const [userData] = useUserDataContext();
-  const theme = useTheme();
+export const PuzzleAd = React.memo(
+  ({ onSizeChange }: { onSizeChange?: () => void }) => {
+    const [userData] = useUserDataContext();
+    const theme = useTheme();
 
-  useEffect(() => {
+    useEffect(() => {
+      if (!adsConsentInfo?.canRequestAds || userData.removeAds) {
+        onSizeChange?.();
+      }
+    }, []);
+
     if (!adsConsentInfo?.canRequestAds || userData.removeAds) {
-      onSizeChange?.();
+      return;
     }
-  }, []);
 
-  if (!adsConsentInfo?.canRequestAds || userData.removeAds) {
-    return;
+    return (
+      <View style={{ backgroundColor: theme.colors.borders }}>
+        <BannerAd
+          requestOptions={{
+            requestNonPersonalizedAdsOnly: true,
+            keywords: [
+              "education",
+              "learn",
+              "learning",
+              "language",
+              "words",
+              "word",
+              "game",
+              "puzzle",
+            ],
+          }}
+          onSizeChange={onSizeChange}
+          unitId={
+            __DEV__ || !isMobileAdsStartCalled
+              ? TestIds.BANNER
+              : "ca-app-pub-1435328633777702/8919664433"
+          }
+          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+        />
+      </View>
+    );
   }
-
-  return (
-    <View style={{ backgroundColor: theme.colors.borders }}>
-      <BannerAd
-        requestOptions={{
-          requestNonPersonalizedAdsOnly: true,
-          keywords: [
-            "education",
-            "learn",
-            "learning",
-            "language",
-            "words",
-            "word",
-            "game",
-            "puzzle",
-          ],
-        }}
-        onSizeChange={onSizeChange}
-        unitId={
-          __DEV__ || !isMobileAdsStartCalled
-            ? TestIds.BANNER
-            : "ca-app-pub-1435328633777702/8919664433"
-        }
-        size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-      />
-    </View>
-  );
-}
+);
