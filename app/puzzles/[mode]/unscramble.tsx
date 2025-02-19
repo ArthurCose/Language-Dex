@@ -227,7 +227,7 @@ const springConfig = {
   damping: 22,
 };
 
-function ChipSlot({
+const ChipSlot = React.memo(function ({
   index,
   puzzleColors,
   gameState,
@@ -394,7 +394,7 @@ function ChipSlot({
       </Portal>
     </View>
   );
-}
+});
 
 export default function () {
   const params = useLocalSearchParams<{ mode: string }>();
