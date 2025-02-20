@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   StyleSheet,
   View,
@@ -489,6 +495,8 @@ export default function () {
   )!;
 
   const [resolvedAdSize, setResolvedAdSize] = useState(false);
+  const onAdResize = useCallback(() => setResolvedAdSize(true), []);
+
   const [allWords, setAllWords] = useState<GameWord[] | null>(null);
   const [gameState, setGameState, getGameState] = useGettableState(() =>
     initGameState([], params.mode as UnscrambleGameMode)
@@ -664,7 +672,7 @@ export default function () {
         </ScoreRow>
       )}
 
-      <PuzzleAd onSizeChange={() => setResolvedAdSize(true)} />
+      <PuzzleAd onSizeChange={onAdResize} />
 
       {resolvedAdSize && !gameState.loading && (
         <>

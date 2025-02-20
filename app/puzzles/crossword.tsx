@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Text,
   ScrollView,
@@ -139,6 +139,8 @@ export default function () {
   const [t] = useTranslation();
   const [userData, setUserData] = useUserDataContext();
   const [resolvedAdSize, setResolvedAdSize] = useState(false);
+  const onAdResize = useCallback(() => setResolvedAdSize(true), []);
+
   const [allWords, setAllWords] = useState<string[] | null>(null);
   const [gameState, setGameState, getGameState] = useGettableState(() =>
     initGameState()
@@ -244,7 +246,7 @@ export default function () {
       </ScoreRow>
 
       {/* <GameTitle>{t("Crossword")}</GameTitle> */}
-      <PuzzleAd onSizeChange={() => setResolvedAdSize(true)} />
+      <PuzzleAd onSizeChange={onAdResize} />
 
       {resolvedAdSize && allWords && (
         <>
