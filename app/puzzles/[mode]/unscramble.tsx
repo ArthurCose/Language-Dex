@@ -292,6 +292,31 @@ const ChipSlot = React.memo(function ({
     color: colorRange[1],
   };
 
+  // animations that need to run after updating style outputRanges
+  const [pendingAnimations, setPendingAnimations] = useState<(() => void)[]>(
+    []
+  );
+
+  const pushAnimation = (callback: () => void) => {
+    setPendingAnimations((animations) => {
+      if (animations.length == 0) {
+        return [callback];
+      }
+
+      animations.push(callback);
+      return animations;
+    });
+  };
+
+  useEffect(() => {
+    for (const animate of pendingAnimations) {
+      animate();
+    }
+
+    // clear without updating
+    pendingAnimations.length = 0;
+  }, [pendingAnimations]);
+
   // highlight on correctness check
   useEffect(() => {
     if (!correctList) {
@@ -314,7 +339,9 @@ const ChipSlot = React.memo(function ({
       targetBorderColor = puzzleColors.mistake.borderColor;
     }
 
-    flash(colorValue, 1, 0);
+    pushAnimation(() => {
+      flash(colorValue, 1, 0);
+    });
     setColorRange([theme.colors.text, targetColor]);
     setBackgroundColorRange([
       theme.colors.definitionBackground,
@@ -358,23 +385,26 @@ const ChipSlot = React.memo(function ({
       }
 
       const gameState = { ...getGameState(), graphemeInteraction: false };
+      let swapped = false;
 
       if (dragged) {
         const i = overlappingGraphemeIndex(gameState, e.absoluteX, e.absoluteY);
 
-        if (i != undefined) {
+        if (i != undefined && i != index) {
           gameState.graphemes = [...gameState.graphemes];
           swap(gameState.graphemes, index, i);
+          swapped = true;
         }
       } else if (gameState.graphemeSelected != undefined) {
         gameState.graphemes = [...gameState.graphemes];
         swap(gameState.graphemes, index, gameState.graphemeSelected);
+        swapped = true;
         gameState.graphemeSelected = undefined;
       } else {
         gameState.graphemeSelected = index;
       }
 
-      if (originalPos) {
+      if (!swapped && originalPos) {
         setMovingCount((c) => c + 2);
         const decrement = () => setMovingCount((c) => c - 1);
 
