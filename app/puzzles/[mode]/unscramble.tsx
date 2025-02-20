@@ -420,9 +420,7 @@ const ChipSlot = React.memo(function ({
     return Gesture.Pan()
       .onBegin(() => runOnJS(begin)())
       .onStart(() => runOnJS(start)())
-      .onUpdate((e) => {
-        runOnJS(update)(e.translationX, e.translationY);
-      })
+      .onUpdate((e) => runOnJS(update)(e.translationX, e.translationY))
       .onFinalize((e, success) => runOnJS(finalize)(e, success));
   }, [originalPos]);
 
