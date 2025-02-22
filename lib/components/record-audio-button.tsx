@@ -159,24 +159,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  optionRow: {
-    flexDirection: "row",
-    height: 48,
-    alignItems: "center",
-  },
-  optionLabel: {},
-  optionActions: {
-    marginLeft: "auto",
-  },
-  dialogActionsRow: {
-    flexDirection: "row",
-  },
-  dialogAction: {
-    flex: 1,
-    alignItems: "flex-end",
-    justifyContent: "flex-end",
-  },
-  confirmButton: {
-    padding: 16,
-  },
 });

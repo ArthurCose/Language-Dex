@@ -222,20 +222,6 @@ function PronunciationEditorDialog({
 }
 
 const styles = StyleSheet.create({
-  recordButtonContainer: {
-    borderRadius: "50%",
-    overflow: "hidden",
-    width: 56,
-    aspectRatio: 1,
-    alignSelf: "center",
-    marginTop: 8,
-    marginBottom: 8,
-  },
-  recordButtonPressable: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   optionRow: {
     flexDirection: "row",
     height: 48,
