@@ -135,9 +135,9 @@ export default function RecordAudioButton({
         }}
       >
         {recording ? (
-          <StopRecordingIcon size={40} color={theme.colors.primary.contrast} />
+          <StopRecordingIcon size={48} color={theme.colors.primary.contrast} />
         ) : (
-          <RecordIcon size={40} color={theme.colors.primary.contrast} />
+          <RecordIcon size={48} color={theme.colors.primary.contrast} />
         )}
       </Pressable>
     </View>
@@ -148,14 +148,13 @@ const styles = StyleSheet.create({
   recordButtonContainer: {
     borderRadius: "50%",
     overflow: "hidden",
-    width: 56,
     aspectRatio: 1,
     alignSelf: "center",
     marginTop: 8,
     marginBottom: 8,
   },
   recordButtonPressable: {
-    flex: 1,
+    padding: 8,
     justifyContent: "center",
     alignItems: "center",
   },
