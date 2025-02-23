@@ -39,12 +39,12 @@ import { useAudioPlayer } from "expo-audio";
 
 function Definition({
   item,
-  word,
+  encodedWord,
   dictionary,
   setPronunciationUri,
 }: {
   item: WordDefinitionData;
-  word: string;
+  encodedWord: string;
   dictionary: DictionaryData;
   setPronunciationUri: (uri: string) => void;
 }) {
@@ -63,7 +63,9 @@ function Definition({
           style={styles.definitionBlock}
           android_ripple={theme.ripples.transparentButton}
           onPress={() =>
-            router.navigate(`/words/existing/${word}/definition/${item.id}`)
+            router.navigate(
+              `/words/existing/${encodedWord}/definition/${item.id}`
+            )
           }
         >
           <View style={styles.definitionBody}>
@@ -166,6 +168,8 @@ export default function Word() {
     }
   }, [startAudio]);
 
+  const encodedWord = encodeURIComponent(word);
+
   return (
     <>
       <SubMenuTopNav>
@@ -181,7 +185,7 @@ export default function Word() {
           <SubMenuIconButton
             icon={PlusIcon}
             onPress={() =>
-              router.navigate(`/words/existing/${word}/definition/add`)
+              router.navigate(`/words/existing/${encodedWord}/definition/add`)
             }
           />
         </SubMenuActions>
@@ -215,7 +219,7 @@ export default function Word() {
         renderItem={({ item }) => (
           <Definition
             dictionary={dictionary}
-            word={word}
+            encodedWord={encodedWord}
             setPronunciationUri={(uri) => {
               setPronunciationUri(uri);
               setStartAudio(true);
