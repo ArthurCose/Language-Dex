@@ -42,7 +42,7 @@ import { fadeTo } from "@/lib/puzzles/animations";
 import { Saved, ScoreRow, ThumbsUps } from "@/lib/components/puzzles/info";
 import ConfirmationDialog from "@/lib/components/confirmation-dialog";
 import { useTranslation } from "react-i18next";
-import useAnimationffects from "@/lib/hooks/use-animation-effects";
+import useAnimationEffects from "@/lib/hooks/use-animation-effects";
 
 type GameState = {
   loading: boolean;
@@ -165,7 +165,7 @@ export default function () {
   const [transitioning, setTransitioning] = useState(false);
   const definitionOpacity = useAnimatedValue(1);
   const inputOpacity = useAnimatedValue(1);
-  const pushAnimation = useAnimationffects();
+  const pushAnimation = useAnimationEffects();
 
   const transition = (transitionRound: boolean) => {
     setTransitioning(true);

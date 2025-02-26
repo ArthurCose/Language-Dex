@@ -1,6 +1,7 @@
 import React, {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -78,7 +79,7 @@ import {
   toGraphemes,
   toGraphemeStrings,
 } from "@/lib/puzzles/words";
-import useAnimationffects from "@/lib/hooks/use-animation-effects";
+import useAnimationEffects from "@/lib/hooks/use-animation-effects";
 
 export type UnscrambleGameMode = "endless" | "timed" | "rush";
 export const unscrambleModeList: UnscrambleGameMode[] = [
@@ -215,13 +216,13 @@ function overlappingGraphemeIndex(gameState: GameState, x: number, y: number) {
 }
 
 type ChipSlotProps = {
+  word: GameWord;
   index: number;
   puzzleColors: PuzzleColors;
   selected: boolean;
   correctList?: boolean[];
   setGameState: (gameState: GameState) => void;
   getGameState: () => GameState;
-  opacity: Animated.Value;
 } & React.PropsWithChildren;
 
 const springConfig = {
@@ -238,13 +239,13 @@ function springTo(value: Animated.Value, to: number, callback: () => void) {
 }
 
 const ChipSlot = React.memo(function ({
+  word,
   index,
   puzzleColors,
   selected,
   correctList,
   setGameState,
   getGameState,
-  opacity,
   children,
 }: ChipSlotProps) {
   const theme = useTheme();
@@ -290,7 +291,6 @@ const ChipSlot = React.memo(function ({
       inputRange: [0, 1],
       outputRange: backgroundColorRange,
     }),
-    opacity,
   };
 
   const animatedTextStyle: Animated.WithAnimatedObject<TextStyle> = {
@@ -300,7 +300,7 @@ const ChipSlot = React.memo(function ({
   };
 
   // animations that need to run after updating style outputRanges
-  const pushAnimation = useAnimationffects();
+  const pushAnimation = useAnimationEffects();
 
   // highlight on correctness check
   useEffect(() => {
@@ -334,6 +334,11 @@ const ChipSlot = React.memo(function ({
     ]);
     setBorderColorRange([theme.colors.borders, targetBorderColor]);
   }, [correctList]);
+
+  // reset original position
+  useLayoutEffect(() => {
+    setOriginalPos(undefined);
+  }, [word]);
 
   const gesture = useMemo(() => {
     const begin = () => {
@@ -414,28 +419,22 @@ const ChipSlot = React.memo(function ({
       <View
         style={[styles.slot, { backgroundColor: theme.colors.borders }]}
         onLayout={(e) => {
-          e.target.measure((x, y, w, h, pageX, pageY) => {
-            setOriginalPos({ x, y });
+          const { x, y } = e.nativeEvent.layout;
 
-            if (originalPos == undefined) {
-              left.setValue(x);
-              top.setValue(y);
+          setOriginalPos({ x, y });
 
-              // call in case the above part didn't apply from some weird timing issue
-              pushAnimation(() => {
-                left.setValue(x);
-                top.setValue(y);
-              });
-            } else {
-              setMovingCount((c) => c + 2);
-              const decrement = () => setMovingCount((c) => c - 1);
+          if (originalPos == undefined) {
+            left.setValue(x);
+            top.setValue(y);
+          } else {
+            setMovingCount((c) => c + 2);
+            const decrement = () => setMovingCount((c) => c - 1);
 
-              pushAnimation(() => {
-                springTo(left, x, decrement);
-                springTo(top, y, decrement);
-              });
-            }
+            springTo(left, x, decrement);
+            springTo(top, y, decrement);
+          }
 
+          e.target.measure((_x, _y, w, h, pageX, pageY) => {
             // not using setGameState, since we're modifying directly
             getGameState().graphemeBoxes[index] = {
               x: pageX,
@@ -486,6 +485,7 @@ export default function () {
     gameState.activeWords
   );
 
+  const pushAnimation = useAnimationEffects();
   const seconds = useTimerSeconds(gameState.timer);
 
   useEffect(() => {
@@ -527,7 +527,7 @@ export default function () {
         }
       };
 
-      fadeTo(opacity, 1, endCallback);
+      pushAnimation(() => fadeTo(opacity, 1, endCallback));
     }
   }, [gameState.roundStarted]);
 
@@ -678,6 +678,7 @@ export default function () {
             {!gameState.roundStarted &&
               gameState.graphemes.map((grapheme, i) => (
                 <ChipSlot
+                  word={gameState.activeWord!}
                   index={i}
                   key={grapheme.rawIndex}
                   puzzleColors={puzzleColors}
@@ -685,7 +686,6 @@ export default function () {
                   correctList={gameState.correctList}
                   setGameState={setGameState}
                   getGameState={getGameState}
-                  opacity={opacity}
                 >
                   {grapheme.rawString}
                 </ChipSlot>
