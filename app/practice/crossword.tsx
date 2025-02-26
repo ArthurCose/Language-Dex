@@ -36,7 +36,6 @@ import SubMenuTopNav, {
 import { SubMenuIconButton } from "@/lib/components/icon-button";
 import { ConfirmReadyIcon, PracticeResultsIcon } from "@/lib/components/icons";
 import {
-  GameTitle,
   HintScore,
   IncorrectScore,
   ScoreRow,
