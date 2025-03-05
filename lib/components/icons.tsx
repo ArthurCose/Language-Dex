@@ -159,6 +159,10 @@ export function UnlockedIcon(props: IconProps) {
   return <MaterialDesignIcons name="lock-open-variant" {...props} />;
 }
 
+export function SentencePracticeIcon(props: IconProps) {
+  return <MaterialDesignIcons name="tooltip-text-outline" {...props} />;
+}
+
 export function MicrophoneIcon(props: IconProps) {
   return <MaterialDesignIcons name="microphone" {...props} />;
 }

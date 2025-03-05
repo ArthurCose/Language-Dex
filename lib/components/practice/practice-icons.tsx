@@ -3,7 +3,7 @@ import { StyleSheet, TextStyle, View, Text } from "react-native";
 import { colors as guessTheWordColors } from "@/app/practice/guess-the-word";
 import { useTheme } from "@/lib/contexts/theme";
 import usePracticeColors from "@/lib/hooks/use-practice-colors";
-import { MicrophoneIcon } from "../icons";
+import { SentencePracticeIcon, MicrophoneIcon } from "../icons";
 import { useTranslation } from "react-i18next";
 
 export const ShortAnswerIcon = React.memo(function () {
@@ -59,6 +59,37 @@ const shortAnswerStyles = StyleSheet.create({
     aspectRatio: 2 / 3,
     borderWidth: 1,
     borderRadius: 3,
+  },
+});
+
+export const InASentenceIcon = React.memo(function () {
+  const theme = useTheme();
+  const styles = inASentenceStyles;
+  const [iconSize, setIconSize] = useState<number | undefined>();
+
+  return (
+    <View
+      style={styles.container}
+      onLayout={(e) => {
+        e.target.measure((_x, _y, _w, h, _pageX, _pageY) => {
+          setIconSize(h * (4 / 5));
+        });
+      }}
+    >
+      {iconSize != undefined && (
+        <SentencePracticeIcon
+          size={iconSize}
+          color={theme.colors.disabledText}
+        />
+      )}
+    </View>
+  );
+});
+
+const inASentenceStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
   },
 });
 

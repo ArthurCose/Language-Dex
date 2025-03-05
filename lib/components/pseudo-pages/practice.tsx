@@ -34,6 +34,7 @@ import {
   UnscrambleIcon,
   PronunciationIcon,
   ShortAnswerIcon,
+  InASentenceIcon,
 } from "../practice/practice-icons";
 
 type GameListingProps = {
@@ -174,6 +175,7 @@ export default function () {
   const [guessStatus, setGuessStatus] = useState({ locked: true });
   const [crosswordStatus, setCrosswordStatus] = useState({ locked: true });
   const [shortAnswerStatus, setShortAnswerStatus] = useState({ locked: true });
+  const [inASentenceStatus, setInASentenceStatus] = useState({ locked: true });
   const [pronunciationStatus, setPronunciationStatus] = useState({
     locked: true,
   });
@@ -208,6 +210,10 @@ export default function () {
     });
 
     testLock(setShortAnswerStatus, listGameWords, userData.activeDictionary, {
+      limit: 5,
+    });
+
+    testLock(setInASentenceStatus, listGameWords, userData.activeDictionary, {
       limit: 5,
     });
 
@@ -293,6 +299,18 @@ export default function () {
               href="/practice/short-answer"
             />
 
+            <GameListing
+              label="In_a_Sentence"
+              icon={InASentenceIcon}
+              style={listingStyles}
+              theme={theme}
+              lockStatus={inASentenceStatus}
+              setLockDescription={lockCallback}
+              href="/practice/in-a-sentence"
+            />
+          </View>
+
+          <View style={styles.row}>
             <GameListing
               label="Pronunciation"
               icon={PronunciationIcon}
