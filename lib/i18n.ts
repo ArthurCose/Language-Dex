@@ -81,6 +81,7 @@ i18n
           mode_rush: "Rush",
 
           Enter_Guess: "Enter Guess",
+          Enter_Word: "Enter Word",
           Missing_Definition_brack: "[ Missing Definition ]",
 
           short_answer_mystery: "????",

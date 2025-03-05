@@ -254,7 +254,7 @@ export default function () {
           >
             <DockedTextInput
               style={submissionStyle}
-              placeholder={t("Enter_Guess")}
+              placeholder={t("Enter_Word")}
               onChangeText={setPendingGuess}
               submitBehavior="submit"
               onSubmitEditing={submit}
