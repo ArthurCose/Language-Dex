@@ -275,7 +275,7 @@ export const PronunciationIcon = React.memo(function () {
       style={styles.container}
       onLayout={(e) => {
         e.target.measure((_x, _y, _w, h, _pageX, _pageY) => {
-          setIconSize(h);
+          setIconSize(h * (4 / 5));
         });
       }}
     >
@@ -289,18 +289,6 @@ export const PronunciationIcon = React.memo(function () {
 const pronunciationStyles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  row: {
-    flex: 1,
-    flexDirection: "row",
-  },
-  cell: {
-    aspectRatio: 1,
-    borderWidth: 1,
-    alignItems: "center",
     justifyContent: "center",
-  },
-  emptyCell: {
-    aspectRatio: 1,
   },
 });
