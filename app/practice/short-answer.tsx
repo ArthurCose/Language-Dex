@@ -274,16 +274,14 @@ export default function () {
 const styles = StyleSheet.create({
   definitionAndWordBlock: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "space-evenly",
   },
   definitionBlock: {
-    flex: 1,
     justifyContent: "center",
     marginHorizontal: 16,
   },
   wordBlock: {
     position: "relative",
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
