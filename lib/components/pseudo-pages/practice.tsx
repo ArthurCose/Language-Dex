@@ -34,7 +34,7 @@ import {
   UnscrambleIcon,
   PronunciationIcon,
   ShortAnswerIcon,
-  InASentenceIcon,
+  UseInASentenceIcon,
 } from "../practice/practice-icons";
 
 type GameListingProps = {
@@ -175,7 +175,9 @@ export default function () {
   const [guessStatus, setGuessStatus] = useState({ locked: true });
   const [crosswordStatus, setCrosswordStatus] = useState({ locked: true });
   const [shortAnswerStatus, setShortAnswerStatus] = useState({ locked: true });
-  const [inASentenceStatus, setInASentenceStatus] = useState({ locked: true });
+  const [useInASentenceStatus, setUseInASentenceStatus] = useState({
+    locked: true,
+  });
   const [pronunciationStatus, setPronunciationStatus] = useState({
     locked: true,
   });
@@ -213,9 +215,14 @@ export default function () {
       limit: 5,
     });
 
-    testLock(setInASentenceStatus, listGameWords, userData.activeDictionary, {
-      limit: 5,
-    });
+    testLock(
+      setUseInASentenceStatus,
+      listGameWords,
+      userData.activeDictionary,
+      {
+        limit: 5,
+      }
+    );
 
     testLock(setPronunciationStatus, listGameWords, userData.activeDictionary, {
       limit: 5,
@@ -300,13 +307,13 @@ export default function () {
             />
 
             <GameListing
-              label="In_a_Sentence"
-              icon={InASentenceIcon}
+              label="Use_in_a_Sentence"
+              icon={UseInASentenceIcon}
               style={listingStyles}
               theme={theme}
-              lockStatus={inASentenceStatus}
+              lockStatus={useInASentenceStatus}
               setLockDescription={lockCallback}
-              href="/practice/in-a-sentence"
+              href="/practice/use-in-a-sentence"
             />
           </View>
 

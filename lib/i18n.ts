@@ -68,8 +68,8 @@ i18n
           Short_Answer: "Short Answer",
           Short_Answer_Requirements:
             "Requires at least five word definitions below max confidence.",
-          In_a_Sentence: "In a Sentence",
-          In_a_Sentence_Requirements:
+          Use_in_a_Sentence: "Use in a Sentence",
+          Use_in_a_Sentence_Requirements:
             "Requires at least five word definitions below max confidence.",
           Pronunciation_Requirements:
             "Requires at least five words below max confidence with recorded pronunciation.",
@@ -85,7 +85,7 @@ i18n
           Missing_Definition_brack: "[ Missing Definition ]",
 
           short_answer_mystery: "????",
-          in_a_sentence_placeholder: "Write a sentence",
+          use_in_a_sentence_placeholder: "Write a sentence",
 
           Results: "Results",
           Top_Score: "Top Score",

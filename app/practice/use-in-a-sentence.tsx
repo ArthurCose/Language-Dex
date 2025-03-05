@@ -173,7 +173,7 @@ export default function () {
         <SubMenuBackButton />
       </SubMenuTopNav>
 
-      <GameTitle>{t("In_a_Sentence")}</GameTitle>
+      <GameTitle>{t("Use_in_a_Sentence")}</GameTitle>
 
       <ScoreRow>
         <Saved value={gameState.saveCount} />
@@ -199,7 +199,7 @@ export default function () {
           editable
           multiline
           value={sentence}
-          placeholder={t("in_a_sentence_placeholder")}
+          placeholder={t("use_in_a_sentence_placeholder")}
           onChangeText={setSentence}
           maxLength={MAX_LEN}
         />

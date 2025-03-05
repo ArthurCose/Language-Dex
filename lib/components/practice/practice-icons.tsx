@@ -62,9 +62,9 @@ const shortAnswerStyles = StyleSheet.create({
   },
 });
 
-export const InASentenceIcon = React.memo(function () {
+export const UseInASentenceIcon = React.memo(function () {
   const theme = useTheme();
-  const styles = inASentenceStyles;
+  const styles = useInASentenceStyles;
   const [iconSize, setIconSize] = useState<number | undefined>();
 
   return (
@@ -86,7 +86,7 @@ export const InASentenceIcon = React.memo(function () {
   );
 });
 
-const inASentenceStyles = StyleSheet.create({
+const useInASentenceStyles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
