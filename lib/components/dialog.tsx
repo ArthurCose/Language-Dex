@@ -182,6 +182,7 @@ const styles = StyleSheet.create({
     padding: 8,
     paddingTop: 16,
     paddingLeft: 24,
+    paddingRight: 12,
   },
   progressContainer: {
     paddingTop: 4,
