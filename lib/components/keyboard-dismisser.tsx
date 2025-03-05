@@ -1,4 +1,3 @@
-import React from "react";
 import { Keyboard, Pressable, StyleProp, ViewStyle } from "react-native";
 
 export default function KeyboardDismisser({
@@ -6,7 +5,7 @@ export default function KeyboardDismisser({
 }: React.PropsWithChildren) {
   return (
     <Pressable style={style} onPress={Keyboard.dismiss} accessible={false}>
-      <>{children}</>
+      {children}
     </Pressable>
   );
 }
