@@ -69,15 +69,16 @@ function setUpNextRound(gameState: GameState) {
   );
   gameState.bagLen -= 1;
 
+  if (gameState.bagLen == 0) {
+    gameState.bagLen = gameState.bagWords.length;
+  }
+
   if (!gameState.activeWord) {
     gameState.activeWords = [];
     return;
   }
 
   gameState.activeWords = [gameState.activeWord.spelling.toLowerCase()];
-
-  // treat as endless
-  gameState.bagLen = gameState.bagWords.length;
 
   gameState.roundStarted = true;
 }
