@@ -1,12 +1,14 @@
 import React from "react";
-import { Keyboard, TouchableWithoutFeedback } from "react-native";
+import { Keyboard, Pressable, StyleProp, ViewStyle } from "react-native";
 
 export default function KeyboardDismisser({
   children,
 }: React.PropsWithChildren) {
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <Pressable style={style} onPress={Keyboard.dismiss} accessible={false}>
       <>{children}</>
-    </TouchableWithoutFeedback>
+    </Pressable>
   );
 }
+
+const style: StyleProp<ViewStyle> = { flex: 1 };
