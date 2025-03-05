@@ -275,7 +275,9 @@ export default function () {
             </View>
           </Animated.View>
 
-          <DockedTextInputContainer>
+          <DockedTextInputContainer
+            style={!keyboardVisible && styles.inputControlsKeyboardHidden}
+          >
             <DockedTextInput
               style={submissionStyle}
               placeholder={t("Enter_Guess")}
@@ -328,5 +330,8 @@ const styles = StyleSheet.create({
   },
   wordStyle: {
     fontSize: 24,
+  },
+  inputControlsKeyboardHidden: {
+    marginBottom: 12,
   },
 });
