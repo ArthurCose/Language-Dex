@@ -110,7 +110,6 @@ export default function () {
 
   useEffect(() => {
     listGameWords(userData.activeDictionary, {
-      minLength: 2,
       requirePronunciation: true,
     })
       .then((words) => {
