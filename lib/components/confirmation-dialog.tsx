@@ -39,6 +39,7 @@ export function ConfirmationDialogAction({
 
 type DiscardDialogProps = {
   open: boolean;
+  saveDisabled?: boolean;
   onCancel: () => void;
   onDiscard?: () => Promise<void>;
   onSave?: () => Promise<void>;
@@ -46,6 +47,7 @@ type DiscardDialogProps = {
 
 export function DiscardDialog({
   open,
+  saveDisabled,
   onSave,
   onDiscard,
   onCancel,
@@ -96,7 +98,7 @@ export function DiscardDialog({
                 .then(() => setPending(false))
                 .catch((err) => logError(err));
             }}
-            disabled={pending}
+            disabled={saveDisabled || pending}
           >
             {t("Save_Changes")}
           </ConfirmationDialogAction>

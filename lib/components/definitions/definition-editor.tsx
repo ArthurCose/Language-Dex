@@ -224,6 +224,14 @@ export default function DefinitionEditor(props: Props) {
 
   const audioPlayer = useAudioPlayer(pronunciationUri);
 
+  const saveDisabled =
+    deleteRequested ||
+    saving ||
+    !definitionLoaded ||
+    definition.trim().length == 0 ||
+    spelling.trim().length == 0 ||
+    !hasPendingChanges;
+
   return (
     <>
       <SubMenuTopNav>
@@ -249,14 +257,7 @@ export default function DefinitionEditor(props: Props) {
 
           <SubMenuIconButton
             icon={SaveIcon}
-            disabled={
-              deleteRequested ||
-              saving ||
-              !definitionLoaded ||
-              definition.trim().length == 0 ||
-              spelling.trim().length == 0 ||
-              !hasPendingChanges
-            }
+            disabled={saveDisabled}
             onPress={save}
           />
         </SubMenuActions>
@@ -456,6 +457,7 @@ export default function DefinitionEditor(props: Props) {
 
       <DiscardDialog
         open={discardDialogOpen}
+        saveDisabled={saveDisabled}
         onCancel={() => setDiscardDialogOpen(false)}
         onDiscard={async () => {
           setDiscardDialogOpen(false);
