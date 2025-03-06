@@ -12,6 +12,7 @@ import IconButton from "../icon-button";
 import RadioButton from "../radio-button";
 import * as FileSystem from "expo-file-system";
 import RecordAudioButton from "../record-audio-button";
+import { stripProtocol } from "@/lib/path";
 
 type PronunciationEditorProps = {
   saved: boolean;
@@ -131,7 +132,10 @@ function PronunciationEditorDialog({
       return;
     }
 
-    const player = new AudioModule.AudioPlayer({ uri }, 500);
+    const player = new AudioModule.AudioPlayer(
+      { uri: stripProtocol(uri) },
+      500
+    );
 
     player.play();
     player.addListener("playbackStatusUpdate", (status) => {

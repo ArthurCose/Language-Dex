@@ -36,6 +36,7 @@ import {
 import { logError } from "@/lib/log";
 import ConfirmationDialog from "@/lib/components/confirmation-dialog";
 import { useAudioPlayer } from "expo-audio";
+import { stripProtocol } from "@/lib/path";
 
 function Definition({
   item,
@@ -153,7 +154,7 @@ export default function Word() {
     string | undefined
   >();
   const [startAudio, setStartAudio] = useState(false);
-  const audioPlayer = useAudioPlayer(pronunciationUri);
+  const audioPlayer = useAudioPlayer(stripProtocol(pronunciationUri));
 
   useEffect(() => {
     if (startAudio) {

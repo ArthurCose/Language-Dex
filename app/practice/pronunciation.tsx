@@ -39,6 +39,7 @@ import {
   DefinitionBubble,
   WordBubble,
 } from "@/lib/components/practice/definition-bubbles";
+import { stripProtocol } from "@/lib/path";
 
 type GameState = {
   loading: boolean;
@@ -139,7 +140,7 @@ export default function () {
     string | undefined
   >();
   const [startAudio, setStartAudio] = useState(false);
-  const audioPlayer = useAudioPlayer(pronunciationUri);
+  const audioPlayer = useAudioPlayer(stripProtocol(pronunciationUri));
 
   useEffect(() => {
     if (startAudio) {

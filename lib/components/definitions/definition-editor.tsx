@@ -43,6 +43,7 @@ import useBackHandler from "@/lib/hooks/use-back-handler";
 import { usePendingChangesDetection } from "@/lib/hooks/use-pending-changes-detection";
 import PronunciationEditor from "./pronunciation-editor";
 import { useAudioPlayer } from "expo-audio";
+import { stripProtocol } from "@/lib/path";
 
 type Props = {
   lowerCaseWord?: string;
@@ -222,7 +223,7 @@ export default function DefinitionEditor(props: Props) {
     setSaving(false);
   };
 
-  const audioPlayer = useAudioPlayer(pronunciationUri);
+  const audioPlayer = useAudioPlayer(stripProtocol(pronunciationUri));
 
   const saveDisabled =
     deleteRequested ||

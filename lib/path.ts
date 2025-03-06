@@ -1,4 +1,12 @@
-export function stripProtocol(path: string) {
+export function stripProtocol(path: string): string;
+export function stripProtocol(path: undefined): undefined;
+export function stripProtocol(path: string | undefined): string | undefined;
+
+export function stripProtocol(path: string | undefined) {
+  if (path == undefined) {
+    return;
+  }
+
   const index = path.indexOf("://");
 
   return index == -1 ? path : path.slice(index + 3);
