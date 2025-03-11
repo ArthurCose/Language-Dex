@@ -141,23 +141,28 @@ export default function Statistics() {
       <GameTitle>{t("Statistics")}</GameTitle>
 
       <ScrollView>
-        <StatsBlock
-          style={blockStyles}
-          theme={theme}
-          label={dictionary.name}
-          version={version}
-          dictionaryId={userData.activeDictionary}
-          stats={dictionary.stats}
-        />
+        <View
+          style={styles.scrollViewContent}
+          onStartShouldSetResponder={() => true}
+        >
+          <StatsBlock
+            style={blockStyles}
+            theme={theme}
+            label={dictionary.name}
+            version={version}
+            dictionaryId={userData.activeDictionary}
+            stats={dictionary.stats}
+          />
 
-        <StatsBlock
-          style={blockStyles}
-          theme={theme}
-          label={t("Overall")}
-          version={version}
-          dictionaryId={null}
-          stats={userData.stats}
-        />
+          <StatsBlock
+            style={blockStyles}
+            theme={theme}
+            label={t("Overall")}
+            version={version}
+            dictionaryId={null}
+            stats={userData.stats}
+          />
+        </View>
       </ScrollView>
     </View>
   );
@@ -166,9 +171,9 @@ export default function Statistics() {
 const styles = StyleSheet.create({
   content: {
     flex: 1,
-    padding: 8,
+    paddingTop: 8,
     paddingBottom: 0,
-    gap: 16,
+    gap: 8,
   },
   block: {
     borderRadius: 8,
@@ -188,5 +193,10 @@ const styles = StyleSheet.create({
   },
   lists: {
     gap: 12,
+  },
+  scrollViewContent: {
+    minHeight: "100%",
+    paddingHorizontal: 8,
+    paddingTop: 8,
   },
 });
