@@ -112,9 +112,6 @@
     },
     "expo-system-ui": {
       "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
-    },
-    "expo-web-browser": {
-      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
     }
   }
 }

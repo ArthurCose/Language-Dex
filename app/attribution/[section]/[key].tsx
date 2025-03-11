@@ -1,5 +1,5 @@
 import React from "react";
-import { FlatList, ScrollView, StyleSheet, View } from "react-native";
+import { FlatList, Linking, ScrollView, StyleSheet, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Span } from "@/lib/components/text";
 import SubMenuTopNav, {
@@ -16,7 +16,6 @@ import { useTheme } from "@/lib/contexts/theme";
 import { useTranslation } from "react-i18next";
 import { SubMenuIconButton } from "@/lib/components/icon-button";
 import { LinkIcon } from "@/lib/components/icons";
-import { openBrowserAsync } from "expo-web-browser";
 import { logError } from "@/lib/log";
 import RouteRoot from "@/lib/components/route-root";
 
@@ -67,9 +66,9 @@ export default function () {
             <SubMenuIconButton
               icon={LinkIcon}
               onPress={() => {
-                openBrowserAsync(
-                  item.homepage ?? "https://www.npmjs.com/package/" + name
-                ).catch(logError);
+                const url =
+                  item.homepage ?? "https://www.npmjs.com/package/" + name;
+                Linking.openURL(url).catch(logError);
               }}
             />
           </SubMenuActions>
