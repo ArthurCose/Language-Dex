@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Props = {
   open: boolean;
+  allowOverflow?: boolean;
   onClose?: () => void;
 } & React.PropsWithChildren;
 
@@ -61,7 +62,12 @@ export function DialogProgressBar({ progress }: { progress?: number }) {
   );
 }
 
-export default function Dialog({ open, onClose, children }: Props) {
+export default function Dialog({
+  allowOverflow,
+  open,
+  onClose,
+  children,
+}: Props) {
   const theme = useTheme();
   const [id] = useState(() => (idCounter++).toString());
   const [closed, setClosed] = useState(true);
@@ -134,7 +140,12 @@ export default function Dialog({ open, onClose, children }: Props) {
           <View style={{ height: insets.top }} />
 
           <Animated.View
-            style={[styles.dialog, theme.styles.dialog, dialogStyle]}
+            style={[
+              styles.dialog,
+              theme.styles.dialog,
+              dialogStyle,
+              allowOverflow && styles.overflowAllowed,
+            ]}
           >
             <Pressable style={styles.innerPressable}>
               {!closed && children}
@@ -167,8 +178,12 @@ const styles = StyleSheet.create({
     alignItems: "stretch",
   },
   dialog: {
+    position: "relative",
     overflow: "hidden",
     maxHeight: "80%",
+  },
+  overflowAllowed: {
+    overflow: "visible",
   },
   innerPressable: {
     flexGrow: 1,

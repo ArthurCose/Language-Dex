@@ -1,9 +1,61 @@
+import { useEffect, useState } from "react";
 import { useTheme } from "@/lib/contexts/theme";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View, StyleSheet } from "react-native";
 import Dialog from "../dialog";
 import usePracticeColors from "@/lib/hooks/use-practice-colors";
+import { pickIndexWithLenUnbiased } from "@/lib/practice/random";
+
+import Ears from "@/assets/svgs/Results-1.svg";
+import PeakUnder from "@/assets/svgs/Results-2.svg";
+import DoorYarn from "@/assets/svgs/Results-3.svg";
+import Sleeping from "@/assets/svgs/Results-4.svg";
+import CatInteraction from "../cat-interaction";
+
+const cats = [
+  /* eslint-disable react/jsx-key*/
+  <Ears
+    style={{
+      position: "absolute",
+      left: 8,
+      top: 0,
+      transform: [{ translateY: "-100%" }],
+    }}
+    width={100}
+    height={100}
+  />,
+  <CatInteraction
+    style={{
+      position: "absolute",
+      right: 8,
+      bottom: 1,
+      transform: [{ translateY: "100%" }],
+    }}
+  >
+    <PeakUnder width={100} height={100} />
+  </CatInteraction>,
+  <DoorYarn
+    style={{
+      position: "absolute",
+      left: 8,
+      bottom: 1,
+      transform: [{ translateY: "100%" }],
+    }}
+    width={100}
+    height={100}
+  />,
+  <CatInteraction
+    style={{
+      position: "absolute",
+      right: 8,
+      top: 52,
+      transform: [{ translateY: "-100%" }],
+    }}
+  >
+    <Sleeping width={128} height={128} />
+  </CatInteraction>,
+];
 
 type ResultsDialogProps = {
   open: boolean;
@@ -19,9 +71,26 @@ export function ResultsDialog({
 }: ResultsDialogProps) {
   const theme = useTheme();
   const [t] = useTranslation();
+  const [reroll, setReroll] = useState(false);
+
+  const [catIndex, setCatIndex] = useState(() =>
+    pickIndexWithLenUnbiased(cats.length)
+  );
+
+  // display a different cat when reopening after a new game ends
+  useEffect(() => {
+    if (!open || !reroll) {
+      return;
+    }
+
+    setReroll(false);
+    setCatIndex(pickIndexWithLenUnbiased(cats.length));
+  }, [open]);
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={onClose} allowOverflow>
+      {cats[catIndex]}
+
       <Text style={[styles.header, theme.styles.text]}>{t("Results")}</Text>
 
       <View style={styles.rows}>{children}</View>
@@ -40,7 +109,10 @@ export function ResultsDialog({
         <Pressable
           style={styles.button}
           android_ripple={theme.ripples.transparentButton}
-          onPress={onReplay}
+          onPress={() => {
+            setReroll(true);
+            onReplay?.();
+          }}
         >
           <Text style={[styles.buttonText, styles.replayText]}>
             {t("Replay")}
@@ -144,6 +216,9 @@ const styles = StyleSheet.create({
   },
   buttons: {
     flexDirection: "row",
+    overflow: "hidden",
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
   },
   button: {
     paddingVertical: 16,
