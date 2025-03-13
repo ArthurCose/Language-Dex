@@ -215,6 +215,12 @@ export default function EditableListPopup<T>({
   const reorderableListRef = useRef<FlatList<T> | null>(null);
   const virtualListRef = useRef<VirtualizedList<T> | null>(null);
 
+  useEffect(() => {
+    if (open) {
+      setEditing(false);
+    }
+  }, [open]);
+
   return (
     <>
       <Pressable onPress={() => setOpen(true)} style={[styles.button, style]}>
@@ -225,13 +231,7 @@ export default function EditableListPopup<T>({
         </View>
       </Pressable>
 
-      <Dialog
-        open={open}
-        onClose={() => {
-          setOpen(false);
-          setEditing(false);
-        }}
-      >
+      <Dialog open={open} onClose={() => setOpen(false)}>
         <View style={styles.headerStyle}>
           <Span>{name}</Span>
 
