@@ -104,7 +104,7 @@ export default function DefinitionEditor(props: Props) {
   const defaultPartOfSpeech = definitionData?.partOfSpeech ?? null;
   const defaultDefinition = definitionData?.definition ?? "";
   const defaultExample = definitionData?.example ?? "";
-  const defaultNotes = definitionData?.example ?? "";
+  const defaultNotes = definitionData?.notes ?? "";
 
   // state
   const [spelling, setSpelling] = useState(defaultSpelling);
