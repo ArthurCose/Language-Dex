@@ -1,16 +1,15 @@
 import { Keyboard, StyleProp, View, ViewStyle } from "react-native";
 
+const onStartShouldSetResponder = () => {
+  Keyboard.dismiss();
+  return false;
+};
+
 export default function KeyboardDismisser({
   children,
 }: React.PropsWithChildren) {
   return (
-    <View
-      style={style}
-      onStartShouldSetResponder={() => {
-        Keyboard.dismiss();
-        return false;
-      }}
-    >
+    <View style={style} onStartShouldSetResponder={onStartShouldSetResponder}>
       {children}
     </View>
   );
