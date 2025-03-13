@@ -8,16 +8,16 @@
     "scheme": "myapp",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "dev.arthurcose.languagedex"
+      "bundleIdentifier": "dev.arthurcose.languagedex",
+      "supportsTablet": true
     },
     "android": {
+      "package": "dev.arthurcose.languagedex",
       "versionCode": 32,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#aa33ff"
       },
-      "package": "dev.arthurcose.languagedex",
       "softwareKeyboardLayoutMode": "adjustResize",
       "blockedPermissions": ["com.google.android.gms.permission.AD_ID"]
     },
