@@ -40,7 +40,6 @@ import SubMenuTopNav, {
   SubMenuActions,
 } from "@/lib/components/sub-menu-top-nav";
 import useBackHandler from "@/lib/hooks/use-back-handler";
-import { usePendingChangesDetection } from "@/lib/hooks/use-pending-changes-detection";
 import PronunciationEditor from "./pronunciation-editor";
 import { useAudioPlayer } from "expo-audio";
 import { stripProtocol } from "@/lib/path";
@@ -97,21 +96,26 @@ export default function DefinitionEditor(props: Props) {
   const [deleteRequested, setDeleteRequested] = useState(false);
   const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
 
-  const [spelling, setSpelling] = useState(
-    definitionData?.spelling ?? props.lowerCaseWord ?? ""
-  );
+  // defaults
+  const defaultSpelling = definitionData?.spelling ?? props.lowerCaseWord ?? "";
+  const defaultPronunciationUri =
+    getFileObjectPath(definitionData?.pronunciationAudio) ?? null;
+  const defaultConfidence = definitionData?.confidence ?? 0;
+  const defaultPartOfSpeech = definitionData?.partOfSpeech ?? null;
+  const defaultDefinition = definitionData?.definition ?? "";
+  const defaultExample = definitionData?.example ?? "";
+  const defaultNotes = definitionData?.example ?? "";
+
+  // state
+  const [spelling, setSpelling] = useState(defaultSpelling);
   const [pronunciationUri, setPronunciationUri] = useState(
-    getFileObjectPath(definitionData?.pronunciationAudio) ?? null
+    defaultPronunciationUri
   );
-  const [confidence, setConfidence] = useState(definitionData?.confidence ?? 0);
-  const [partOfSpeech, setPartOfSpeech] = useState(
-    definitionData?.partOfSpeech ?? null
-  );
-  const [definition, setDefinition] = useState(
-    definitionData?.definition ?? ""
-  );
-  const [example, setExample] = useState(definitionData?.example ?? "");
-  const [notes, setNotes] = useState(definitionData?.notes ?? "");
+  const [confidence, setConfidence] = useState(defaultConfidence);
+  const [partOfSpeech, setPartOfSpeech] = useState(defaultPartOfSpeech);
+  const [definition, setDefinition] = useState(defaultDefinition);
+  const [example, setExample] = useState(defaultExample);
+  const [notes, setNotes] = useState(defaultNotes);
 
   useEffect(() => {
     if (definitionData) {
@@ -128,14 +132,14 @@ export default function DefinitionEditor(props: Props) {
   }, [definitionData]);
 
   // detecting pending changes
-  const [hasPendingChanges, setHasPendingChanges] = usePendingChangesDetection([
-    spelling,
-    confidence,
-    partOfSpeech,
-    definition,
-    example,
-    notes,
-  ]);
+  const hasPendingChanges =
+    spelling != defaultSpelling ||
+    confidence != defaultConfidence ||
+    partOfSpeech != defaultPartOfSpeech ||
+    definition != defaultDefinition ||
+    example != defaultExample ||
+    notes != defaultNotes ||
+    pronunciationUri != defaultPronunciationUri;
 
   useBackHandler(() => {
     if (hasPendingChanges) {
@@ -146,7 +150,6 @@ export default function DefinitionEditor(props: Props) {
 
   const save = async () => {
     setSaving(true);
-    setHasPendingChanges(false);
 
     try {
       const lowerCaseSpelling = spelling.toLowerCase().trim();
@@ -286,7 +289,6 @@ export default function DefinitionEditor(props: Props) {
                 setPronunciationUri={(uri) => {
                   if (uri != pronunciationUri) {
                     setPronunciationUri(uri);
-                    setHasPendingChanges(true);
                   }
                 }}
               />
