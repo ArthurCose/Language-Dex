@@ -139,7 +139,7 @@ export default function Dialog({
         <Pressable style={styles.backdropButton} onPress={onClose}>
           <View style={{ height: insets.top }} />
 
-          <View style={styles.dialogContainer}>
+          <Animated.View style={[styles.dialogContainer, dialogStyle]}>
             <View
               style={[
                 styles.dialog,
@@ -151,7 +151,7 @@ export default function Dialog({
             >
               {!closed && children}
             </View>
-          </View>
+          </Animated.View>
 
           <KeyboardSpacer />
         </Pressable>
