@@ -109,6 +109,7 @@ i18n
           Words_Unscrambled: "Words Unscrambled",
           Words_Guessed: "Words Guessed",
           Crosswords_Completed: "Crosswords Completed",
+          Sentences_Constructed: "Sentences Constructed",
           Total_Pats: "Total Pats",
 
           NA: "N/A",

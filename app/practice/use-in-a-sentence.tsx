@@ -17,7 +17,13 @@ import { useTranslation } from "react-i18next";
 import CustomTextInput, {
   TextInputCharacterCount,
 } from "@/lib/components/custom-text-input";
-import { GameWord, listGameWords, upsertDefinition } from "@/lib/data";
+import {
+  GameWord,
+  listGameWords,
+  updateStatistics,
+  upsertDefinition,
+  UserData,
+} from "@/lib/data";
 import useWordDefinitions, {
   invalidateWordDefinitions,
 } from "@/lib/hooks/use-word-definitions";
@@ -99,9 +105,15 @@ function setUpNextRound(gameState: GameState) {
   gameState.roundStarted = true;
 }
 
+function incrementSentencesConstructed(userData: UserData) {
+  return updateStatistics(userData, (stats) => {
+    stats.sentencesConstructed = (stats.sentencesConstructed ?? 0) + 1;
+  });
+}
+
 export default function () {
   const theme = useTheme();
-  const [userData] = useUserDataContext();
+  const [userData, setUserData] = useUserDataContext();
   const [t] = useTranslation();
 
   const [resolvedAdSize, setResolvedAdSize] = useState(false);
@@ -229,6 +241,7 @@ export default function () {
                 disabled={sentence.length == 0 || transitioning}
                 onPress={() => {
                   advance();
+                  setUserData(incrementSentencesConstructed);
                   setGameState((gameState) => ({
                     ...gameState,
                     score: gameState.score + 1,
@@ -290,6 +303,7 @@ export default function () {
                   example: sentence,
                 });
 
+                setUserData(incrementSentencesConstructed);
                 setGameState((gameState) => ({
                   ...gameState,
                   saveCount: gameState.saveCount + 1,
