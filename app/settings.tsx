@@ -7,7 +7,7 @@ import { Span } from "@/lib/components/text";
 import { useTheme } from "@/lib/contexts/theme";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import ListPopup from "@/lib/components/list-popup";
 import { useUserDataContext } from "@/lib/contexts/user-data";
 import {
@@ -91,171 +91,172 @@ export default function () {
         <SubMenuTitle>{t("Settings")}</SubMenuTitle>
       </SubMenuTopNav>
 
-      <ListPopup
-        style={styles.row}
-        list={["light", "dark"]}
-        getItemText={(value) => getColorSchemeText(t, value)}
-        defaultItemText={t("System")}
-        keyExtractor={(value) => value}
-        onSelect={(value?: UserData["colorScheme"]) => {
-          if (value != userData.colorScheme) {
-            const updatedData = { ...userData };
-            updatedData.colorScheme = value;
-            setUserData(updatedData);
-          }
-        }}
-      >
-        <Span style={styles.label}>{t("Theme")}</Span>
-        <Span style={[styles.value, theme.styles.disabledText]}>
-          {getColorSchemeText(t, userData.colorScheme)}
-        </Span>
-      </ListPopup>
-
-      <View style={theme.styles.separator} />
-
-      <ListPopup
-        style={styles.row}
-        list={pageList}
-        getItemText={(value) => t(value)}
-        keyExtractor={(value) => value}
-        onSelect={(value?: string) => {
-          if (value != userData.home) {
-            const updatedData = { ...userData };
-            updatedData.home = value;
-            setUserData(updatedData);
-          }
-        }}
-      >
-        <Span style={styles.label}>{t("Default_View")}</Span>
-        <Span style={[styles.value, theme.styles.disabledText]}>
-          {userData.home != undefined && pageList.includes(userData.home)
-            ? t(userData.home)
-            : t("Dictionary")}
-        </Span>
-      </ListPopup>
-
-      <View style={theme.styles.separator} />
-
-      <Span style={[styles.sectionHeader, theme.styles.poppingText]}>
-        {t("Dictionaries")}
-      </Span>
-
-      <ListPopup
-        style={styles.row}
-        list={wordOrderOptions}
-        getItemText={(value) => t(value)}
-        keyExtractor={(value) => value}
-        onSelect={(value) => {
-          if (value != userData.dictionaryOrder) {
-            const updatedData = { ...userData };
-            updatedData.dictionaryOrder = value;
-            setUserData(updatedData);
-          }
-        }}
-      >
-        <Span style={styles.label}>{t("Default_Order")}</Span>
-        <Span style={[styles.value, theme.styles.disabledText]}>
-          {userData.dictionaryOrder != undefined &&
-          wordOrderOptions.includes(userData.dictionaryOrder)
-            ? t(userData.dictionaryOrder)
-            : t(wordOrderOptions[0])}
-        </Span>
-      </ListPopup>
-
-      <View style={theme.styles.separator} />
-
-      <Pressable
-        style={styles.row}
-        android_ripple={theme.ripples.transparentButton}
-        onPress={() => {
-          DocumentPicker.getDocumentAsync({ copyToCacheDirectory: false })
-            .then((result) => {
-              if (result.canceled) {
-                return;
-              }
-
-              const asset = result.assets[0];
-
-              setLongTaskOpen(true);
-              setLongTaskName(t("Dictionary_Import"));
-              setLongTaskCompleted(false);
-              setLongTaskMessage(t("importing_metadata_stage"));
-              setLongTaskProgress(undefined);
-
-              const progressCallback = throttle(
-                progressThrottleMs,
-                (stage, i, total) => {
-                  setLongTaskMessage(t("importing_" + stage + "_stage"));
-                  setLongTaskProgress(i / total);
-                }
-              );
-
-              importData(
-                userData,
-                (userData) => {
-                  setUserData(userData);
-                },
-                asset.uri,
-                progressCallback
-              )
-                .then(() => setLongTaskMessage(t("Success_exclamation")))
-                .catch((err) => {
-                  setLongTaskMessage(t("An_error_occurred"));
-                  logError(err);
-                })
-                .finally(() => {
-                  setLongTaskCompleted(true);
-                  bumpDictionaryVersion();
-                });
-            })
-            .catch(logError);
-        }}
-      >
-        <Span style={styles.label}>{t("Import_Dictionaries")}</Span>
-      </Pressable>
-
-      <View style={theme.styles.separator} />
-
-      <ListPopup
-        style={styles.row}
-        list={userData.dictionaries.map((d) => d)}
-        getItemText={(value) => value.name}
-        keyExtractor={(value) => String(value.id)}
-        defaultItemText={t("All")}
-        onSelect={(value?: DictionaryData) => {
-          setLongTaskOpen(true);
-          setLongTaskName(t("Dictionary_Export"));
-          setLongTaskCompleted(false);
-          setLongTaskMessage(t("exporting_metadata_stage"));
-          setLongTaskProgress(undefined);
-
-          const progressCallback = throttle(
-            progressThrottleMs,
-            (stage, i, total) => {
-              setLongTaskMessage(t("exporting_" + stage + "_stage"));
-              setLongTaskProgress(i / total);
+      <ScrollView>
+        <ListPopup
+          style={styles.row}
+          list={["light", "dark"]}
+          getItemText={(value) => getColorSchemeText(t, value)}
+          defaultItemText={t("System")}
+          keyExtractor={(value) => value}
+          onSelect={(value?: UserData["colorScheme"]) => {
+            if (value != userData.colorScheme) {
+              const updatedData = { ...userData };
+              updatedData.colorScheme = value;
+              setUserData(updatedData);
             }
-          );
+          }}
+        >
+          <Span style={styles.label}>{t("Theme")}</Span>
+          <Span style={[styles.value, theme.styles.disabledText]}>
+            {getColorSchemeText(t, userData.colorScheme)}
+          </Span>
+        </ListPopup>
 
-          exportData(userData, value?.id, progressCallback)
-            .then(() => {
-              setLongTaskMessage(t("Success_exclamation"));
-            })
-            .catch((err) => {
-              setLongTaskMessage(t("An_error_occurred"));
-              logError(err);
-            })
-            .finally(() => {
-              setLongTaskCompleted(true);
-            });
-        }}
-      >
-        <Span style={styles.label}>{t("Export_Dictionaries")}</Span>
-      </ListPopup>
+        <View style={theme.styles.separator} />
 
-      <View style={theme.styles.separator} />
+        <ListPopup
+          style={styles.row}
+          list={pageList}
+          getItemText={(value) => t(value)}
+          keyExtractor={(value) => value}
+          onSelect={(value?: string) => {
+            if (value != userData.home) {
+              const updatedData = { ...userData };
+              updatedData.home = value;
+              setUserData(updatedData);
+            }
+          }}
+        >
+          <Span style={styles.label}>{t("Default_View")}</Span>
+          <Span style={[styles.value, theme.styles.disabledText]}>
+            {userData.home != undefined && pageList.includes(userData.home)
+              ? t(userData.home)
+              : t("Dictionary")}
+          </Span>
+        </ListPopup>
 
-      {/* <Span style={[styles.sectionHeader, theme.styles.poppingText]}>
+        <View style={theme.styles.separator} />
+
+        <Span style={[styles.sectionHeader, theme.styles.poppingText]}>
+          {t("Dictionaries")}
+        </Span>
+
+        <ListPopup
+          style={styles.row}
+          list={wordOrderOptions}
+          getItemText={(value) => t(value)}
+          keyExtractor={(value) => value}
+          onSelect={(value) => {
+            if (value != userData.dictionaryOrder) {
+              const updatedData = { ...userData };
+              updatedData.dictionaryOrder = value;
+              setUserData(updatedData);
+            }
+          }}
+        >
+          <Span style={styles.label}>{t("Default_Order")}</Span>
+          <Span style={[styles.value, theme.styles.disabledText]}>
+            {userData.dictionaryOrder != undefined &&
+            wordOrderOptions.includes(userData.dictionaryOrder)
+              ? t(userData.dictionaryOrder)
+              : t(wordOrderOptions[0])}
+          </Span>
+        </ListPopup>
+
+        <View style={theme.styles.separator} />
+
+        <Pressable
+          style={styles.row}
+          android_ripple={theme.ripples.transparentButton}
+          onPress={() => {
+            DocumentPicker.getDocumentAsync({ copyToCacheDirectory: false })
+              .then((result) => {
+                if (result.canceled) {
+                  return;
+                }
+
+                const asset = result.assets[0];
+
+                setLongTaskOpen(true);
+                setLongTaskName(t("Dictionary_Import"));
+                setLongTaskCompleted(false);
+                setLongTaskMessage(t("importing_metadata_stage"));
+                setLongTaskProgress(undefined);
+
+                const progressCallback = throttle(
+                  progressThrottleMs,
+                  (stage, i, total) => {
+                    setLongTaskMessage(t("importing_" + stage + "_stage"));
+                    setLongTaskProgress(i / total);
+                  }
+                );
+
+                importData(
+                  userData,
+                  (userData) => {
+                    setUserData(userData);
+                  },
+                  asset.uri,
+                  progressCallback
+                )
+                  .then(() => setLongTaskMessage(t("Success_exclamation")))
+                  .catch((err) => {
+                    setLongTaskMessage(t("An_error_occurred"));
+                    logError(err);
+                  })
+                  .finally(() => {
+                    setLongTaskCompleted(true);
+                    bumpDictionaryVersion();
+                  });
+              })
+              .catch(logError);
+          }}
+        >
+          <Span style={styles.label}>{t("Import_Dictionaries")}</Span>
+        </Pressable>
+
+        <View style={theme.styles.separator} />
+
+        <ListPopup
+          style={styles.row}
+          list={userData.dictionaries.map((d) => d)}
+          getItemText={(value) => value.name}
+          keyExtractor={(value) => String(value.id)}
+          defaultItemText={t("All")}
+          onSelect={(value?: DictionaryData) => {
+            setLongTaskOpen(true);
+            setLongTaskName(t("Dictionary_Export"));
+            setLongTaskCompleted(false);
+            setLongTaskMessage(t("exporting_metadata_stage"));
+            setLongTaskProgress(undefined);
+
+            const progressCallback = throttle(
+              progressThrottleMs,
+              (stage, i, total) => {
+                setLongTaskMessage(t("exporting_" + stage + "_stage"));
+                setLongTaskProgress(i / total);
+              }
+            );
+
+            exportData(userData, value?.id, progressCallback)
+              .then(() => {
+                setLongTaskMessage(t("Success_exclamation"));
+              })
+              .catch((err) => {
+                setLongTaskMessage(t("An_error_occurred"));
+                logError(err);
+              })
+              .finally(() => {
+                setLongTaskCompleted(true);
+              });
+          }}
+        >
+          <Span style={styles.label}>{t("Export_Dictionaries")}</Span>
+        </ListPopup>
+
+        <View style={theme.styles.separator} />
+
+        {/* <Span style={[styles.sectionHeader, theme.styles.poppingText]}>
         {t("Ads")}
       </Span>
 
@@ -293,111 +294,112 @@ export default function () {
         <View style={theme.styles.separator} />
       )} */}
 
-      <Span style={[styles.sectionHeader, theme.styles.poppingText]}>
-        {t("Development")}
-      </Span>
+        <Span style={[styles.sectionHeader, theme.styles.poppingText]}>
+          {t("Development")}
+        </Span>
 
-      <Pressable
-        style={styles.row}
-        android_ripple={theme.ripples.transparentButton}
-        onPress={() => router.navigate("/attribution")}
-      >
-        <Span style={styles.label}>{t("Third_Party_Licenses")}</Span>
-      </Pressable>
+        <Pressable
+          style={styles.row}
+          android_ripple={theme.ripples.transparentButton}
+          onPress={() => router.navigate("/attribution")}
+        >
+          <Span style={styles.label}>{t("Third_Party_Licenses")}</Span>
+        </Pressable>
 
-      <View style={theme.styles.separator} />
+        <View style={theme.styles.separator} />
 
-      <Pressable
-        style={styles.row}
-        android_ripple={theme.ripples.transparentButton}
-        onPress={() => router.navigate("/logs")}
-      >
-        <Span style={styles.label}>{t("View_Logs")}</Span>
-      </Pressable>
+        <Pressable
+          style={styles.row}
+          android_ripple={theme.ripples.transparentButton}
+          onPress={() => router.navigate("/logs")}
+        >
+          <Span style={styles.label}>{t("View_Logs")}</Span>
+        </Pressable>
 
-      {__DEV__ && (
-        <>
-          <View style={theme.styles.separator} />
+        {__DEV__ && (
+          <>
+            <View style={theme.styles.separator} />
 
-          <Pressable
-            style={styles.row}
-            android_ripple={theme.ripples.transparentButton}
-            onPress={() => {
-              const totalWords = 5000;
+            <Pressable
+              style={styles.row}
+              android_ripple={theme.ripples.transparentButton}
+              onPress={() => {
+                const totalWords = 5000;
 
-              const updatedData = { ...userData };
-              updatedData.updatingStats = true;
-              updatedData.dictionaries = [...updatedData.dictionaries];
+                const updatedData = { ...userData };
+                updatedData.updatingStats = true;
+                updatedData.dictionaries = [...updatedData.dictionaries];
 
-              const dictionaryId = updatedData.nextDictionaryId++;
+                const dictionaryId = updatedData.nextDictionaryId++;
 
-              updatedData.dictionaries.push({
-                name: "Generated",
-                id: dictionaryId,
-                partsOfSpeech: [],
-                nextPartOfSpeechId: 0,
-                stats: {
-                  definitions: totalWords,
-                },
-              });
+                updatedData.dictionaries.push({
+                  name: "Generated",
+                  id: dictionaryId,
+                  partsOfSpeech: [],
+                  nextPartOfSpeechId: 0,
+                  stats: {
+                    definitions: totalWords,
+                  },
+                });
 
-              setUserData(updatedData);
+                setUserData(updatedData);
 
-              setLongTaskOpen(true);
-              setLongTaskName("Generating Dictionary");
-              setLongTaskMessage("Creating words...");
-              setLongTaskProgress(0);
-              setLongTaskCompleted(false);
+                setLongTaskOpen(true);
+                setLongTaskName("Generating Dictionary");
+                setLongTaskMessage("Creating words...");
+                setLongTaskProgress(0);
+                setLongTaskCompleted(false);
 
-              const updateProgress = throttle(
-                progressThrottleMs,
-                (i: number) => {
-                  setLongTaskProgress(i / totalWords);
-                }
-              );
+                const updateProgress = throttle(
+                  progressThrottleMs,
+                  (i: number) => {
+                    setLongTaskProgress(i / totalWords);
+                  }
+                );
 
-              const longTask = async () => {
-                for (let i = 0; i < totalWords; i++) {
-                  const length = Math.floor(Math.random() * 20) + 2;
-                  const chars = [];
+                const longTask = async () => {
+                  for (let i = 0; i < totalWords; i++) {
+                    const length = Math.floor(Math.random() * 20) + 2;
+                    const chars = [];
 
-                  for (let j = 0; j < length; j++) {
-                    chars.push(
-                      String.fromCharCode(Math.floor(Math.random() * 26) + 65)
-                    );
+                    for (let j = 0; j < length; j++) {
+                      chars.push(
+                        String.fromCharCode(Math.floor(Math.random() * 26) + 65)
+                      );
+                    }
+
+                    const word = chars.join("");
+
+                    await upsertDefinition(dictionaryId, {
+                      spelling: word,
+                      confidence: 0,
+                      definition: word,
+                      example: "",
+                      notes: "",
+                    });
+
+                    updateProgress(i);
                   }
 
-                  const word = chars.join("");
+                  setLongTaskMessage("Success");
+                  setLongTaskCompleted(true);
 
-                  await upsertDefinition(dictionaryId, {
-                    spelling: word,
-                    confidence: 0,
-                    definition: word,
-                    example: "",
-                    notes: "",
-                  });
+                  setUserData((userData) => ({
+                    ...userData,
+                    updatingStats: false,
+                  }));
+                };
 
-                  updateProgress(i);
-                }
+                longTask().catch(logError);
+              }}
+            >
+              <Span style={styles.label}>Generate Large Dictionary</Span>
+            </Pressable>
+          </>
+        )}
 
-                setLongTaskMessage("Success");
-                setLongTaskCompleted(true);
-
-                setUserData((userData) => ({
-                  ...userData,
-                  updatingStats: false,
-                }));
-              };
-
-              longTask().catch(logError);
-            }}
-          >
-            <Span style={styles.label}>Generate Large Dictionary</Span>
-          </Pressable>
-        </>
-      )}
-
-      <View style={theme.styles.separator} />
+        <View style={theme.styles.separator} />
+      </ScrollView>
 
       <Dialog
         open={longTaskOpen}
