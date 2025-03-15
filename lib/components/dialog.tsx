@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Portal } from "@rn-primitives/portal";
 import Animated, {
+  AnimatedStyle,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
 import { useTheme } from "../contexts/theme";
-import { Pressable, StyleSheet, View } from "react-native";
+import {
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewStyle,
+} from "react-native";
 import useBackHandler from "../hooks/use-back-handler";
 import { Span } from "./text";
 import * as Progress from "react-native-progress";
@@ -103,28 +110,28 @@ export default function Dialog({
     });
   }, [open]);
 
-  const backdropStyle = useAnimatedStyle(() => ({
-    opacity: progress.value,
-    display: closing.value && progress.value == 0 ? "none" : "flex",
-  }));
+  const backdropStyle: AnimatedStyle<StyleProp<ViewStyle>> = {
+    opacity: progress,
+    display: closed ? "none" : "flex",
+  };
 
   const dialogStyle = useAnimatedStyle(() => {
     function lerp(start: number, end: number, progress: number) {
       return start + (end - start) * progress;
     }
 
-    let transform;
+    let translateY;
 
     const DISTANCE = 25;
 
     if (closing.value) {
-      transform = [{ translateY: lerp(-DISTANCE, 0, progress.value) }];
+      translateY = lerp(-DISTANCE, 0, progress.value);
     } else {
-      transform = [{ translateY: lerp(DISTANCE, 0, progress.value) }];
+      translateY = lerp(DISTANCE, 0, progress.value);
     }
 
     return {
-      transform,
+      transform: [{ translateY }],
     };
   });
 
@@ -141,7 +148,6 @@ export default function Dialog({
               style={[
                 styles.dialog,
                 theme.styles.dialog,
-                dialogStyle,
                 allowOverflow && styles.overflowAllowed,
               ]}
               onStartShouldSetResponder={onStartShouldSetResponder}
