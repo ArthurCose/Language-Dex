@@ -26,6 +26,7 @@ export function AttributionRow({
         <Pressable
           style={styles.pressable}
           android_ripple={theme.ripples.transparentButton}
+          pointerEvents="box-only"
           onPress={() =>
             router.navigate(
               `/attribution/${section}/${encodeURIComponent(key)}`
@@ -49,6 +50,7 @@ export function AttributionRow({
         <Pressable
           style={styles.pressable}
           android_ripple={theme.ripples.transparentButton}
+          pointerEvents="box-only"
           onPress={() =>
             router.navigate(
               `/attribution/${section}/${encodeURIComponent(key)}`

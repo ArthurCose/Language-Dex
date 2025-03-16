@@ -25,6 +25,7 @@ function Word({ item: word }: { item: string }) {
       key={word}
       style={[styles.wordButton, theme.styles.dictionaryWordButton]}
       android_ripple={theme.ripples.transparentButton}
+      pointerEvents="box-only"
       onPress={() =>
         router.navigate(
           `/words/existing/${encodeURIComponent(word.toLowerCase())}`
@@ -162,6 +163,7 @@ export default function Dictionary() {
       <Pressable
         style={[styles.addWordButton, theme.styles.dictionaryAddWordButton]}
         android_ripple={theme.ripples.primaryButton}
+        pointerEvents="box-only"
         onPress={() => router.navigate("/words/new")}
       >
         <Span style={theme.styles.dictionaryAddWordButtonText}>

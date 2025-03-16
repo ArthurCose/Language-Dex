@@ -89,6 +89,7 @@ function GameListing({
             style={styles.pressable}
             android_ripple={theme.ripples.transparentButton}
             onPress={() => setLockDescription(t(label + "_Requirements"))}
+            pointerEvents="box-only"
           >
             {x}
 
@@ -123,6 +124,7 @@ function GameListing({
           <Pressable
             style={styles.pressable}
             android_ripple={theme.ripples.transparentButton}
+            pointerEvents="box-only"
             onPress={() => {
               if (href != undefined) {
                 router.navigate(href);

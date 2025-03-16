@@ -13,7 +13,6 @@ type SearchParams = {
 export default function () {
   const navigation = useNavigation();
   const params = useLocalSearchParams<SearchParams>();
-  const theme = useTheme();
   const [userData] = useUserDataContext();
   const [word, setWord] = useState(() => params.word?.toLowerCase());
   const [definitionId, setDefinitionId] = useState(

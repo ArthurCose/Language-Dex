@@ -99,6 +99,7 @@ export function ResultsDialog({
         <Pressable
           style={styles.button}
           android_ripple={theme.ripples.transparentButton}
+          pointerEvents="box-only"
           onPress={() => router.back()}
         >
           <Text style={[styles.buttonText, theme.styles.text]}>
@@ -109,6 +110,7 @@ export function ResultsDialog({
         <Pressable
           style={styles.button}
           android_ripple={theme.ripples.transparentButton}
+          pointerEvents="box-only"
           onPress={() => {
             setReroll(true);
             onReplay?.();

@@ -55,6 +55,7 @@ function DefinitionsBubble({
                 <Pressable
                   style={[styles.bordered, theme.styles.definitionBorders]}
                   android_ripple={theme.ripples.popup}
+                  pointerEvents="box-only"
                   onPress={() => {
                     router.navigate(
                       `/words/existing/${encodeURIComponent(lowercase)}`
@@ -82,6 +83,7 @@ function DefinitionsBubble({
                         theme.styles.definitionBorders,
                       ]}
                       android_ripple={theme.ripples.popup}
+                      pointerEvents="box-only"
                       onPress={() => {
                         router.navigate(
                           `/words/existing/${encodeURIComponent(
@@ -117,6 +119,7 @@ function DefinitionsBubble({
                 theme.styles.definitionBorders,
               ]}
               android_ripple={theme.ripples.popup}
+              pointerEvents="box-only"
               onPress={() => {
                 router.navigate(
                   `/words/existing/${encodeURIComponent(
@@ -132,6 +135,7 @@ function DefinitionsBubble({
             <Pressable
               style={styles.action}
               android_ripple={theme.ripples.popup}
+              pointerEvents="box-only"
               onPress={() => {
                 Clipboard.setStringAsync(text).catch(logError);
                 close();

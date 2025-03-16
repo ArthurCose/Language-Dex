@@ -40,6 +40,7 @@ export default function CircleButton({
         onPress={ignoreInput ? undefined : onPress}
         disabled={disabled}
         android_ripple={android_ripple ?? theme.ripples.primaryButton}
+        pointerEvents="box-only"
       >
         {children}
       </Pressable>

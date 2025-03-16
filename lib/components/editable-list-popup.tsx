@@ -349,6 +349,7 @@ export default function EditableListPopup<T>({
             <Pressable
               style={styles.rowStyle}
               android_ripple={theme.ripples.transparentButton}
+              pointerEvents="box-only"
               onPress={() => {
                 setAddingItem(true);
               }}

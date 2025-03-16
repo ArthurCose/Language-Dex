@@ -65,6 +65,7 @@ function Definition({
         <Pressable
           style={styles.definitionBlock}
           android_ripple={theme.ripples.transparentButton}
+          pointerEvents="box-only"
           onPress={() =>
             router.navigate(
               `/words/existing/${encodedWord}/definition/${item.id}`

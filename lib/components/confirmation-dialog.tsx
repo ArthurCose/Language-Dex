@@ -28,6 +28,7 @@ export function ConfirmationDialogAction({
     <Pressable
       onPress={onPress}
       android_ripple={theme.ripples.transparentButton}
+      pointerEvents="box-only"
       disabled={disabled}
     >
       <Span style={[styles.action, disabled && theme.styles.disabledText]}>

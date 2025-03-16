@@ -54,6 +54,7 @@ export default function ListPopup<T>({
         onPress={() => setOpen(true)}
         style={style}
         android_ripple={android_ripple ?? theme.ripples.transparentButton}
+        pointerEvents="box-only"
       >
         {children}
       </Pressable>
