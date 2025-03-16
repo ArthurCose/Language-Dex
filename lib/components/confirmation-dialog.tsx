@@ -83,7 +83,7 @@ export function DiscardDialog({
                 .then(() => setPending(false))
                 .catch((err) => logError(err));
             }}
-            disabled={pending}
+            disabled={pending || !open}
           >
             {t("Discard")}
           </ConfirmationDialogAction>
@@ -99,7 +99,7 @@ export function DiscardDialog({
                 .then(() => setPending(false))
                 .catch((err) => logError(err));
             }}
-            disabled={saveDisabled || pending}
+            disabled={saveDisabled || pending || !open}
           >
             {t("Save_Changes")}
           </ConfirmationDialogAction>
@@ -142,7 +142,10 @@ export default function ConfirmationDialog({
       <DialogDescription>{description}</DialogDescription>
 
       <ConfirmationDialogActions>
-        <ConfirmationDialogAction onPress={onCancel} disabled={pending}>
+        <ConfirmationDialogAction
+          onPress={onCancel}
+          disabled={pending || !open}
+        >
           {t("Cancel")}
         </ConfirmationDialogAction>
 
@@ -155,7 +158,7 @@ export default function ConfirmationDialog({
               .then(() => setPending(false))
               .catch((err) => logError(err));
           }}
-          disabled={pending}
+          disabled={pending || !open}
         >
           {confirmationText != undefined ? confirmationText : t("Confirm")}
         </ConfirmationDialogAction>
