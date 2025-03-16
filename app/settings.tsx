@@ -38,6 +38,7 @@ import {
   isPrivacyOptionsFormRequired,
   showPrivacyOptionsForm,
 } from "@/lib/components/ads";
+import { useSignal } from "@/lib/hooks/use-signal";
 
 function getColorSchemeText(
   t: TFunction<"translation", undefined>,
@@ -77,9 +78,7 @@ export default function () {
   const [longTaskName, setLongTaskName] = useState("");
   const [longTaskOpen, setLongTaskOpen] = useState(false);
   const [longTaskMessage, setLongTaskMessage] = useState("");
-  const [longTaskProgress, setLongTaskProgress] = useState<
-    number | undefined
-  >();
+  const longTaskProgressSignal = useSignal<number | undefined>();
   const [longTaskCompleted, setLongTaskCompleted] = useState(false);
 
   const pageList = pages.map((page) => page.label);
@@ -182,13 +181,13 @@ export default function () {
                 setLongTaskName(t("Dictionary_Import"));
                 setLongTaskCompleted(false);
                 setLongTaskMessage(t("importing_metadata_stage"));
-                setLongTaskProgress(undefined);
+                longTaskProgressSignal.set(undefined);
 
                 const progressCallback = throttle(
                   progressThrottleMs,
                   (stage, i, total) => {
                     setLongTaskMessage(t("importing_" + stage + "_stage"));
-                    setLongTaskProgress(i / total);
+                    longTaskProgressSignal.set(i / total);
                   }
                 );
 
@@ -229,13 +228,13 @@ export default function () {
             setLongTaskName(t("Dictionary_Export"));
             setLongTaskCompleted(false);
             setLongTaskMessage(t("exporting_metadata_stage"));
-            setLongTaskProgress(undefined);
+            longTaskProgressSignal.set(undefined);
 
             const progressCallback = throttle(
               progressThrottleMs,
               (stage, i, total) => {
                 setLongTaskMessage(t("exporting_" + stage + "_stage"));
-                setLongTaskProgress(i / total);
+                longTaskProgressSignal.set(i / total);
               }
             );
 
@@ -353,13 +352,13 @@ export default function () {
                 setLongTaskOpen(true);
                 setLongTaskName("Generating Dictionary");
                 setLongTaskMessage("Creating words...");
-                setLongTaskProgress(0);
+                longTaskProgressSignal.set(0);
                 setLongTaskCompleted(false);
 
                 const updateProgress = throttle(
                   progressThrottleMs,
                   (i: number) => {
-                    setLongTaskProgress(i / totalWords);
+                    longTaskProgressSignal.set(i / totalWords);
                   }
                 );
 
@@ -428,7 +427,7 @@ export default function () {
             </ConfirmationDialogAction>
           </ConfirmationDialogActions>
         ) : (
-          <DialogProgressBar progress={longTaskProgress} />
+          <DialogProgressBar progressSignal={longTaskProgressSignal} />
         )}
       </Dialog>
     </RouteRoot>

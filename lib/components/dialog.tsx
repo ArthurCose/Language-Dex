@@ -20,6 +20,7 @@ import { Span } from "./text";
 import * as Progress from "react-native-progress";
 import KeyboardSpacer from "./keyboard-spacer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Signal, useSignalValue } from "../hooks/use-signal";
 
 type Props = {
   open: boolean;
@@ -51,8 +52,13 @@ export function DialogDescription({ children }: React.PropsWithChildren) {
   );
 }
 
-export function DialogProgressBar({ progress }: { progress?: number }) {
+export function DialogProgressBar({
+  progressSignal,
+}: {
+  progressSignal: Signal<number | undefined>;
+}) {
   const theme = useTheme();
+  const progress = useSignalValue(progressSignal);
 
   return (
     <View style={styles.progressContainer}>
