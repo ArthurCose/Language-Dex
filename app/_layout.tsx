@@ -6,9 +6,9 @@ import { ThemeContext } from "@/lib/contexts/theme";
 import { themeList, themeConstructors } from "@/lib/themes";
 import { loadUserData, saveUserData, UserData } from "@/lib/data";
 import { SetUserDataCallback, UserDataContext } from "@/lib/contexts/user-data";
-import { Stack } from "expo-router";
+import { Stack, usePathname } from "expo-router";
 import { PortalHost } from "@rn-primitives/portal";
-import { logError } from "@/lib/log";
+import { log, logError } from "@/lib/log";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import KeyboardDismisser from "@/lib/components/keyboard-dismisser";
 
@@ -19,6 +19,18 @@ import { initAds } from "@/lib/components/ads";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync().catch(logError);
+
+const startTime = performance.now();
+
+function PathLogger() {
+  const pathName = usePathname();
+
+  useEffect(() => {
+    log(`Viewing ${pathName}`);
+  }, [pathName]);
+
+  return null;
+}
 
 export default function RootLayout() {
   const [userData, setUserData] = useState<UserData | undefined>();
@@ -65,6 +77,7 @@ export default function RootLayout() {
   useEffect(() => {
     if (!loading) {
       SplashScreen.hideAsync().catch(logError);
+      log(`App initialized in ${performance.now() - startTime}ms`);
     }
   }, [loading]);
 
@@ -92,6 +105,8 @@ export default function RootLayout() {
                   animation: "fade",
                 }}
               />
+
+              <PathLogger />
 
               <PortalHost />
             </KeyboardDismisser>

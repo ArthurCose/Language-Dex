@@ -1,7 +1,7 @@
 import uuid from "react-native-uuid";
 import * as FileSystem from "expo-file-system";
 import * as SQLite from "expo-sqlite";
-import { logError } from "./log";
+import { log, logError } from "./log";
 import Unistring from "@akahuku/unistring";
 import db from "./db";
 import * as Sharing from "expo-sharing";
@@ -258,6 +258,8 @@ CREATE INDEX IF NOT EXISTS word_definition_data_confidence_index ON word_definit
 }
 
 export async function deleteDictionary(id: number) {
+  log("Deleting Dictionary...");
+
   // delete associated files
   const results = db.getEachAsync<{
     pronunciationAudio?: string | null;
@@ -291,16 +293,22 @@ export async function deleteDictionary(id: number) {
   //   "DELETE FROM scan_history WHERE dictionaryId = $dictionaryId",
   //   { $dictionaryId: id }
   // );
+
+  log("Delete Complete!");
 }
 
 export async function deletePartOfSpeech(
   dictionaryId: number,
   partOfSpeech: number
 ) {
+  log("Deleting Part of Speech...");
+
   await db.runAsync(
     "UPDATE word_definition_data SET partOfSpeech = NULL WHERE dictionaryId = $dictionaryId AND partOfSpeech = $partOfSpeech",
     { $dictionaryId: dictionaryId, $partOfSpeech: partOfSpeech }
   );
+
+  log("Delete Complete!");
 }
 
 export type WordOrder = "alphabetical" | "latest" | "confidence" | "longest";
@@ -618,6 +626,8 @@ export async function upsertDefinition(
   dictionaryId: number,
   definition: WordDefinitionUpsertData
 ) {
+  log("Upserting Definition...");
+
   const time = Date.now();
 
   const copyList: (keyof WordDefinitionUpsertData)[] = [
@@ -654,6 +664,8 @@ export async function upsertDefinition(
   params.$sharedId = sharedId;
 
   if (definition.id != undefined) {
+    log("Upsert is Updating.");
+
     // fetch old sharedId to see if we switched words
     const oldDataResult = await db.getFirstAsync<{
       sharedId: number;
@@ -688,8 +700,11 @@ export async function upsertDefinition(
     // update current shared data
     await updateSharedData(sharedId);
 
+    log("Upsert Complete!");
     return definition.id;
   } else {
+    log("Upsert is Inserting.");
+
     // copy properties only required by inserting
     setList.push("dictionaryId", "sharedId", "createdAt", "orderKey");
     params.$dictionaryId = dictionaryId;
@@ -707,6 +722,7 @@ export async function upsertDefinition(
       params
     );
 
+    log("Upsert Complete!");
     return result.lastInsertRowId;
   }
 }
@@ -745,6 +761,8 @@ async function shiftOrderKeys(sharedId: number, greaterThanOrderKey: number) {
 }
 
 export async function deleteDefinition(id: number) {
+  log("Deleting Definition...");
+
   const result = await db.getFirstAsync<{
     sharedId: number;
     orderKey: number;
@@ -757,6 +775,7 @@ export async function deleteDefinition(id: number) {
   );
 
   if (!result) {
+    log("Definition does not exist...");
     return;
   }
 
@@ -774,6 +793,8 @@ export async function deleteDefinition(id: number) {
   await shiftOrderKeys(result.sharedId, result.orderKey);
 
   await updateSharedData(result.sharedId);
+
+  log("Delete Complete!");
 }
 
 export async function prepareNewPronunciation(
@@ -826,6 +847,8 @@ function deleteAssociatedFiles(result: { pronunciationAudio?: string }) {
 }
 
 export async function deleteWord(dictionaryId: number, word: string) {
+  log("Deleting Word...");
+
   word = word.toLowerCase();
 
   const result = await db.getFirstAsync<{ id: number }>(
@@ -856,6 +879,8 @@ export async function deleteWord(dictionaryId: number, word: string) {
   await db.runAsync("DELETE FROM word_shared_data WHERE id = $id", {
     $id: sharedId,
   });
+
+  log("Delete Complete!");
 }
 
 // data in files
@@ -909,7 +934,10 @@ export function saveUserData(data: UserData) {
   return saveFileObject("user", data);
 }
 
-export async function recalculateWordStatistics(data: UserData) {
+async function recalculateWordStatistics(data: UserData) {
+  log("Recalculating Word Statistics...");
+  const startTime = performance.now();
+
   data.stats = {
     ...data.stats,
     definitions: 0,
@@ -964,6 +992,7 @@ export async function recalculateWordStatistics(data: UserData) {
   }
 
   data.updatingStats = false;
+  log(`Recalculation completed in ${performance.now() - startTime}ms`);
 }
 
 const FILE_OBJECT_DIR = FileSystem.documentDirectory + "file-objects/";
@@ -1051,6 +1080,9 @@ export async function exportData(
   dictionaryId: number | undefined,
   progressCallback: (stage: ExportImportStage, i: number, total: number) => void
 ) {
+  log("Exporting Data...");
+  const startTime = performance.now();
+
   const dictionary = userData.dictionaries.find((d) => d.id == dictionaryId);
 
   // make sure we don't have existing export data
@@ -1229,6 +1261,8 @@ CREATE TABLE files (
     // } finally {
     //   await insertFileStatement.finalizeAsync();
     // }
+
+    log(`Export completed in ${performance.now() - startTime}ms`);
   } finally {
     await exportDb.closeAsync();
   }
@@ -1242,6 +1276,9 @@ export async function importData(
   uri: string,
   progressCallback: (stage: ExportImportStage, i: number, total: number) => void
 ) {
+  log("Importing Data...");
+  const startTime = performance.now();
+
   await deleteExportDb();
   await deleteImportDb();
 
@@ -1461,6 +1498,8 @@ export async function importData(
         }
       }
     );
+
+    log(`Import completed in ${performance.now() - startTime}ms`);
   } finally {
     await importDb.closeAsync();
     await deleteImportDb();

@@ -14,7 +14,10 @@ import * as Clipboard from "expo-clipboard";
 import appMeta from "../app.json";
 import RouteRoot from "@/lib/components/route-root";
 
-const logHeader = `version ${appMeta.expo.version}\n`;
+const versionHeader = `Version ${appMeta.expo.version}\n`;
+const logHeader =
+  `Note: These logs are not automatically sent to the developer. If you find a bug, you should copy these logs to your report.\n\n` +
+  versionHeader;
 
 export default function () {
   const [t] = useTranslation();
@@ -34,7 +37,7 @@ export default function () {
             icon={CopyIcon}
             onPress={() =>
               Clipboard.setStringAsync(
-                logHeader + "\n" + logs.join("\n")
+                versionHeader + "\n" + logs.join("\n")
               ).catch(logError)
             }
           />
@@ -43,7 +46,7 @@ export default function () {
             icon={ShareIcon}
             onPress={() =>
               Share.share({
-                message: logHeader + "\n" + logs.join("\n"),
+                message: versionHeader + "\n" + logs.join("\n"),
               }).catch(logError)
             }
           />
@@ -64,5 +67,6 @@ export default function () {
 const styles = StyleSheet.create({
   logs: {
     paddingHorizontal: 8,
+    paddingBottom: 4,
   },
 });

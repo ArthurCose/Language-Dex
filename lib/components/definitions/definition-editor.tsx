@@ -207,8 +207,6 @@ export default function DefinitionEditor(props: Props) {
         ],
       ];
 
-      console.log(statChanges);
-
       setUserData((userData) => {
         userData = updateStatistics(userData, (stats) => {
           for (const [statKey, increase] of statChanges) {

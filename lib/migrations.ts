@@ -1,5 +1,6 @@
 import { UserData } from "./data";
 import db from "./db";
+import { log } from "./log";
 
 const migrateUpList = [
   async (_: UserData) => {
@@ -42,12 +43,16 @@ const migrateUpList = [
 export const dataRevisions = migrateUpList.length;
 
 export async function migrateUp(data: UserData) {
+  log("userData.version = " + data.version);
+
   if (data.version >= dataRevisions) {
     return false;
   }
 
   for (let i = data.version; i < dataRevisions; i++) {
+    log("Migrating userData to version  " + (i + 1));
     await migrateUpList[i](data);
+    log("Migration complete");
   }
 
   data.version = dataRevisions;

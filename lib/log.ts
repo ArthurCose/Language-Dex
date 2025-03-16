@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 export let logs: string[] = [];
 
+export const logPrefix = "Info: ";
 export const errorPrefix = "Error: ";
 export const warnPrefix = "Warn: ";
 
@@ -39,17 +40,24 @@ function formatMessage(message: any) {
   }
 }
 
+export function log(data: any) {
+  const message = formatMessage(data);
+  console.log(message);
+  logs.push(logPrefix + message);
+  updateListeners();
+}
+
 export function logError(error: any) {
-  const message = errorPrefix + formatMessage(error);
+  const message = formatMessage(error);
   console.error(message);
-  logs.push(message);
+  logs.push(errorPrefix + message);
   updateListeners();
 }
 
 export function logWarning(warning: any) {
-  const message = warnPrefix + formatMessage(warning);
+  const message = formatMessage(warning);
   console.warn(message);
-  logs.push(message);
+  logs.push(warnPrefix + message);
   updateListeners();
 }
 
