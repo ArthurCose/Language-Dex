@@ -104,7 +104,7 @@ i18n
           Total_Definitions: "Definitions",
           Total_Examples: "Examples",
           Total_Pronounced: "Pronunciations",
-          Total_Max_Confidence: "Maxed Confidence",
+          Total_Max_Confidence: "Full Confidence",
           Words_Read: "Words Read",
           Excerpts_Read: "Excerpts Read",
           Words_Matched: "Words Matched",

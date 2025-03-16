@@ -17,113 +17,169 @@ import { logError } from "@/lib/log";
 import { useDictionaryVersioning } from "@/lib/hooks/use-word-definitions";
 import { GameTitle } from "../practice/info";
 import IconButton from "../icon-button";
-import { ShareIcon } from "../icons";
+import { AllDictionariesIcon, DictionaryIcon, ShareIcon } from "../icons";
+import { TFunction } from "i18next";
 
+import ReadSvg from "@/assets/svgs/Statistics-Read.svg";
+import PracticeSvg from "@/assets/svgs/Statistics-Practice.svg";
 import Cat1 from "@/assets/svgs/Statistics-1.svg";
 import Cat2 from "@/assets/svgs/Statistics-2.svg";
 import CatInteraction from "@/lib/components/cat-interaction";
 
-const statsLists: [string, keyof DictionaryStats][][] = [
-  [
-    ["Total_Definitions", "definitions"],
-    ["Total_Examples", "totalExamples"],
-    ["Total_Pronounced", "totalPronounced"],
-    ["Total_Max_Confidence", "documentedMaxConfidence"],
-  ],
-  [
-    ["Excerpts_Read", "totalScans"],
-    ["Words_Read", "wordsScanned"],
-  ],
-  [
-    ["Words_Matched", "definitionsMatched"],
-    ["Words_Unscrambled", "unscrambled"],
-    ["Words_Guessed", "wordsGuessed"],
-    ["Crosswords_Completed", "crosswordsCompleted"],
-    ["Sentences_Constructed", "sentencesConstructed"],
-  ],
+type StatsList = [string, keyof DictionaryStats][];
+const wordStats: StatsList = [
+  ["Total_Definitions", "definitions"],
+  ["Total_Examples", "totalExamples"],
+  ["Total_Pronounced", "totalPronounced"],
+  ["Total_Max_Confidence", "documentedMaxConfidence"],
+];
+const readStats: StatsList = [
+  ["Excerpts_Read", "totalScans"],
+  ["Words_Read", "wordsScanned"],
+];
+const practiceStats: StatsList = [
+  ["Words_Matched", "definitionsMatched"],
+  ["Words_Unscrambled", "unscrambled"],
+  ["Words_Guessed", "wordsGuessed"],
+  ["Crosswords_Completed", "crosswordsCompleted"],
+  ["Sentences_Constructed", "sentencesConstructed"],
 ];
 
-function StatsBlock({
-  style,
-  theme,
-  label,
-  version,
-  dictionaryId,
-  stats,
-}: {
-  style: StyleProp<ViewStyle>;
-  theme: Theme;
-  label: string;
-  version: number;
-  dictionaryId: number | null;
-  stats: DictionaryStats;
-}) {
+function renderStatsList(
+  theme: Theme,
+  t: TFunction<"translation", undefined>,
+  stats: DictionaryStats,
+  statsList: StatsList
+) {
+  return statsList.map(([label, key]) => (
+    <Span key={label}>
+      {t("label", { label: t(label) })}{" "}
+      <Span style={theme.styles.poppingText}>
+        {typeof stats[key] == "number" ? stats[key] : 0}
+      </Span>
+    </Span>
+  ));
+}
+
+function StatsBlock({ theme, userData }: { theme: Theme; userData: UserData }) {
   const [t] = useTranslation();
-  const [longestWord, setLongestWord] = useState<string | undefined>();
+  const version = useDictionaryVersioning();
+
+  const [overallLongestWord, setOverallLongestWord] = useState<
+    string | undefined
+  >();
+  const [activeLongestWord, setActiveLongestWord] = useState<
+    string | undefined
+  >();
+  const [viewingOverall, setViewingOverall] = useState(false);
 
   useEffect(() => {
-    listWords(dictionaryId, {
+    listWords(userData.activeDictionary, {
       ascending: false,
       orderBy: "longest",
       limit: 1,
     })
-      .then((words) => setLongestWord(words[0]))
+      .then((words) => setActiveLongestWord(words[0]))
       .catch(logError);
-  }, [dictionaryId, version]);
 
-  const sections = statsLists.map((list, i) => {
-    const rows = [];
+    listWords(null, {
+      ascending: false,
+      orderBy: "longest",
+      limit: 1,
+    })
+      .then((words) => setOverallLongestWord(words[0]))
+      .catch(logError);
+  }, [userData.activeDictionary, version]);
 
-    if (i == 0) {
-      rows.push([
-        t("label", { label: t("Longest Word") }),
-        longestWord != undefined ? longestWord : t("NA"),
-      ]);
-    }
+  let label, dictionaryId, stats, longestWord;
 
-    list.forEach(([label, key]) => {
-      rows.push([
-        t("label", { label: t(label) }),
-        typeof stats[key] == "number" ? stats[key] : 0,
-      ]);
-    });
+  if (viewingOverall) {
+    dictionaryId = userData.activeDictionary;
+    stats = userData.stats;
+    label = t("Overall");
+    longestWord = overallLongestWord;
+  } else {
+    const dictionary = userData.dictionaries.find(
+      (d) => d.id == userData.activeDictionary
+    )!;
 
-    return rows;
-  });
+    dictionaryId = null;
+    stats = dictionary.stats;
+    label = dictionary.name;
+    longestWord = activeLongestWord;
+  }
+
+  const listBlockStyles = [
+    theme.styles.definitionBackground,
+    theme.styles.definitionBorders,
+    styles.listBlock,
+  ];
 
   return (
-    <View style={style}>
-      <View style={styles.statsBody}>
-        <Span style={[styles.statsHeader, theme.styles.poppingText]}>
-          {t("label", { label })}
-        </Span>
+    <>
+      <View style={styles.statsHeader}>
+        <Span style={[styles.headerText]}> {label}</Span>
 
-        <View style={styles.lists}>
-          {sections.map((section, i) => (
-            <View key={i}>
-              {section.map(([label, value], i) => (
-                <Span key={i}>
-                  {label} <Span style={theme.styles.poppingText}>{value}</Span>
-                </Span>
-              ))}
-            </View>
-          ))}
+        <View style={styles.buttons}>
+          <IconButton
+            icon={viewingOverall ? DictionaryIcon : AllDictionariesIcon}
+            onPress={() => setViewingOverall(!viewingOverall)}
+          />
+
+          <IconButton
+            icon={ShareIcon}
+            onPress={() => {
+              const headerText = t("label", { label });
+              const bodyText = [wordStats, readStats, practiceStats]
+                .map((list) =>
+                  list
+                    .map(([labelKey, statKey]) => {
+                      const label = t("label", { label: t(labelKey) });
+                      const value =
+                        typeof stats[statKey] == "number" ? stats[statKey] : 0;
+
+                      return label + " " + value;
+                    })
+                    .join("\n")
+                )
+                .join("\n\n");
+              const message = headerText + "\n" + bodyText;
+
+              Share.share({ message }).catch(logError);
+            }}
+          />
         </View>
       </View>
 
-      <IconButton
-        icon={ShareIcon}
-        onPress={() => {
-          const headerText = t("label", { label });
-          const bodyText = sections
-            .map((list) => list.map((pair) => pair.join(" ")).join("\n"))
-            .join("\n\n");
-          const message = headerText + "\n" + bodyText;
+      <View style={listBlockStyles}>
+        <View style={styles.list}>
+          <Span>
+            {t("Longest Word")}{" "}
+            <Span style={theme.styles.poppingText}>
+              {longestWord != undefined ? longestWord : t("NA")}
+            </Span>
+          </Span>
 
-          Share.share({ message }).catch(logError);
-        }}
-      />
-    </View>
+          {renderStatsList(theme, t, stats, wordStats)}
+        </View>
+      </View>
+
+      <View style={listBlockStyles}>
+        <View style={styles.list}>
+          {renderStatsList(theme, t, stats, readStats)}
+        </View>
+
+        <ReadSvg style={styles.readSvg} width={100} height={50} />
+      </View>
+
+      <View style={listBlockStyles}>
+        <View style={styles.list}>
+          {renderStatsList(theme, t, stats, practiceStats)}
+        </View>
+
+        <PracticeSvg style={styles.practiceSvg} width={100} height={100} />
+      </View>
+    </>
   );
 }
 
@@ -161,40 +217,13 @@ export default function Statistics() {
   const [t] = useTranslation();
   const theme = useTheme();
   const [userData] = useUserDataContext();
-  const dictionary = userData.dictionaries.find(
-    (d) => d.id == userData.activeDictionary
-  )!;
-
-  const version = useDictionaryVersioning();
-
-  const blockStyles = [
-    theme.styles.definitionBackground,
-    theme.styles.definitionBorders,
-    styles.statsBlock,
-  ];
 
   return (
     <View style={styles.content}>
       <GameTitle>{t("Statistics")}</GameTitle>
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <StatsBlock
-          style={blockStyles}
-          theme={theme}
-          label={dictionary.name}
-          version={version}
-          dictionaryId={userData.activeDictionary}
-          stats={dictionary.stats}
-        />
-
-        <StatsBlock
-          style={blockStyles}
-          theme={theme}
-          label={t("Overall")}
-          version={version}
-          dictionaryId={null}
-          stats={userData.stats}
-        />
+        <StatsBlock theme={theme} userData={userData} />
 
         <PatsBlock theme={theme} userData={userData} />
       </ScrollView>
@@ -209,28 +238,42 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     gap: 8,
   },
-  statsBlock: {
+  scrollViewContent: {
+    flexGrow: 1,
+    padding: 8,
+  },
+  headerText: {
+    fontWeight: "bold",
+    fontSize: 24,
+  },
+  buttons: {
+    flexDirection: "row",
+  },
+  statsHeader: {
+    flexDirection: "row",
+    marginBottom: 2,
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  listBlock: {
     borderRadius: 8,
     borderWidth: 1,
     marginBottom: 16,
     flexDirection: "row",
-    alignItems: "flex-start",
   },
-  statsBody: {
-    paddingTop: 8,
-    paddingHorizontal: 12,
+  list: {
     paddingVertical: 12,
-    flex: 1,
+    paddingHorizontal: 12,
   },
-  statsHeader: {
-    marginBottom: 2,
+  readSvg: {
+    alignSelf: "center",
+    marginLeft: "auto",
+    marginRight: 8,
   },
-  lists: {
-    gap: 12,
-  },
-  scrollViewContent: {
-    flexGrow: 1,
-    padding: 8,
+  practiceSvg: {
+    alignSelf: "flex-end",
+    marginRight: 8,
+    marginLeft: "auto",
   },
   patsBlock: {
     marginTop: "auto",

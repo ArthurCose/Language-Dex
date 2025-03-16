@@ -147,6 +147,10 @@ export function ShareIcon(props: IconProps) {
   return <MaterialDesignIcons name="share-variant" {...props} />;
 }
 
+export function AllDictionariesIcon(props: IconProps) {
+  return <MaterialDesignIcons name="bookshelf" {...props} />;
+}
+
 export function PracticeResultsIcon(props: IconProps) {
   return <MaterialDesignIcons name="medal-outline" {...props} />;
 }

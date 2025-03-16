@@ -1,0 +1,13 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<!-- Created using Krita: https://krita.org -->
+<svg xmlns="http://www.w3.org/2000/svg" 
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:krita="http://krita.org/namespaces/svg/krita"
+    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+    width="245.76pt"
+    height="122.88pt"
+    viewBox="0 0 245.76 122.88">
+<defs/>
+<ellipse id="shape02" transform="matrix(0.842221549002619 0.0664404714854252 -0.0664404714854252 0.842221549002619 97.1569833748646 36.926095408164)" rx="38.5793471100716" ry="34.8206360065499" cx="38.5793471100716" cy="34.8206360065499" fill="none" stroke="#328b7b" stroke-width="7.68" stroke-linecap="square" stroke-linejoin="bevel"/><path id="shape2" transform="matrix(1.11105801467968 0 0 -1.11105801467968 160.810228037627 60.4606009590376)" fill="none" stroke="#328b7b" stroke-width="6.24" stroke-linecap="square" stroke-linejoin="bevel" d="M0 0C36.6929 24.7613 62.1125 15.3297 65.2366 21.3971C65.2017 25.4083 36.3673 25.1399 0 0Z" sodipodi:nodetypes="ccc"/><path id="shape3" transform="matrix(0.844838134707217 0 0 0.844838134707217 81.7562843810029 57.8931663094794)" fill="none" stroke="#328b7b" stroke-width="7.68" stroke-linecap="square" stroke-linejoin="bevel" d="M0 1.04023C1.54198 0.629645 5.61968 -1.39954 14.1981 1.65669" sodipodi:nodetypes="cc"/><ellipse id="shape021" transform="matrix(0.842221549002619 0.0664404714854252 -0.0664404714854252 0.842221549002619 17.095127165994 32.3893879204111)" rx="38.5793471100716" ry="34.8206360065499" cx="38.5793471100716" cy="34.8206360065499" fill="none" stroke="#328b7b" stroke-width="7.68" stroke-linecap="square" stroke-linejoin="bevel"/><path id="shape21" transform="matrix(1.11105801467968 0 0 -1.11105801467968 19.7842440091964 48.0705077842562)" fill="none" stroke="#328b7b" stroke-width="6.24" stroke-linecap="square" stroke-linejoin="bevel" d="M0 0C36.6929 24.7613 62.1125 15.3297 65.2366 21.3971C65.2017 25.4083 36.3673 25.1399 0 0Z" sodipodi:nodetypes="ccc"/>
+</svg>
