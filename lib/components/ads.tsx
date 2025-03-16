@@ -10,9 +10,10 @@ import mobileAds, {
   TestIds,
 } from "react-native-google-mobile-ads";
 import { logError } from "../log";
-import { useUserDataContext } from "../contexts/user-data";
 import { useTheme } from "../contexts/theme";
 import { UserData } from "../data";
+import { useUserDataSignal } from "../contexts/user-data";
+import { useSignalLens } from "../hooks/use-signal";
 
 let isMobileAdsStartCalled = false;
 let adsConsentInfo: AdsConsentInfo | undefined;
@@ -83,16 +84,17 @@ async function startGoogleMobileAdsSDK() {
 
 export const PracticeAd = React.memo(
   ({ onSizeChange }: { onSizeChange?: () => void }) => {
-    const [userData] = useUserDataContext();
     const theme = useTheme();
+    const userDataSignal = useUserDataSignal();
+    const removeAds = useSignalLens(userDataSignal, (data) => data.removeAds);
 
     useEffect(() => {
-      if (!adsConsentInfo?.canRequestAds || userData.removeAds) {
+      if (!adsConsentInfo?.canRequestAds || removeAds) {
         onSizeChange?.();
       }
     }, []);
 
-    if (!adsConsentInfo?.canRequestAds || userData.removeAds) {
+    if (!adsConsentInfo?.canRequestAds || removeAds) {
       return;
     }
 

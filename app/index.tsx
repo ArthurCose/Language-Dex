@@ -15,7 +15,7 @@ import Dictionary from "@/lib/components/pseudo-pages/dictionary";
 import Read from "@/lib/components/pseudo-pages/read";
 import Practice from "@/lib/components/pseudo-pages/practice";
 import Statistics from "@/lib/components/pseudo-pages/statistics";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
 import RouteRoot from "@/lib/components/route-root";
 import Carousel from "@/lib/components/carousel";
 
@@ -27,9 +27,9 @@ export const pages = [
 ];
 
 export default function () {
-  const [userData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
   const [currentPage, setCurrentPage] = useState(() => {
-    const index = pages.findIndex((p) => p.label == userData.home);
+    const index = pages.findIndex((p) => p.label == userDataSignal.get().home);
 
     if (index == -1) {
       return 1;

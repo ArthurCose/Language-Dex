@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { StyleSheet, View, TextStyle } from "react-native";
 import { useTranslation } from "react-i18next";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
+import { Signal, useSignalLens } from "@/lib/hooks/use-signal";
 import {
   GameWord,
   listGameWords,
@@ -86,16 +87,22 @@ function setUpNextRound(gameState: GameState) {
   gameState.roundStarted = true;
 }
 
-function incrementCorrectShortAnswers(userData: UserData) {
-  return updateStatistics(userData, (stats) => {
-    stats.correctShortAnswers = (stats.correctShortAnswers ?? 0) + 1;
-  });
+function incrementCorrectShortAnswers(userDataSignal: Signal<UserData>) {
+  userDataSignal.set(
+    updateStatistics(userDataSignal.get(), (stats) => {
+      stats.correctShortAnswers = (stats.correctShortAnswers ?? 0) + 1;
+    })
+  );
 }
 
 export default function () {
   const practiceColors = usePracticeColors();
   const [t] = useTranslation();
-  const [userData, setUserData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
+  const activeDictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.activeDictionary
+  );
 
   const [resolvedAdSize, setResolvedAdSize] = useState(false);
   const onAdResize = useCallback(() => setResolvedAdSize(true), []);
@@ -103,7 +110,7 @@ export default function () {
   const [gameState, setGameState] = useState(() => initGameState([]));
 
   const definitionMap = useWordDefinitions(
-    userData.activeDictionary,
+    activeDictionary,
     gameState.activeWords
   );
 
@@ -114,7 +121,7 @@ export default function () {
   const pushAnimation = useAnimationEffects();
 
   useEffect(() => {
-    listGameWords(userData.activeDictionary, { minLength: 2 })
+    listGameWords(activeDictionary, { minLength: 2 })
       .then((words) => {
         const updatedGameState = { ...gameState };
         updatedGameState.loading = false;
@@ -170,7 +177,7 @@ export default function () {
     }
 
     if (correct) {
-      setUserData(incrementCorrectShortAnswers);
+      incrementCorrectShortAnswers(userDataSignal);
     }
 
     // update score

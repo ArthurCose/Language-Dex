@@ -23,7 +23,8 @@ import {
   invalidateWordDefinitions,
   useWordDefinition,
 } from "@/lib/hooks/use-word-definitions";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
+import { useSignalLens } from "@/lib/hooks/use-signal";
 import PartOfSpeechDropdown from "@/lib/components/definitions/part-of-speech-dropdown";
 import ConfirmationDialog, {
   DiscardDialog,
@@ -87,10 +88,14 @@ function ConfidenceButton({
 export default function DefinitionEditor(props: Props) {
   const theme = useTheme();
   const [t] = useTranslation();
-  const [userData, setUserData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
+  const activeDictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.activeDictionary
+  );
 
   const [definitionLoaded, definitionData] = useWordDefinition(
-    userData.activeDictionary,
+    activeDictionary,
     props.lowerCaseWord,
     props.definitionId
   );
@@ -167,7 +172,7 @@ export default function DefinitionEditor(props: Props) {
       );
 
       // create or update the word
-      const definitionId = await upsertDefinition(userData.activeDictionary, {
+      const definitionId = await upsertDefinition(activeDictionary, {
         // coercion to force interpretation as a full "insert"
         // making all required fields required
         id: props.definitionId!,
@@ -207,15 +212,13 @@ export default function DefinitionEditor(props: Props) {
         ],
       ];
 
-      setUserData((userData) => {
-        userData = updateStatistics(userData, (stats) => {
+      userDataSignal.set(
+        updateStatistics(userDataSignal.get(), (stats) => {
           for (const [statKey, increase] of statChanges) {
             stats[statKey] = Math.max((stats[statKey] ?? 0) + increase, 0);
           }
-        });
-
-        return userData;
-      });
+        })
+      );
 
       // keep identifiers in sync
       props.setLowerCaseWord(lowerCaseSpelling);
@@ -223,14 +226,11 @@ export default function DefinitionEditor(props: Props) {
 
       // invalidate the old word
       if (migratingWords && props.lowerCaseWord != undefined) {
-        invalidateWordDefinitions(
-          userData.activeDictionary,
-          props.lowerCaseWord
-        );
+        invalidateWordDefinitions(activeDictionary, props.lowerCaseWord);
       }
 
       // invalidate the new word
-      invalidateWordDefinitions(userData.activeDictionary, lowerCaseSpelling);
+      invalidateWordDefinitions(activeDictionary, lowerCaseSpelling);
     } catch (e) {
       logError(e);
     }
@@ -442,14 +442,11 @@ export default function DefinitionEditor(props: Props) {
             props.definitionId != undefined
           ) {
             await deleteDefinition(props.definitionId).catch(logError);
-            invalidateWordDefinitions(
-              userData.activeDictionary,
-              props.lowerCaseWord
-            );
+            invalidateWordDefinitions(activeDictionary, props.lowerCaseWord);
 
             // update statistics
-            setUserData((userData) => {
-              userData = updateStatistics(userData, (stats) => {
+            userDataSignal.set(
+              updateStatistics(userDataSignal.get(), (stats) => {
                 if (stats.definitions != undefined) {
                   stats.definitions = Math.max(stats.definitions - 1, 0);
                 }
@@ -470,10 +467,8 @@ export default function DefinitionEditor(props: Props) {
                     0
                   );
                 }
-              });
-
-              return userData;
-            });
+              })
+            );
           }
 
           setDeleteRequested(false);

@@ -12,7 +12,8 @@ import useGettableState from "@/lib/hooks/use-gettable-state";
 import { getWordDefinitions, listWords, updateStatistics } from "@/lib/data";
 import { logError } from "@/lib/log";
 import { useTranslation } from "react-i18next";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
+import { useSignalLens } from "@/lib/hooks/use-signal";
 import RouteRoot from "@/lib/components/route-root";
 import {
   DockedTextInput,
@@ -136,7 +137,11 @@ function updateWordSubmission(
 export default function () {
   const theme = useTheme();
   const [t] = useTranslation();
-  const [userData, setUserData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
+  const activeDictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.activeDictionary
+  );
   const [resolvedAdSize, setResolvedAdSize] = useState(false);
   const onAdResize = useCallback(() => setResolvedAdSize(true), []);
 
@@ -150,7 +155,7 @@ export default function () {
   const [hintIndex, setHintIndex] = useState(0);
 
   useEffect(() => {
-    listWords(userData.activeDictionary, {
+    listWords(activeDictionary, {
       ascending: true,
       orderBy: "confidence",
       minLength: 2,
@@ -205,7 +210,7 @@ export default function () {
     setGameState({ ...gameState });
 
     const word = wordData.word;
-    getWordDefinitions(userData.activeDictionary, word.toLowerCase())
+    getWordDefinitions(activeDictionary, word.toLowerCase())
       .then((result) => {
         const gameState = { ...getGameState() };
         const wordData = gameState.board.words[wordIndex];
@@ -356,12 +361,12 @@ export default function () {
                     updatedGameState.displayingResults = true;
                     updatedGameState.over = true;
 
-                    setUserData((userData) => {
-                      return updateStatistics(userData, (stats) => {
+                    userDataSignal.set(
+                      updateStatistics(userDataSignal.get(), (stats) => {
                         stats.crosswordsCompleted =
                           (stats.crosswordsCompleted ?? 0) + 1;
-                      });
-                    });
+                      })
+                    );
                   } else {
                     updatedGameState.incorrectSubmissions++;
                   }

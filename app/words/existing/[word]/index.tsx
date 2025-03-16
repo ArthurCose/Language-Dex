@@ -18,7 +18,8 @@ import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import useWordDefinitions, {
   invalidateWordDefinitions,
 } from "@/lib/hooks/use-word-definitions";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
+import { useSignalValue } from "@/lib/hooks/use-signal";
 import { useTranslation } from "react-i18next";
 import ReorderableList, {
   reorderItems,
@@ -119,7 +120,8 @@ export default function Word() {
   const { word } = useLocalSearchParams<{ word: string }>();
   const navigation = useNavigation();
   const [t] = useTranslation();
-  const [userData, setUserData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
+  const userData = useSignalValue(userDataSignal);
   const theme = useTheme();
   const [deleteRequested, setDeleteRequested] = useState(false);
 
@@ -255,8 +257,8 @@ export default function Word() {
             ["totalPronounced", (d) => d.pronunciationAudio != undefined],
           ];
 
-          setUserData((userData) => {
-            userData = updateStatistics(userData, (stats) => {
+          userDataSignal.set(
+            updateStatistics(userDataSignal.get(), (stats) => {
               if (stats.definitions != undefined) {
                 const count = savedDefinitions?.length ?? 0;
                 stats.definitions = Math.max(stats.definitions - count, 0);
@@ -270,10 +272,8 @@ export default function Word() {
                 const count = savedDefinitions?.filter(filter).length ?? 0;
                 stats[statKey] = Math.max(stats[statKey] - count, 0);
               }
-            });
-
-            return userData;
-          });
+            })
+          );
 
           setDeleteRequested(false);
           router.back();

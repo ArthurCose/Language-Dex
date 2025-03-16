@@ -3,7 +3,8 @@ import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import BottomListPopup from "@/lib/components/bottom-list-popup";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/lib/contexts/theme";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
+import { useSignalLens } from "@/lib/hooks/use-signal";
 import CustomTextInput from "@/lib/components/custom-text-input";
 import { CloseIcon, ArrowUpIcon, ArrowDownIcon } from "../icons";
 import { listWords, wordOrderOptions } from "@/lib/data";
@@ -42,25 +43,33 @@ function Word({ item: word }: { item: string }) {
 export default function Dictionary() {
   const [t] = useTranslation();
   const theme = useTheme();
-  const [userData] = useUserDataContext();
-
-  const dictionary = userData.dictionaries.find(
-    (d) => d.id == userData.activeDictionary
-  )!;
-  const [activeDictionaryId, setActiveDictionaryId] = useState(
-    userData.activeDictionary
+  const userDataSignal = useUserDataSignal();
+  const userActiveDictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.activeDictionary
   );
+  const partsOfSpeech = useSignalLens(
+    userDataSignal,
+    (data) =>
+      data.dictionaries.find((d) => d.id == data.activeDictionary)!
+        .partsOfSpeech
+  );
+
+  const [activeDictionaryId, setActiveDictionaryId] =
+    useState(userActiveDictionary);
 
   const [allWords, setAllWords] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState("");
   const [partOfSpeechFilter, setPartOfSpeechFilter] =
     useState(PART_OF_SPEECH_ALL);
-  const [orderBy, setOrderBy] = useState(() =>
-    userData.dictionaryOrder != undefined &&
-    wordOrderOptions.includes(userData.dictionaryOrder)
+  const [orderBy, setOrderBy] = useState(() => {
+    const userData = userDataSignal.get();
+
+    return userData.dictionaryOrder != undefined &&
+      wordOrderOptions.includes(userData.dictionaryOrder)
       ? userData.dictionaryOrder
-      : wordOrderOptions[0]
-  );
+      : wordOrderOptions[0];
+  });
   const [ascending, setAscending] = useState(true);
 
   // resolve final word list
@@ -92,15 +101,15 @@ export default function Dictionary() {
       partOfSpeechId = null;
     }
 
-    if (activeDictionaryId != userData.activeDictionary) {
-      setActiveDictionaryId(userData.activeDictionary);
+    if (activeDictionaryId != userActiveDictionary) {
+      setActiveDictionaryId(userActiveDictionary);
       setPartOfSpeechFilter(PART_OF_SPEECH_ALL);
       partOfSpeechId = undefined;
     }
 
     let cancelled = false;
 
-    listWords(dictionary.id, {
+    listWords(userActiveDictionary, {
       ascending: false,
       orderBy,
       partOfSpeech: partOfSpeechId,
@@ -124,24 +133,19 @@ export default function Dictionary() {
     return () => {
       cancelled = true;
     };
-  }, [
-    userData.activeDictionary,
-    partOfSpeechFilter,
-    orderBy,
-    dictionaryVersion,
-  ]);
+  }, [userActiveDictionary, partOfSpeechFilter, orderBy, dictionaryVersion]);
 
   // resolve parts of speech list
   const [partOfSpeechOptions, resolveWordFilterLabel] = useMemo(() => {
     const partOfSpeechOptions = [
       PART_OF_SPEECH_ALL,
-      ...dictionary.partsOfSpeech.map((p) => p.id),
+      ...partsOfSpeech.map((p) => p.id),
       PART_OF_SPEECH_UNKNOWN,
     ];
 
     const partOfSpeechLabelMap: { [id: number]: string } = {};
 
-    for (const partOfSpeech of dictionary.partsOfSpeech) {
+    for (const partOfSpeech of partsOfSpeech) {
       partOfSpeechLabelMap[partOfSpeech.id] = partOfSpeech.name;
     }
 
@@ -156,7 +160,7 @@ export default function Dictionary() {
     };
 
     return [partOfSpeechOptions, resolveWordFilterLabel];
-  }, [dictionary.partsOfSpeech]);
+  }, [partsOfSpeech]);
 
   return (
     <>

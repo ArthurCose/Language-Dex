@@ -13,7 +13,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { useUserDataContext } from "../contexts/user-data";
+import { useUserDataSignal } from "../contexts/user-data";
 
 let idCounter: number = 0;
 
@@ -74,7 +74,7 @@ type Props = { style?: StyleProp<ViewStyle> } & React.PropsWithChildren;
 export default function CatInteraction({ style, children }: Props) {
   const [hearts, setHearts] = useState<HeartData[]>([]);
   const [interactionCount, setInteractionCount] = useState(0);
-  const [_, setUserData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
 
   useEffect(() => {
     if (hearts.length > 0 || interactionCount == 0) {
@@ -82,16 +82,16 @@ export default function CatInteraction({ style, children }: Props) {
     }
 
     setInteractionCount(0);
-    setUserData((userData) => {
-      const previousCount = userData.stats.totalPats ?? 0;
 
-      return {
-        ...userData,
-        stats: {
-          ...userData.stats,
-          totalPats: previousCount + interactionCount,
-        },
-      };
+    const userData = userDataSignal.get();
+    const previousCount = userData.stats.totalPats ?? 0;
+
+    userDataSignal.set({
+      ...userData,
+      stats: {
+        ...userData.stats,
+        totalPats: previousCount + interactionCount,
+      },
     });
   }, [hearts]);
 

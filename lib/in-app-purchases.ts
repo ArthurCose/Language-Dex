@@ -11,16 +11,13 @@ import {
   ErrorCode,
 } from "react-native-iap";
 import { logError } from "./log";
-import { SetUserDataCallback } from "./contexts/user-data";
 import { UserData } from "./data";
+import { Signal } from "./hooks/use-signal";
 
 const REMOVE_ADS_PRODUCT_ID = "remove_ads";
 const ignoredErrors = [ErrorCode.E_USER_CANCELLED, ErrorCode.E_NETWORK_ERROR];
 
-export function initInAppPurchases(
-  userData: UserData,
-  setUserData: SetUserDataCallback
-) {
+export function initInAppPurchases(userDataSignal: Signal<UserData>) {
   const promise = (async function () {
     await initConnection();
     await flushFailedPurchasesCachedAsPendingAndroid().catch(() => {
@@ -28,7 +25,7 @@ export function initInAppPurchases(
       // - there are pending purchases that are still pending (we can't consume a pending purchase)
       // in any case, you might not want to do anything special with the error
     });
-    await restorePurchases(userData, setUserData).catch(() => logError);
+    await restorePurchases(userDataSignal).catch(() => logError);
 
     purchaseUpdatedListener((purchase) => {
       const receipt = purchase.transactionReceipt;
@@ -36,7 +33,7 @@ export function initInAppPurchases(
       if (receipt) {
         finishTransaction({ purchase, isConsumable: false })
           .then(() =>
-            setUserData((userData) => ({ ...userData, removeAds: true }))
+            userDataSignal.set({ ...userDataSignal.get(), removeAds: true })
           )
           .catch(logError);
       }
@@ -63,11 +60,8 @@ export async function requestAdRemoval() {
   requestPurchase(purchaseParams).catch(() => {});
 }
 
-async function restorePurchases(
-  userData: UserData,
-  setUserData: SetUserDataCallback
-) {
-  if (userData.removeAds) {
+async function restorePurchases(userDataSignal: Signal<UserData>) {
+  if (userDataSignal.get().removeAds) {
     return;
   }
 
@@ -75,7 +69,7 @@ async function restorePurchases(
 
   for (const purchase of purchases) {
     if (purchase.productId == REMOVE_ADS_PRODUCT_ID) {
-      setUserData({ ...userData, removeAds: true });
+      userDataSignal.set({ ...userDataSignal.get(), removeAds: true });
     }
   }
 }

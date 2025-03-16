@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { StyleProp, TextStyle, ViewStyle } from "react-native";
 import { useTranslation } from "react-i18next";
 import EditableListPopup from "./editable-list-popup";
-import { useUserDataContext } from "../contexts/user-data";
+import { useUserDataSignal } from "../contexts/user-data";
 import {
   deleteDictionary,
   DictionaryData,
@@ -11,6 +11,7 @@ import {
 } from "../data";
 import ConfirmationDialog from "./confirmation-dialog";
 import { bumpDictionaryVersion } from "../hooks/use-word-definitions";
+import { useSignalLens } from "../hooks/use-signal";
 
 type Props = {
   style?: StyleProp<ViewStyle>;
@@ -25,7 +26,11 @@ export default function DictionaryDropdown({
   value,
   onChange,
 }: Props) {
-  const [userData, setUserData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
+  const dictionaries = useSignalLens(
+    userDataSignal,
+    (data) => data.dictionaries
+  );
   const [t] = useTranslation();
   const [deleteItem, setDeleteItem] = useState<DictionaryData | null>(null);
   const [deleteRequested, setDeleteRequested] = useState(false);
@@ -35,32 +40,31 @@ export default function DictionaryDropdown({
       <EditableListPopup
         name={t("Dictionary")}
         label={
-          userData.dictionaries.find((item) => item.id == value)?.name ??
-          t("unknown")
+          dictionaries.find((item) => item.id == value)?.name ?? t("unknown")
         }
         style={style}
         labelStyle={labelStyle}
-        list={userData.dictionaries}
+        list={dictionaries}
         getItemText={(item) => item.name}
         keyExtractor={(item) => String(item.id)}
         addItemText={t("New_Dictionary")}
         onRename={(item, name) => {
           const [updatedData, updatedDictionary] = prepareDictionaryUpdate(
-            userData,
+            userDataSignal.get(),
             item.id
           );
 
           updatedDictionary.name = name;
 
-          setUserData(updatedData);
+          userDataSignal.set(updatedData);
         }}
         onReorder={(list) => {
-          const updatedData = { ...userData };
+          const updatedData = { ...userDataSignal.get() };
           updatedData.dictionaries = list;
-          setUserData(updatedData);
+          userDataSignal.set(updatedData);
         }}
         onAdd={(name) => {
-          const updatedData = { ...userData };
+          const updatedData = { ...userDataSignal.get() };
           updatedData.dictionaries = [...updatedData.dictionaries];
           updatedData.dictionaries.push({
             name,
@@ -70,7 +74,7 @@ export default function DictionaryDropdown({
             stats: {},
           });
 
-          setUserData(updatedData);
+          userDataSignal.set(updatedData);
         }}
         onDelete={(item) => {
           setDeleteItem(item);
@@ -90,42 +94,41 @@ export default function DictionaryDropdown({
             return;
           }
 
-          setUserData((userData) => ({ ...userData, updatingStats: true }));
+          userDataSignal.set({ ...userDataSignal.get(), updatingStats: true });
 
           const id = deleteItem.id;
           await deleteDictionary(id);
 
           // make sure we're updating the latest userData since this is happening asynchronously
-          setUserData((userData) => {
-            userData = { ...userData };
-            userData.updatingStats = false;
 
-            const i = userData.dictionaries.findIndex((d) => d.id == id);
-            const [dictionary] = userData.dictionaries.splice(i, 1);
+          const userData = { ...userDataSignal.get() };
+          userData.updatingStats = false;
 
-            userData.stats = { ...userData.stats };
+          const i = userData.dictionaries.findIndex((d) => d.id == id);
+          const [dictionary] = userData.dictionaries.splice(i, 1);
 
-            for (const stat of negatableStats) {
-              subStat(userData.stats, dictionary.stats, stat);
-            }
+          userData.stats = { ...userData.stats };
 
-            if (userData.dictionaries.length == 0) {
-              userData.nextDictionaryId = 0;
-              userData.dictionaries.push({
-                name: t("New"),
-                id: userData.nextDictionaryId++,
-                partsOfSpeech: [],
-                nextPartOfSpeechId: 0,
-                stats: {},
-              });
-            }
+          for (const stat of negatableStats) {
+            subStat(userData.stats, dictionary.stats, stat);
+          }
 
-            if (userData.activeDictionary == dictionary.id) {
-              userData.activeDictionary = userData.dictionaries[0].id;
-            }
+          if (userData.dictionaries.length == 0) {
+            userData.nextDictionaryId = 0;
+            userData.dictionaries.push({
+              name: t("New"),
+              id: userData.nextDictionaryId++,
+              partsOfSpeech: [],
+              nextPartOfSpeechId: 0,
+              stats: {},
+            });
+          }
 
-            return userData;
-          });
+          if (userData.activeDictionary == dictionary.id) {
+            userData.activeDictionary = userData.dictionaries[0].id;
+          }
+
+          userDataSignal.set(userData);
 
           bumpDictionaryVersion();
 

@@ -11,16 +11,16 @@ export class Signal<T> {
     this._subscriptions = new Set();
   }
 
-  value() {
-    return this._value;
-  }
-
   subscribe(listener: Listener<T>) {
     this._subscriptions.add(listener);
   }
 
   unsubscribe(listener: Listener<T>) {
     this._subscriptions.delete(listener);
+  }
+
+  get() {
+    return this._value;
   }
 
   set(value: T) {
@@ -36,14 +36,15 @@ export class Signal<T> {
   }
 }
 
-export function useSignal<T>(initialValue?: T) {
+export function useSignal<T>(initialValue: T) {
   const [signal] = useState(() => new Signal(initialValue));
 
   return signal;
 }
 
 export function useSignalValue<T>(signal: Signal<T>) {
-  const [_, setValue] = useState(signal.value());
+  const value = signal.get();
+  const [_, setValue] = useState(value);
 
   useEffect(() => {
     signal.subscribe(setValue);
@@ -53,5 +54,24 @@ export function useSignalValue<T>(signal: Signal<T>) {
     };
   }, [signal]);
 
-  return signal.value();
+  return value;
+}
+
+export function useSignalLens<T, R>(
+  signal: Signal<T>,
+  transformation: (value: T) => R
+): R {
+  const value = transformation(signal.get());
+  const [_, setValue] = useState(value);
+
+  useEffect(() => {
+    const listener = (value: T) => setValue(transformation(value));
+    signal.subscribe(listener);
+
+    return () => {
+      signal.unsubscribe(listener);
+    };
+  }, [signal]);
+
+  return value;
 }

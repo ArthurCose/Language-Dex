@@ -9,7 +9,7 @@ import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import ListPopup from "@/lib/components/list-popup";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
 import {
   DictionaryData,
   exportData,
@@ -38,7 +38,7 @@ import {
   isPrivacyOptionsFormRequired,
   showPrivacyOptionsForm,
 } from "@/lib/components/ads";
-import { useSignal } from "@/lib/hooks/use-signal";
+import { useSignal, useSignalValue } from "@/lib/hooks/use-signal";
 
 function getColorSchemeText(
   t: TFunction<"translation", undefined>,
@@ -74,11 +74,12 @@ function throttle<T extends any[]>(
 export default function () {
   const theme = useTheme();
   const [t] = useTranslation();
-  const [userData, setUserData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
+  const userData = useSignalValue(userDataSignal);
   const [longTaskName, setLongTaskName] = useState("");
   const [longTaskOpen, setLongTaskOpen] = useState(false);
   const [longTaskMessage, setLongTaskMessage] = useState("");
-  const longTaskProgressSignal = useSignal<number | undefined>();
+  const longTaskProgressSignal = useSignal<number | undefined>(undefined);
   const [longTaskCompleted, setLongTaskCompleted] = useState(false);
 
   const pageList = pages.map((page) => page.label);
@@ -101,7 +102,7 @@ export default function () {
             if (value != userData.colorScheme) {
               const updatedData = { ...userData };
               updatedData.colorScheme = value;
-              setUserData(updatedData);
+              userDataSignal.set(updatedData);
             }
           }}
         >
@@ -122,7 +123,7 @@ export default function () {
             if (value != userData.home) {
               const updatedData = { ...userData };
               updatedData.home = value;
-              setUserData(updatedData);
+              userDataSignal.set(updatedData);
             }
           }}
         >
@@ -149,7 +150,7 @@ export default function () {
             if (value != userData.dictionaryOrder) {
               const updatedData = { ...userData };
               updatedData.dictionaryOrder = value;
-              setUserData(updatedData);
+              userDataSignal.set(updatedData);
             }
           }}
         >
@@ -194,7 +195,7 @@ export default function () {
                 importData(
                   userData,
                   (userData) => {
-                    setUserData(userData);
+                    userDataSignal.set(userData);
                   },
                   asset.uri,
                   progressCallback
@@ -347,7 +348,7 @@ export default function () {
                   },
                 });
 
-                setUserData(updatedData);
+                userDataSignal.set(updatedData);
 
                 setLongTaskOpen(true);
                 setLongTaskName("Generating Dictionary");
@@ -389,10 +390,10 @@ export default function () {
                   setLongTaskMessage("Success");
                   setLongTaskCompleted(true);
 
-                  setUserData((userData) => ({
-                    ...userData,
+                  userDataSignal.set({
+                    ...userDataSignal.get(),
                     updatingStats: false,
-                  }));
+                  });
                 };
 
                 longTask().catch(logError);

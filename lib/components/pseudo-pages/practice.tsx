@@ -19,7 +19,8 @@ import ListPopup from "../list-popup";
 import { LockIcon } from "../icons";
 import { definitionMatchModeList } from "@/app/practice/[mode]/definition-match";
 import { unscrambleModeList } from "@/app/practice/[mode]/unscramble";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
+import { useSignalLens } from "@/lib/hooks/use-signal";
 import Dialog, { DialogDescription, DialogTitle } from "../dialog";
 import {
   ConfirmationDialogAction,
@@ -173,7 +174,11 @@ function testLock<Options>(
 export default function () {
   const theme = useTheme();
   const [t] = useTranslation();
-  const [userData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
+  const activeDictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.activeDictionary
+  );
   const dictionaryVersion = useDictionaryVersioning();
   const [matchStatus, setMatchStatus] = useState({ locked: true });
   const [unscrambleStatus, setUnscrambleStatus] = useState({ locked: true });
@@ -192,23 +197,23 @@ export default function () {
   const listingStyles = [theme.styles.gameListing, styles.listing];
 
   useEffect(() => {
-    testLock(setMatchStatus, listGameWords, userData.activeDictionary, {
+    testLock(setMatchStatus, listGameWords, activeDictionary, {
       limit: 3,
     });
 
-    testLock(setUnscrambleStatus, listGameWords, userData.activeDictionary, {
+    testLock(setUnscrambleStatus, listGameWords, activeDictionary, {
       minLength: 2,
       limit: 5,
     });
 
-    testLock(setGuessStatus, listWords, userData.activeDictionary, {
+    testLock(setGuessStatus, listWords, activeDictionary, {
       ascending: false,
       orderBy: "longest",
       limit: 10,
       belowMaxConfidence: true,
     });
 
-    testLock(setCrosswordStatus, listWords, userData.activeDictionary, {
+    testLock(setCrosswordStatus, listWords, activeDictionary, {
       ascending: false,
       orderBy: "longest",
       limit: 10,
@@ -216,23 +221,18 @@ export default function () {
       belowMaxConfidence: true,
     });
 
-    testLock(setShortAnswerStatus, listGameWords, userData.activeDictionary, {
+    testLock(setShortAnswerStatus, listGameWords, activeDictionary, {
       limit: 5,
     });
 
-    testLock(
-      setUseInASentenceStatus,
-      listGameWords,
-      userData.activeDictionary,
-      {
-        limit: 5,
-      }
-    );
-
-    testLock(setPronunciationStatus, listGameWords, userData.activeDictionary, {
+    testLock(setUseInASentenceStatus, listGameWords, activeDictionary, {
       limit: 5,
     });
-  }, [userData.activeDictionary, dictionaryVersion]);
+
+    testLock(setPronunciationStatus, listGameWords, activeDictionary, {
+      limit: 5,
+    });
+  }, [activeDictionary, dictionaryVersion]);
 
   const lockCallback = (desc: string) => {
     setLockDescription(desc);

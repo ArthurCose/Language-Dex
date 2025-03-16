@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useWordDefinition } from "@/lib/hooks/use-word-definitions";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
 import DefinitionEditor from "@/lib/components/definitions/definition-editor";
 import { useTheme } from "@/lib/contexts/theme";
+import { useSignalLens } from "@/lib/hooks/use-signal";
 
 type SearchParams = {
   word?: string;
@@ -13,14 +14,18 @@ type SearchParams = {
 export default function () {
   const navigation = useNavigation();
   const params = useLocalSearchParams<SearchParams>();
-  const [userData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
+  const activeDictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.activeDictionary
+  );
   const [word, setWord] = useState(() => params.word?.toLowerCase());
   const [definitionId, setDefinitionId] = useState(
     parseInt(params.definition_id!) || undefined
   );
 
   const [definitionLoaded, definitionData] = useWordDefinition(
-    userData.activeDictionary,
+    activeDictionary,
     word,
     definitionId
   );

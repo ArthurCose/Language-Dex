@@ -19,7 +19,8 @@ import {
   upsertDefinition,
 } from "@/lib/data";
 import { pickIndexWithLenBiased, swapToEnd } from "@/lib/practice/random";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
+import { useSignalLens } from "@/lib/hooks/use-signal";
 import { useTheme } from "@/lib/contexts/theme";
 import { useAudioPlayer } from "expo-audio";
 import CircleButton from "@/lib/components/circle-button";
@@ -96,7 +97,11 @@ function setUpNextRound(gameState: GameState) {
 
 export default function () {
   const theme = useTheme();
-  const [userData, setUserData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
+  const activeDictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.activeDictionary
+  );
   const [t] = useTranslation();
 
   const [resolvedAdSize, setResolvedAdSize] = useState(false);
@@ -106,12 +111,12 @@ export default function () {
     initGameState([])
   );
   const definitionMap = useWordDefinitions(
-    userData.activeDictionary,
+    activeDictionary,
     gameState.activeWords
   );
 
   useEffect(() => {
-    listGameWords(userData.activeDictionary)
+    listGameWords(activeDictionary)
       .then((words) => {
         const updatedGameState = { ...gameState };
         updatedGameState.loading = false;
@@ -377,7 +382,7 @@ export default function () {
               definitionData?.pronunciationAudio
             ) {
               // update the word
-              await upsertDefinition(userData.activeDictionary, {
+              await upsertDefinition(activeDictionary, {
                 id: definitionData!.id,
                 spelling: definitionData!.spelling,
                 pronunciationAudio: preparedPronunciation.pronunciationAudio,
@@ -386,8 +391,8 @@ export default function () {
 
             if (definitionData?.pronunciationAudio == undefined) {
               // update statistics if this is new audio
-              setUserData((userData) =>
-                updateStatistics(userData, (stats) => {
+              userDataSignal.set(
+                updateStatistics(userDataSignal.get(), (stats) => {
                   stats.totalPronounced = (stats.totalPronounced ?? 0) + 1;
                 })
               );

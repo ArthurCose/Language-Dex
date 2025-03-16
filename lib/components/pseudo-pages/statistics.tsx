@@ -1,16 +1,10 @@
 import React, { useEffect, useState } from "react";
-import {
-  StyleSheet,
-  View,
-  StyleProp,
-  ViewStyle,
-  Share,
-  ScrollView,
-} from "react-native";
+import { StyleSheet, View, Share, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/lib/contexts/theme";
 import { Span } from "../text";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
+import { useSignalValue } from "@/lib/hooks/use-signal";
 import { DictionaryStats, listWords, UserData } from "@/lib/data";
 import { Theme } from "@/lib/themes";
 import { logError } from "@/lib/log";
@@ -217,7 +211,8 @@ function PatsBlock({ theme, userData }: { theme: Theme; userData: UserData }) {
 export default function Statistics() {
   const [t] = useTranslation();
   const theme = useTheme();
-  const [userData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
+  const userData = useSignalValue(userDataSignal);
 
   return (
     <View style={styles.content}>

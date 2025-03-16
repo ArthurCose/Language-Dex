@@ -18,7 +18,8 @@ import {
   ResultsRow,
   ResultsScore,
 } from "@/lib/components/practice/results";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
+import { useSignalLens } from "@/lib/hooks/use-signal";
 import { logError } from "@/lib/log";
 import Animated, {
   interpolateColor,
@@ -242,7 +243,11 @@ const GuessRow = React.memo(function ({
 export default function () {
   const theme = useTheme();
   const [t] = useTranslation();
-  const [userData, setUserData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
+  const activeDictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.activeDictionary
+  );
   const [allWords, setAllWords] = useState<string[] | null>(null);
   const [gameState, setGameState, getGameState] = useGettableState(() =>
     initGameState()
@@ -256,7 +261,7 @@ export default function () {
   const keyboardVisible = useKeyboardVisible();
 
   useEffect(() => {
-    listWords(userData.activeDictionary, {
+    listWords(activeDictionary, {
       ascending: true,
       orderBy: "confidence",
       minLength: 1,
@@ -299,7 +304,7 @@ export default function () {
 
     setGameState({ ...gameState, guesses });
 
-    isValidWord(userData.activeDictionary, lowerCaseGuess)
+    isValidWord(activeDictionary, lowerCaseGuess)
       .then((valid) => {
         const gameState = getGameState();
         const guesses = [...gameState.guesses];
@@ -342,11 +347,11 @@ export default function () {
           setGameState({ ...gameState, over: true, displayingResults: true });
         }, delay);
 
-        setUserData((userData) => {
-          return updateStatistics(userData, (stats) => {
+        userDataSignal.set(
+          updateStatistics(userDataSignal.get(), (stats) => {
             stats.wordsGuessed = (stats.wordsGuessed ?? 0) + 1;
-          });
-        });
+          })
+        );
       })
       .catch(logError);
   };

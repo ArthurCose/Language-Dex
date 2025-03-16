@@ -13,7 +13,8 @@ import {
   updateStatistics,
   UserData,
 } from "@/lib/data";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
+import { Signal, useSignalLens } from "@/lib/hooks/use-signal";
 import { logError } from "@/lib/log";
 import useWordDefinitions from "@/lib/hooks/use-word-definitions";
 import {
@@ -152,20 +153,25 @@ function setUpNextRound(gameState: GameState) {
   }
 }
 
-function updateGameStats(userData: UserData, gameState: GameState) {
-  return updateStatistics(userData, (stats) => {
-    stats.definitionsMatched =
-      (stats.definitionsMatched ?? 0) + gameState.totalMatched;
+function updateGameStats(
+  userDataSignal: Signal<UserData>,
+  gameState: GameState
+) {
+  userDataSignal.set(
+    updateStatistics(userDataSignal.get(), (stats) => {
+      stats.definitionsMatched =
+        (stats.definitionsMatched ?? 0) + gameState.totalMatched;
 
-    if (!stats.definitionMatchBest) {
-      stats.definitionMatchBest = {};
-    }
+      if (!stats.definitionMatchBest) {
+        stats.definitionMatchBest = {};
+      }
 
-    stats.definitionMatchBest[gameState.mode] = Math.max(
-      stats.definitionMatchBest[gameState.mode] ?? 0,
-      gameState.score
-    );
-  });
+      stats.definitionMatchBest[gameState.mode] = Math.max(
+        stats.definitionMatchBest[gameState.mode] ?? 0,
+        gameState.score
+      );
+    })
+  );
 }
 
 type CardProps = {
@@ -269,10 +275,16 @@ export default function () {
   const theme = useTheme();
   const practiceColors = usePracticeColors();
   const [t] = useTranslation();
-  const [userData, setUserData] = useUserDataContext();
-  const dictionary = userData.dictionaries.find(
-    (d) => d.id == userData.activeDictionary
-  )!;
+  const userDataSignal = useUserDataSignal();
+  const activeDictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.activeDictionary
+  );
+  const dictionaryStats = useSignalLens(
+    userDataSignal,
+    (data) =>
+      data.dictionaries.find((d) => d.id == data.activeDictionary)!.stats
+  );
 
   const [allWords, setAllWords] = useState<GameWord[] | null>(null);
   const [cardSizeStyle, setCardSizeStyle] = useState({ width: 0 });
@@ -284,12 +296,12 @@ export default function () {
   const seconds = useTimerSeconds(gameState.timer);
 
   const definitionMap = useWordDefinitions(
-    userData.activeDictionary,
+    activeDictionary,
     gameState.activeWords
   );
 
   useEffect(() => {
-    listGameWords(userData.activeDictionary)
+    listGameWords(activeDictionary)
       .then((words) => {
         setAllWords(words);
 
@@ -394,7 +406,7 @@ export default function () {
     }));
 
     // update stats
-    setUserData((userData) => updateGameStats(userData, gameState));
+    updateGameStats(userDataSignal, gameState);
   }, [gameOver]);
 
   useEffect(() => {
@@ -403,7 +415,7 @@ export default function () {
 
       if (!gameState.over) {
         // add unsaved stats
-        setUserData((userData) => updateGameStats(userData, gameState));
+        updateGameStats(userDataSignal, gameState);
       }
     };
   }, []);
@@ -589,9 +601,7 @@ export default function () {
           <ResultsRow>
             <ResultsLabel>{t("Top_Score")}</ResultsLabel>
             <ResultsScore
-              score={
-                dictionary.stats.definitionMatchBest?.[gameState.mode] ?? 0
-              }
+              score={dictionaryStats.definitionMatchBest?.[gameState.mode] ?? 0}
             />
           </ResultsRow>
         </ResultsDialog>

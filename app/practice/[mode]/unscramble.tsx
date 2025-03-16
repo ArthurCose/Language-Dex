@@ -8,7 +8,8 @@ import React, {
 import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/lib/contexts/theme";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
+import { Signal, useSignalLens } from "@/lib/hooks/use-signal";
 import {
   GameWord,
   listGameWords,
@@ -181,19 +182,24 @@ function setUpNextRound(gameState: GameState) {
   gameState.roundStarted = true;
 }
 
-function updateGameStats(userData: UserData, gameState: GameState) {
-  return updateStatistics(userData, (stats) => {
-    stats.unscrambled = (stats.unscrambled ?? 0) + gameState.totalUnscrambled;
+function updateGameStats(
+  userDataSignal: Signal<UserData>,
+  gameState: GameState
+) {
+  userDataSignal.set(
+    updateStatistics(userDataSignal.get(), (stats) => {
+      stats.unscrambled = (stats.unscrambled ?? 0) + gameState.totalUnscrambled;
 
-    if (!stats.unscrambleBest) {
-      stats.unscrambleBest = {};
-    }
+      if (!stats.unscrambleBest) {
+        stats.unscrambleBest = {};
+      }
 
-    stats.unscrambleBest[gameState.mode] = Math.max(
-      stats.unscrambleBest[gameState.mode] ?? 0,
-      gameState.score
-    );
-  });
+      stats.unscrambleBest[gameState.mode] = Math.max(
+        stats.unscrambleBest[gameState.mode] ?? 0,
+        gameState.score
+      );
+    })
+  );
 }
 
 function overlappingGraphemeIndex(gameState: GameState, x: number, y: number) {
@@ -434,10 +440,16 @@ export default function () {
   const theme = useTheme();
   const practiceColors = usePracticeColors();
   const [t] = useTranslation();
-  const [userData, setUserData] = useUserDataContext();
-  const dictionary = userData.dictionaries.find(
-    (d) => d.id == userData.activeDictionary
-  )!;
+  const userDataSignal = useUserDataSignal();
+  const activeDictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.activeDictionary
+  );
+  const dictionaryStats = useSignalLens(
+    userDataSignal,
+    (data) =>
+      data.dictionaries.find((d) => d.id == data.activeDictionary)!.stats
+  );
 
   const [resolvedAdSize, setResolvedAdSize] = useState(false);
   const onAdResize = useCallback(() => setResolvedAdSize(true), []);
@@ -448,7 +460,7 @@ export default function () {
   );
 
   const definitionMap = useWordDefinitions(
-    userData.activeDictionary,
+    activeDictionary,
     gameState.activeWords
   );
 
@@ -456,7 +468,7 @@ export default function () {
   const seconds = useTimerSeconds(gameState.timer);
 
   useEffect(() => {
-    listGameWords(userData.activeDictionary, { minLength: 2 })
+    listGameWords(activeDictionary, { minLength: 2 })
       .then((words) => {
         setAllWords(words);
 
@@ -544,7 +556,7 @@ export default function () {
     }));
 
     // update stats
-    setUserData((userData) => updateGameStats(userData, gameState));
+    updateGameStats(userDataSignal, gameState);
   }, [gameOver]);
 
   useEffect(() => {
@@ -553,7 +565,7 @@ export default function () {
 
       if (!gameState.over) {
         // add unsaved stats
-        setUserData((userData) => updateGameStats(userData, gameState));
+        updateGameStats(userDataSignal, gameState);
       }
     };
   }, []);
@@ -719,7 +731,7 @@ export default function () {
         <ResultsRow>
           <ResultsLabel>{t("Top_Score")}</ResultsLabel>
           <ResultsScore
-            score={dictionary.stats.unscrambleBest?.[gameState.mode] ?? 0}
+            score={dictionaryStats.unscrambleBest?.[gameState.mode] ?? 0}
           />
         </ResultsRow>
       </ResultsDialog>

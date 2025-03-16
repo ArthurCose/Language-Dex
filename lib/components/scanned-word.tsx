@@ -5,7 +5,8 @@ import { useTheme } from "@/lib/contexts/theme";
 import useWordDefinitions from "@/lib/hooks/use-word-definitions";
 import { Span } from "./text";
 import { useTranslation } from "react-i18next";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
+import { useSignalLens } from "../hooks/use-signal";
 import { namePartOfSpeech, WordDefinitionData } from "@/lib/data";
 import * as Clipboard from "expo-clipboard";
 import { router } from "expo-router";
@@ -31,9 +32,10 @@ function DefinitionsBubble({
 }: DefinitionsBubbleProps) {
   const theme = useTheme();
   const [t] = useTranslation();
-  const [userData] = useUserDataContext();
-  const dictionary = userData.dictionaries.find(
-    (d) => d.id == userData.activeDictionary
+  const userDataSignal = useUserDataSignal();
+  const dictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.dictionaries.find((d) => d.id == data.activeDictionary)!
   );
 
   return (

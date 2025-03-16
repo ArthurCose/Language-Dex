@@ -27,7 +27,8 @@ import {
 import useWordDefinitions, {
   invalidateWordDefinitions,
 } from "@/lib/hooks/use-word-definitions";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
+import { Signal, useSignalLens } from "@/lib/hooks/use-signal";
 import { logError } from "@/lib/log";
 import { pickIndexWithLenBiased, swapToEnd } from "@/lib/practice/random";
 import {
@@ -105,15 +106,21 @@ function setUpNextRound(gameState: GameState) {
   gameState.roundStarted = true;
 }
 
-function incrementSentencesConstructed(userData: UserData) {
-  return updateStatistics(userData, (stats) => {
-    stats.sentencesConstructed = (stats.sentencesConstructed ?? 0) + 1;
-  });
+function incrementSentencesConstructed(userDataSignal: Signal<UserData>) {
+  userDataSignal.set(
+    updateStatistics(userDataSignal.get(), (stats) => {
+      stats.sentencesConstructed = (stats.sentencesConstructed ?? 0) + 1;
+    })
+  );
 }
 
 export default function () {
   const theme = useTheme();
-  const [userData, setUserData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
+  const activeDictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.activeDictionary
+  );
   const [t] = useTranslation();
 
   const [resolvedAdSize, setResolvedAdSize] = useState(false);
@@ -123,12 +130,12 @@ export default function () {
 
   const [gameState, setGameState] = useState(() => initGameState([]));
   const definitionMap = useWordDefinitions(
-    userData.activeDictionary,
+    activeDictionary,
     gameState.activeWords
   );
 
   useEffect(() => {
-    listGameWords(userData.activeDictionary)
+    listGameWords(activeDictionary)
       .then((words) => {
         const updatedGameState = { ...gameState };
         updatedGameState.loading = false;
@@ -241,7 +248,7 @@ export default function () {
                 disabled={sentence.length == 0 || transitioning}
                 onPress={() => {
                   advance();
-                  setUserData(incrementSentencesConstructed);
+                  incrementSentencesConstructed(userDataSignal);
                   setGameState((gameState) => ({
                     ...gameState,
                     score: gameState.score + 1,
@@ -297,13 +304,13 @@ export default function () {
             onPress={() => {
               const save = async () => {
                 // update the word
-                await upsertDefinition(userData.activeDictionary, {
+                await upsertDefinition(activeDictionary, {
                   id: definitionData!.id,
                   spelling: definitionData!.spelling,
                   example: sentence,
                 });
 
-                setUserData(incrementSentencesConstructed);
+                incrementSentencesConstructed(userDataSignal);
                 setGameState((gameState) => ({
                   ...gameState,
                   saveCount: gameState.saveCount + 1,
@@ -312,7 +319,7 @@ export default function () {
 
                 advance(() => {
                   invalidateWordDefinitions(
-                    userData.activeDictionary,
+                    activeDictionary,
                     definitionData!.spelling.toLowerCase()
                   );
                 });

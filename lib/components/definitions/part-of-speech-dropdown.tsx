@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { StyleProp, TextStyle, ViewStyle } from "react-native";
 import { useTranslation } from "react-i18next";
 import EditableListPopup from "../editable-list-popup";
-import { useUserDataContext } from "../../contexts/user-data";
+import { useUserDataSignal } from "../../contexts/user-data";
+import { useSignalLens } from "@/lib/hooks/use-signal";
 import {
   deletePartOfSpeech,
   PartOfSpeechData,
@@ -23,14 +24,14 @@ export default function PartOfSpeechDropdown({
   value,
   onChange,
 }: Props) {
-  const [userData, setUserData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
+  const dictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.dictionaries.find((d) => d.id == data.activeDictionary)!
+  );
   const [t] = useTranslation();
   const [deleteItem, setDeleteItem] = useState<PartOfSpeechData | null>(null);
   const [deleteRequested, setDeleteRequested] = useState(false);
-
-  const dictionary = userData.dictionaries.find(
-    (d) => d.id == userData.activeDictionary
-  )!;
 
   return (
     <>
@@ -48,33 +49,36 @@ export default function PartOfSpeechDropdown({
         defaultItemText={t("unknown")}
         addItemText={t("Add_Part_of_Speech")}
         onRename={(item, name) => {
-          const [updatedData, updatedDictionary] =
-            prepareDictionaryUpdate(userData);
+          const [updatedData, updatedDictionary] = prepareDictionaryUpdate(
+            userDataSignal.get()
+          );
 
           updatedDictionary.partsOfSpeech = updatedDictionary.partsOfSpeech.map(
             (existing) =>
               existing.id == item.id ? { ...existing, name } : existing
           );
 
-          setUserData(updatedData);
+          userDataSignal.set(updatedData);
         }}
         onReorder={(list) => {
-          const [updatedData, updatedDictionary] =
-            prepareDictionaryUpdate(userData);
+          const [updatedData, updatedDictionary] = prepareDictionaryUpdate(
+            userDataSignal.get()
+          );
 
           updatedDictionary.partsOfSpeech = list;
 
-          setUserData(updatedData);
+          userDataSignal.set(updatedData);
         }}
         onAdd={(name) => {
-          const [updatedData, updatedDictionary] =
-            prepareDictionaryUpdate(userData);
+          const [updatedData, updatedDictionary] = prepareDictionaryUpdate(
+            userDataSignal.get()
+          );
 
           const id = updatedDictionary.nextPartOfSpeechId++;
           updatedDictionary.partsOfSpeech =
             updatedDictionary.partsOfSpeech.concat({ id, name });
 
-          setUserData(updatedData);
+          userDataSignal.set(updatedData);
         }}
         onDelete={(item) => {
           setDeleteItem(item);
@@ -96,22 +100,20 @@ export default function PartOfSpeechDropdown({
 
           const id = deleteItem.id;
 
-          await deletePartOfSpeech(userData.activeDictionary, id);
+          await deletePartOfSpeech(dictionary.id, id);
 
           // make sure we're updating the latest userData since this is happening asynchronously
-          setUserData((userData) => {
-            const [updatedData, updatedDictionary] = prepareDictionaryUpdate(
-              userData,
-              userData.activeDictionary
+          const [updatedData, updatedDictionary] = prepareDictionaryUpdate(
+            userDataSignal.get(),
+            dictionary.id
+          );
+
+          updatedDictionary.partsOfSpeech =
+            updatedDictionary.partsOfSpeech.filter(
+              (existing) => existing.id != id
             );
 
-            updatedDictionary.partsOfSpeech =
-              updatedDictionary.partsOfSpeech.filter(
-                (existing) => existing.id != id
-              );
-
-            return updatedData;
-          });
+          userDataSignal.set(updatedData);
 
           setDeleteRequested(false);
         }}

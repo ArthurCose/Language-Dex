@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
-import { useUserDataContext } from "@/lib/contexts/user-data";
+import { useUserDataSignal } from "@/lib/contexts/user-data";
+import { useSignalLens } from "../hooks/use-signal";
 import NavRow from "./nav-row";
 import DictionaryDropdown from "./dictionary-dropdown";
 import IconButton from "./icon-button";
@@ -7,7 +8,11 @@ import { SettingsIcon } from "./icons";
 import { router } from "expo-router";
 
 export default function () {
-  const [userData, setUserData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
+  const activeDictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.activeDictionary
+  );
 
   return (
     <NavRow
@@ -20,11 +25,11 @@ export default function () {
       <DictionaryDropdown
         style={styles.languageOptionContainer}
         labelStyle={styles.languageText}
-        value={userData.activeDictionary}
+        value={activeDictionary}
         onChange={(v) => {
-          const updatedData = { ...userData };
+          const updatedData = { ...userDataSignal.get() };
           updatedData.activeDictionary = v;
-          setUserData(updatedData);
+          userDataSignal.set(updatedData);
         }}
       />
 

@@ -2,12 +2,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View, FlatList } from "react-native";
 import { useTheme } from "@/lib/contexts/theme";
 import extractWords from "@/lib/extract-words";
-import { useUserDataContext } from "../contexts/user-data";
+import { useUserDataSignal } from "../contexts/user-data";
 import ScannedWord from "./scanned-word";
 import { listWords, updateStatistics } from "../data";
 import { isRTL } from "../practice/words";
 import { SegmentationResult } from "@akahuku/unistring";
 import { logError } from "../log";
+import { useSignalLens } from "../hooks/use-signal";
 
 type Props = {
   text: string;
@@ -27,7 +28,11 @@ function reverseFrom<T>(list: T[], start: number) {
 
 export default function ScanOutput({ text }: Props) {
   const theme = useTheme();
-  const [userData, setUserData] = useUserDataContext();
+  const userDataSignal = useUserDataSignal();
+  const activeDictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.activeDictionary
+  );
   const [segments, setSegments] = useState<SegmentationResult[]>([]);
 
   useEffect(() => {
@@ -35,14 +40,12 @@ export default function ScanOutput({ text }: Props) {
     setSegments(segments);
 
     // update statistics
-    setUserData((userData) => {
-      userData = updateStatistics(userData, (stats) => {
+    userDataSignal.set(
+      updateStatistics(userDataSignal.get(), (stats) => {
         stats.totalScans = (stats.totalScans ?? 0) + 1;
         stats.wordsScanned = (stats.wordsScanned ?? 0) + segments.length;
-      });
-
-      return userData;
-    });
+      })
+    );
 
     // second pass to detect compound words such as "ice cream"
     let cancelled = false;
@@ -71,7 +74,7 @@ export default function ScanOutput({ text }: Props) {
           segment.rawIndex,
           nextSegment.rawIndex + nextSegment.text.length
         );
-        const wordList = await listWords(userData.activeDictionary, {
+        const wordList = await listWords(activeDictionary, {
           orderBy: "longest",
           startsWith: initialSubString,
         });
@@ -200,7 +203,7 @@ export default function ScanOutput({ text }: Props) {
       latestBlock.push(
         <ScannedWord
           key={segment.rawIndex}
-          dictionaryId={userData.activeDictionary}
+          dictionaryId={activeDictionary}
           text={word}
           lowercase={segment.text}
         />
@@ -248,7 +251,7 @@ export default function ScanOutput({ text }: Props) {
         ListFooterComponent={() => <View style={styles.footer} />}
       />
     );
-  }, [segments, userData.activeDictionary]);
+  }, [segments, activeDictionary]);
 
   return textElement;
 }
