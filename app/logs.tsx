@@ -15,9 +15,6 @@ import appMeta from "../app.json";
 import RouteRoot from "@/lib/components/route-root";
 
 const versionHeader = `Version ${appMeta.expo.version}\n`;
-const logHeader =
-  `Note: These logs are not automatically sent to the developer. If you find a bug, you should copy these logs to your report.\n\n` +
-  versionHeader;
 
 export default function () {
   const [t] = useTranslation();
@@ -54,7 +51,7 @@ export default function () {
       </SubMenuTopNav>
 
       <ScrollView contentContainerStyle={styles.logs}>
-        <Span>{logHeader}</Span>
+        <Span>{t("log_header") + "\n\n" + versionHeader}</Span>
 
         {logs.map((s, i) => (
           <Span key={i}>{s}</Span>

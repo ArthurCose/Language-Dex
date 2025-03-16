@@ -197,6 +197,8 @@ i18n
           // logs
           View_Logs: "View Logs",
           Logs: "Logs",
+          log_header:
+            "Note: These logs are not automatically sent to the developer. If you find a bug, you should copy these logs to your report.",
 
           // attribution
           Third_Party_Licenses: "Third-party Licenses",
