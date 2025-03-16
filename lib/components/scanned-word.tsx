@@ -177,14 +177,16 @@ export default function ScannedWord({ dictionaryId, text, lowercase }: Props) {
 
   return (
     <DropDownPrimitive.Root>
-      <DropDownPrimitive.Trigger ref={triggerRef} onPress={() => setOpen(true)}>
-        <View style={underlineStyles}>
-          <Span
-            style={[theme.styles.scanText, open && theme.styles.scanTextActive]}
-          >
-            {text}
-          </Span>
-        </View>
+      <DropDownPrimitive.Trigger
+        ref={triggerRef}
+        onPress={() => setOpen(true)}
+        style={underlineStyles}
+      >
+        <Span
+          style={[theme.styles.scanText, open && theme.styles.scanTextActive]}
+        >
+          {text}
+        </Span>
       </DropDownPrimitive.Trigger>
 
       {open && (

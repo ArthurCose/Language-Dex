@@ -1,4 +1,4 @@
-import Unistring from "@akahuku/unistring";
+import Unistring, { SegmentationResult } from "@akahuku/unistring";
 
 const UNKNOWN_OR_KANJI = 0;
 const HIRAGANA = Unistring.WBP["Hiragana"];
@@ -37,12 +37,16 @@ export default function extractWords(text: string) {
     return prop;
   }
 
+  let lastSegment: SegmentationResult | undefined;
+
   return unistringSegments.flatMap((segment, i) => {
     if (!SCRIPT_WHITELIST_MAP[segment.type]) {
       return [];
     }
 
-    const lastType = unistringSegments[i - 1]?.type;
+    const lastSegmentTailIndex = lastSegment
+      ? lastSegment.index + lastSegment.length
+      : undefined;
 
     if (segment.type == UNKNOWN_OR_KANJI) {
       const codePoint = Unistring.getCodePointArray(segment.text)[0];
@@ -50,7 +54,12 @@ export default function extractWords(text: string) {
       if (getScriptProp(codePoint) == COMMON_SCRIPT_PROP) {
         return [];
       }
-    } else if (segment.type == HIRAGANA && lastType == UNKNOWN_OR_KANJI) {
+    } else if (
+      segment.type == HIRAGANA &&
+      lastSegmentTailIndex == segment.index &&
+      segment.text.length > 1
+    ) {
+      // hirigana right after another segment, assume participle
       const particleSegment = {
         text: segment.text[0],
         index: segment.index,
@@ -65,9 +74,11 @@ export default function extractWords(text: string) {
       segment.rawIndex += 1;
       segment.length -= 1;
 
+      lastSegment = segment;
       return [particleSegment, segment];
     }
 
+    lastSegment = segment;
     return [segment];
   });
 }

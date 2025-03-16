@@ -184,6 +184,10 @@ export default function ScanOutput({ text }: Props) {
             </Text>
           );
         }
+      } else if (textI > 0) {
+        latestBlock.push(
+          <View key={"spacer-" + textI} style={styles.spacer} />
+        );
       }
 
       const word = text.slice(
@@ -264,5 +268,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     height: 32,
+  },
+  spacer: {
+    width: 3,
   },
 });
