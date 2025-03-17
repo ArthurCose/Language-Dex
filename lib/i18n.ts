@@ -205,6 +205,9 @@ i18n
           third_party_icons: "Icons",
           third_party_npm: "npm",
           version: "version",
+
+          // errors
+          something_went_wrong: "Something went wrong...",
         },
       },
     },

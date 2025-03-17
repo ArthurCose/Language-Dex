@@ -8,7 +8,7 @@ import { loadUserData, saveUserData, UserData } from "@/lib/data";
 import { UserDataContext } from "@/lib/contexts/user-data";
 import { Stack, usePathname } from "expo-router";
 import { PortalHost } from "@rn-primitives/portal";
-import { log, logError } from "@/lib/log";
+import { clearLog, log, logError } from "@/lib/log";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import KeyboardDismisser from "@/lib/components/keyboard-dismisser";
 
@@ -56,6 +56,9 @@ export default function RootLayout() {
 
   // load user data
   useEffect(() => {
+    // reloaded app?
+    clearLog();
+
     loadUserData(t)
       .then((data) => {
         userDataSignal.set(data);
