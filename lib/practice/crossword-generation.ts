@@ -309,6 +309,8 @@ function rotateBoard(board: Board) {
     for (const { wordIndex, graphemeIndex } of cell.words) {
       board.words[wordIndex].cells[graphemeIndex] = hash;
     }
+    // preserve ambiguous cell preference
+    cell.words.reverse();
   }
 }
 
