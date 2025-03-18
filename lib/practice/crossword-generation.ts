@@ -21,6 +21,7 @@ type BoardWordData = {
   cells: number[];
   hint?: string;
   hintUsed?: boolean;
+  conceded?: boolean;
 };
 
 type Board = Crossword;

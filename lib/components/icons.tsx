@@ -159,6 +159,10 @@ export function HintIcon(props: IconProps) {
   return <MaterialDesignIcons name="lightbulb-on-outline" {...props} />;
 }
 
+export function ConcedeIcon(props: IconProps) {
+  return <MaterialDesignIcons name="flag-variant-outline" {...props} />;
+}
+
 export function UnlockedIcon(props: IconProps) {
   return <MaterialDesignIcons name="lock-open-variant" {...props} />;
 }

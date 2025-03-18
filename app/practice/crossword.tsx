@@ -25,7 +25,7 @@ import {
   ResultsClock,
   ResultsDialog,
   ResultsHintScore,
-  ResultsIncorrectScore,
+  ResultsConcededScore,
   ResultsLabel,
   ResultsRow,
 } from "@/lib/components/practice/results";
@@ -34,11 +34,11 @@ import SubMenuTopNav, {
   SubMenuActions,
   SubMenuBackButton,
 } from "@/lib/components/sub-menu-top-nav";
-import { SubMenuIconButton } from "@/lib/components/icon-button";
-import { ConfirmReadyIcon, PracticeResultsIcon } from "@/lib/components/icons";
+import IconButton, { SubMenuIconButton } from "@/lib/components/icon-button";
+import { ConcedeIcon, PracticeResultsIcon } from "@/lib/components/icons";
 import {
+  ConcededScore,
   HintScore,
-  IncorrectScore,
   ScoreRow,
 } from "@/lib/components/practice/info";
 import {
@@ -46,8 +46,6 @@ import {
   generateCrossword,
 } from "@/lib/practice/crossword-generation";
 import { isRTL, toGraphemeStrings } from "@/lib/practice/words";
-import CircleButton from "@/lib/components/circle-button";
-import useKeyboardVisible from "@/lib/hooks/use-keyboard-visible";
 import { pickIndexWithLenUnbiased } from "@/lib/practice/random";
 import Dialog from "@/lib/components/dialog";
 import { Span } from "@/lib/components/text";
@@ -58,7 +56,7 @@ type GameState = {
   displayingResults: boolean;
   board: Crossword;
   hintsRemaining: number;
-  incorrectSubmissions: number;
+  conceded: number;
   totalTimer: Timer;
 };
 
@@ -79,7 +77,7 @@ function initGameState() {
       words: [],
     },
     hintsRemaining: 0,
-    incorrectSubmissions: 0,
+    conceded: 0,
     totalTimer: new Timer(),
   };
 
@@ -182,13 +180,39 @@ export default function () {
     };
   }, []);
 
-  const keyboardVisible = useKeyboardVisible();
-
   const cellWidth = 48;
+
+  const testBoard = (gameState: GameState) => {
+    const allCorrect = gameState.board.cells.every(
+      (cell) => cell.submitted == cell.expected
+    );
+
+    if (!allCorrect) {
+      return;
+    }
+
+    gameState.totalTimer.pause();
+    gameState.displayingResults = true;
+    gameState.over = true;
+    setHintDialogOpen(false);
+
+    const allLocked = gameState.board.cells.every((cell) => cell.locked);
+
+    if (!allLocked) {
+      // update the crosswords completed statistic
+      // as long as the user figured out at least one word on their own
+      userDataSignal.set(
+        updateStatistics(userDataSignal.get(), (stats) => {
+          stats.crosswordsCompleted = (stats.crosswordsCompleted ?? 0) + 1;
+        })
+      );
+    }
+  };
 
   const submitWordGuess = () => {
     const updatedGameState = { ...gameState };
     updateWordSubmission(updatedGameState, wordGuessIndex!, wordGuess);
+    testBoard(updatedGameState);
     setGameState(updatedGameState);
   };
 
@@ -245,7 +269,7 @@ export default function () {
       </SubMenuTopNav>
 
       <ScoreRow>
-        <IncorrectScore score={gameState.incorrectSubmissions} />
+        <ConcededScore score={gameState.conceded} />
         <HintScore score={gameState.hintsRemaining} />
       </ScoreRow>
 
@@ -339,49 +363,6 @@ export default function () {
             </ScrollView>
           </ScrollView>
 
-          {!keyboardVisible && (
-            <View style={styles.submitView}>
-              <CircleButton
-                style={styles.submitButton}
-                disabled={
-                  gameState.over ||
-                  gameState.board.cells.some(
-                    (cell) => cell.submitted == undefined
-                  )
-                }
-                onPress={() => {
-                  const allCorrect = gameState.board.cells.every(
-                    (cell) => cell.submitted == cell.expected
-                  );
-
-                  const updatedGameState = { ...gameState };
-
-                  if (allCorrect) {
-                    updatedGameState.totalTimer.pause();
-                    updatedGameState.displayingResults = true;
-                    updatedGameState.over = true;
-
-                    userDataSignal.set(
-                      updateStatistics(userDataSignal.get(), (stats) => {
-                        stats.crosswordsCompleted =
-                          (stats.crosswordsCompleted ?? 0) + 1;
-                      })
-                    );
-                  } else {
-                    updatedGameState.incorrectSubmissions++;
-                  }
-
-                  setGameState(updatedGameState);
-                }}
-              >
-                <ConfirmReadyIcon
-                  size={48}
-                  color={theme.colors.primary.contrast}
-                />
-              </CircleButton>
-            </View>
-          )}
-
           {wordGuessIndex != null && (
             <DockedTextInputContainer>
               <DockedTextInputHintButton
@@ -410,9 +391,47 @@ export default function () {
             open={hintDialogOpen}
             onClose={() => setHintDialogOpen(false)}
           >
-            <Span style={styles.hintDialog}>
-              {gameState.board.words[hintIndex].hint}
-            </Span>
+            <View style={styles.hintTitleContainer}>
+              <Span style={styles.hintTitle}>
+                {gameState.over || gameState.board.words[hintIndex].conceded
+                  ? gameState.board.words[hintIndex].word
+                  : t("short_answer_mystery")}
+              </Span>
+
+              <View style={styles.concedeButton}>
+                <IconButton
+                  icon={ConcedeIcon}
+                  disabled={gameState.board.words[hintIndex].conceded}
+                  onPress={() => {
+                    const updatedGameState = {
+                      ...gameState,
+                    };
+                    const word = updatedGameState.board.words[hintIndex];
+                    word.conceded = true;
+                    updatedGameState.conceded += 1;
+
+                    for (let i = 0; i < word.cells.length; i++) {
+                      const cell =
+                        updatedGameState.board.cellMap[word.cells[i]];
+                      cell.submitted = cell.expected;
+                      cell.locked = true;
+                    }
+
+                    testBoard(updatedGameState);
+                    setGameState(updatedGameState);
+                  }}
+                />
+              </View>
+            </View>
+
+            <ScrollView
+              keyboardDismissMode="none"
+              keyboardShouldPersistTaps="always"
+            >
+              <Span style={styles.hintText}>
+                {gameState.board.words[hintIndex].hint}
+              </Span>
+            </ScrollView>
           </Dialog>
 
           <ResultsDialog
@@ -435,8 +454,8 @@ export default function () {
             </ResultsRow>
 
             <ResultsRow>
-              <ResultsLabel>{t("Incorrect_Submissions")}</ResultsLabel>
-              <ResultsIncorrectScore score={gameState.incorrectSubmissions} />
+              <ResultsLabel>{t("Words_Conceded")}</ResultsLabel>
+              <ResultsConcededScore score={gameState.conceded} />
             </ResultsRow>
 
             <ResultsRow>
@@ -476,17 +495,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  submitView: {
-    alignItems: "center",
-    marginVertical: 12,
-    marginBottom: 18,
+  hintTitleContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
   },
-  submitButton: {
-    padding: 8,
-  },
-  hintDialog: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+  hintTitle: {
+    fontSize: 20,
     textAlign: "center",
+    paddingTop: 8,
+    flex: 1,
+    marginHorizontal: 64,
+  },
+  hintText: {
+    paddingTop: 16,
+    paddingBottom: 16,
+    paddingHorizontal: 64,
+    textAlign: "center",
+  },
+  concedeButton: {
+    position: "absolute",
+    top: 0,
+    right: 0,
   },
 });

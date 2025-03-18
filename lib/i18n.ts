@@ -95,6 +95,7 @@ i18n
           Guesses: "Guesses",
           Hints_Used: "Hints Used",
           Incorrect_Submissions: "Incorrect Submissions",
+          Words_Conceded: "Words Conceded",
           Replay: "Replay",
           Quit: "Quit",
 

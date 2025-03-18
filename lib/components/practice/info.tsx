@@ -3,6 +3,7 @@ import { Span } from "../text";
 import { StyleSheet, View } from "react-native";
 import { useTheme } from "@/lib/contexts/theme";
 import {
+  ConcedeIcon,
   CorrectIcon,
   HintIcon,
   IncorrectIcon,
@@ -59,6 +60,25 @@ export function HintScore({ score }: { score: number }) {
         {score}
       </Span>
       <HintIcon size={28} color={theme.colors.text} />
+    </View>
+  );
+}
+
+export function ConcededScore({ score }: { score: number }) {
+  const theme = useTheme();
+  const colors = usePracticeColors();
+
+  return (
+    <View style={styles.incorrectBlock}>
+      <ConcedeIcon size={29} color={theme.colors.text} />
+      <Span
+        style={[
+          styles.scoreFont,
+          score == 0 ? theme.styles.disabledText : theme.styles.text,
+        ]}
+      >
+        {score}
+      </Span>
     </View>
   );
 }

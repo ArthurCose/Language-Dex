@@ -153,17 +153,14 @@ export function ResultsHintScore({ score }: { score: number }) {
   );
 }
 
-export function ResultsIncorrectScore({ score }: { score: number }) {
+export function ResultsConcededScore({ score }: { score: number }) {
   const theme = useTheme();
-  const colors = usePracticeColors();
 
   return (
     <Text
       style={[
         styles.result,
-        score == 0
-          ? theme.styles.disabledText
-          : { color: colors.mistake.color },
+        score == 0 ? theme.styles.disabledText : theme.styles.text,
       ]}
     >
       {score}
