@@ -283,7 +283,7 @@ export default function DefinitionEditor(props: Props) {
         <View style={styles.row}>
           <CustomTextInput
             style={[styles.input, styles.word]}
-            placeholder={t("word")}
+            placeholder={t("spelling_placeholder")}
             value={spelling}
             onChangeText={setSpelling}
           />
@@ -381,7 +381,7 @@ export default function DefinitionEditor(props: Props) {
             style={[styles.input, styles.textInput]}
             verticalPadding={styles.textInput.paddingVertical}
             minHeight={128}
-            placeholder={t("Definition")}
+            placeholder={t("definition_placeholder")}
             value={definition}
             onChangeText={setDefinition}
           />
@@ -399,7 +399,7 @@ export default function DefinitionEditor(props: Props) {
             style={[styles.input, styles.textInput]}
             verticalPadding={styles.textInput.paddingVertical}
             minHeight={128}
-            placeholder={t("Example")}
+            placeholder={t("example_placeholder")}
             value={example}
             onChangeText={setExample}
           />
@@ -417,7 +417,7 @@ export default function DefinitionEditor(props: Props) {
             style={[styles.input, styles.textInput]}
             verticalPadding={styles.textInput.paddingVertical}
             minHeight={128}
-            placeholder={t("Notes")}
+            placeholder={t("notes_placeholder")}
             value={notes}
             onChangeText={setNotes}
           />

@@ -15,7 +15,7 @@ import { UserData } from "../data";
 import { useUserDataSignal } from "../contexts/user-data";
 import { useSignalLens } from "../hooks/use-signal";
 
-const devEnvironment = true;
+const devEnvironment = false;
 
 let isMobileAdsStartCalled = false;
 let adsConsentInfo: AdsConsentInfo | undefined;

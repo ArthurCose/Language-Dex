@@ -123,13 +123,14 @@ i18n
           Saved_Pronunciation: "Saved Pronunciation",
           Recording_number: "Recording {{count}}",
           Confidence_paren: "(Confidence)",
-          Word: "Word",
+          spelling_placeholder: "word*",
           Part_of_Speech: "Part of Speech",
           Add_Part_of_Speech: "Add Part of Speech",
           unknown: "unknown",
           Definition: "Definition",
-          Example: "Example",
-          Notes: "Notes",
+          definition_placeholder: "Definition*",
+          example_placeholder: "Example",
+          notes_placeholder: "Notes",
 
           New: "New",
 
