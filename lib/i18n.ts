@@ -192,6 +192,7 @@ i18n
           System: "System",
           Light: "Light",
           Dark: "Dark",
+          All: "All",
           Import_Dictionaries: "Import Dictionaries",
           Dictionary_Import: "Dictionary Import",
           importing_metadata_stage: "Initializing...",
@@ -209,10 +210,11 @@ i18n
           Requires_Internet: "Requires Internet",
           failed_to_fetch_product:
             "Failed to fetch product. Check your internet connection and try again later.",
-          All: "All",
+          Replay_Tutorial: "Replay Tutorial",
 
-          Ads: "Ads",
           Dictionaries: "Dictionaries",
+          Ads: "Ads",
+          Help: "Help",
           Development: "Development",
 
           // logs

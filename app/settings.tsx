@@ -370,6 +370,37 @@ function AdsSection({
   );
 }
 
+function HelpSection() {
+  const theme = useTheme();
+  const [t] = useTranslation();
+  const userDataSignal = useUserDataSignal();
+
+  return (
+    <>
+      <Span style={[styles.sectionHeader, theme.styles.poppingText]}>
+        {t("Help")}
+      </Span>
+
+      <Pressable
+        style={styles.row}
+        android_ripple={theme.ripples.transparentButton}
+        pointerEvents="box-only"
+        onPress={() => {
+          router.back();
+          userDataSignal.set({
+            ...userDataSignal.get(),
+            completedTutorial: false,
+          });
+        }}
+      >
+        <Span style={styles.label}>{t("Replay_Tutorial")}</Span>
+      </Pressable>
+
+      <View style={theme.styles.separator} />
+    </>
+  );
+}
+
 function DevelopmentSection({
   longTaskSignal,
 }: {
@@ -557,6 +588,7 @@ export default function () {
         <CustomizationSection />
         <DictionariesSection longTaskSignal={longTaskSignal} />
         <AdsSection longTaskSignal={longTaskSignal} />
+        <HelpSection />
         <DevelopmentSection longTaskSignal={longTaskSignal} />
       </ScrollView>
 
