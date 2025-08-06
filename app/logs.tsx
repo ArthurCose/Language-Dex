@@ -16,7 +16,7 @@ export default function () {
   const [t] = useTranslation();
 
   return (
-    <RouteRoot>
+    <RouteRoot allowNavigationInset>
       <SubMenuTopNav>
         <SubMenuBackButton />
 

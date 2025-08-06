@@ -11,12 +11,15 @@ import { PortalHost } from "@rn-primitives/portal";
 import { clearLog, log, logError } from "@/lib/log";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import KeyboardDismisser from "@/lib/components/keyboard-dismisser";
-
-import "@/lib/i18n";
-import { useTranslation } from "react-i18next";
 import { initInAppPurchases } from "@/lib/in-app-purchases";
 import { initAds } from "@/lib/components/ads";
 import { Signal, useSignal, useSignalLens } from "@/lib/hooks/use-signal";
+
+import { isEdgeToEdge } from "react-native-is-edge-to-edge";
+const EDGE_TO_EDGE = isEdgeToEdge();
+
+import "@/lib/i18n";
+import { useTranslation } from "react-i18next";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync().catch(logError);
@@ -96,6 +99,7 @@ export default function RootLayout() {
                     typeof theme.colors.bottomNav == "string"
                       ? theme.colors.bottomNav
                       : undefined,
+                  navigationBarTranslucent: EDGE_TO_EDGE,
                   statusBarBackgroundColor: "transparent",
                   statusBarStyle: colorScheme == "light" ? "dark" : "light",
                   statusBarTranslucent: true,

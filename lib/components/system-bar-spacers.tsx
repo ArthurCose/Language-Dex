@@ -1,8 +1,14 @@
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function () {
+export function StatusBarSpacer() {
   const insets = useSafeAreaInsets();
 
   return <View style={{ height: insets.top }} />;
+}
+
+export function NavigationBarSpacer() {
+  const insets = useSafeAreaInsets();
+
+  return <View style={{ height: insets.bottom }} />;
 }

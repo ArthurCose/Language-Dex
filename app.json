@@ -1,6 +1,6 @@
 {
   "expo": {
-    "version": "0.28.3",
+    "version": "0.28.4",
     "name": "Language Dex",
     "slug": "language-dex",
     "orientation": "portrait",
@@ -13,7 +13,7 @@
     },
     "android": {
       "package": "dev.arthurcose.languagedex",
-      "versionCode": 49,
+      "versionCode": 50,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#aa33ff"
@@ -31,6 +31,16 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
+          }
+        }
+      ],
       [
         "expo-splash-screen",
         {

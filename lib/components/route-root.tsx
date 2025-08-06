@@ -15,12 +15,14 @@ import { useTranslation } from "react-i18next";
 type RouteRootProps = {
   style?: StyleProp<ViewProps>;
   pointerEvents?: ViewProps["pointerEvents"];
+  allowNavigationInset?: boolean;
 } & React.PropsWithChildren;
 
 export default function RouteRoot({
   style,
   children,
   pointerEvents,
+  allowNavigationInset,
 }: RouteRootProps) {
   const insets = useSafeAreaInsets();
 
@@ -31,6 +33,7 @@ export default function RouteRoot({
       <Try catch={ErrorBoundary}>{children}</Try>
 
       <KeyboardSpacer />
+      {!allowNavigationInset && <View style={{ height: insets.bottom }} />}
     </View>
   );
 }

@@ -6,6 +6,7 @@ import { clearLog, logError, logs, useLogs } from "@/lib/log";
 import appMeta from "@/app.json";
 import { Span } from "./text";
 import { useTranslation } from "react-i18next";
+import { NavigationBarSpacer } from "./system-bar-spacers";
 
 const versionHeader = `Version ${appMeta.expo.version}\n`;
 
@@ -50,6 +51,8 @@ export function LogsView() {
       {logs.map((s, i) => (
         <Span key={i}>{s}</Span>
       ))}
+
+      <NavigationBarSpacer />
     </ScrollView>
   );
 }

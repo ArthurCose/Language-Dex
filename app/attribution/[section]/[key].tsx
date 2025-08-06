@@ -18,6 +18,7 @@ import { SubMenuIconButton } from "@/lib/components/icon-button";
 import { LinkIcon } from "@/lib/components/icons";
 import { logError } from "@/lib/log";
 import RouteRoot from "@/lib/components/route-root";
+import { NavigationBarSpacer } from "@/lib/components/system-bar-spacers";
 
 import data from "@/-licenses.json";
 
@@ -55,7 +56,7 @@ export default function () {
       : packageList.find((p) => p.name == name && p.version == version)!;
 
   return (
-    <RouteRoot>
+    <RouteRoot allowNavigationInset>
       <SubMenuTopNav>
         <SubMenuBackButton />
 
@@ -77,6 +78,7 @@ export default function () {
 
       {isNamespace ? (
         <FlatList
+          ListFooterComponent={NavigationBarSpacer}
           style={attributionStyles.listStyles}
           data={packageList}
           keyExtractor={keyExtractor}
@@ -99,6 +101,8 @@ export default function () {
             {item.licenses.map((license, i) => (
               <Span key={i}>{data.licenseText[license.text]}</Span>
             ))}
+
+            <NavigationBarSpacer />
           </ScrollView>
         </>
       )}

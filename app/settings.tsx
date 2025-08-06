@@ -42,6 +42,7 @@ import {
   showPrivacyOptionsForm,
 } from "@/lib/components/ads";
 import { Signal, useSignalLens, useSignalValue } from "@/lib/hooks/use-signal";
+import { NavigationBarSpacer } from "@/lib/components/system-bar-spacers";
 
 type LongTaskMeta = {
   open: boolean;
@@ -578,7 +579,7 @@ export default function () {
   );
 
   return (
-    <RouteRoot>
+    <RouteRoot allowNavigationInset>
       <SubMenuTopNav>
         <SubMenuBackButton />
         <SubMenuTitle>{t("Settings")}</SubMenuTitle>
@@ -590,6 +591,7 @@ export default function () {
         <AdsSection longTaskSignal={longTaskSignal} />
         <HelpSection />
         <DevelopmentSection longTaskSignal={longTaskSignal} />
+        <NavigationBarSpacer />
       </ScrollView>
 
       <LongTaskDialog signal={longTaskSignal} />
