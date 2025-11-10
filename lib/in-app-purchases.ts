@@ -3,11 +3,10 @@ import {
   purchaseErrorListener,
   purchaseUpdatedListener,
   finishTransaction,
-  flushFailedPurchasesCachedAsPendingAndroid,
   getAvailablePurchases,
-  RequestPurchase,
+  MutationRequestPurchaseArgs,
   requestPurchase,
-  getProducts,
+  fetchProducts,
   ErrorCode,
 } from "react-native-iap";
 import { logError } from "./log";
@@ -16,22 +15,17 @@ import { Signal, useSignalValue } from "./hooks/use-signal";
 import { useEffect, useState } from "react";
 
 const REMOVE_ADS_PRODUCT_ID = "remove_ads";
-const ignoredErrors = [ErrorCode.E_USER_CANCELLED, ErrorCode.E_NETWORK_ERROR];
+const ignoredErrors = [ErrorCode.UserCancelled, ErrorCode.NetworkError];
 
 export function initInAppPurchases(userDataSignal: Signal<UserData>) {
   const promise = (async function () {
     await initConnection();
-    await flushFailedPurchasesCachedAsPendingAndroid().catch(() => {
-      // exception can happen here if:
-      // - there are pending purchases that are still pending (we can't consume a pending purchase)
-      // in any case, you might not want to do anything special with the error
-    });
     await restorePurchases(userDataSignal).catch(() => logError);
 
     purchaseUpdatedListener((purchase) => {
-      const receipt = purchase.transactionReceipt;
+      const receipt = purchase.transactionId;
 
-      if (receipt) {
+      if (receipt != null) {
         finishTransaction({ purchase, isConsumable: false })
           .then(() =>
             userDataSignal.set({ ...userDataSignal.get(), removeAds: true })
@@ -55,8 +49,10 @@ export function initInAppPurchases(userDataSignal: Signal<UserData>) {
 const canRequestAdRemovalSignal = new Signal(false);
 
 function updateProducts() {
-  getProducts({ skus: [REMOVE_ADS_PRODUCT_ID] })
-    .then((products) => canRequestAdRemovalSignal.set(products.length > 0))
+  fetchProducts({ skus: [REMOVE_ADS_PRODUCT_ID] })
+    .then((products) =>
+      canRequestAdRemovalSignal.set((products?.length ?? 0) > 0)
+    )
     .catch(logError);
 }
 
@@ -71,9 +67,13 @@ export function useCanRequestAdRemoval() {
 }
 
 export async function requestAdRemoval() {
-  const purchaseParams: RequestPurchase = {
-    skus: [REMOVE_ADS_PRODUCT_ID],
-    andDangerouslyFinishTransactionAutomaticallyIOS: false,
+  const purchaseParams: MutationRequestPurchaseArgs = {
+    request: {
+      android: {
+        skus: [REMOVE_ADS_PRODUCT_ID],
+      },
+    },
+    type: "in-app",
   };
 
   requestPurchase(purchaseParams).catch(() => {});
