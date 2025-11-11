@@ -238,9 +238,21 @@ function createSimpleTheme(colors: Palette): Theme {
       },
     },
     ripples: {
-      popup: { color: colors.ripples.popup },
-      primaryButton: { color: colors.ripples.primaryButton },
-      transparentButton: { color: colors.ripples.transparentButton },
+      popup: {
+        color: colors.ripples.popup,
+        // https://github.com/callstack/react-native-paper/issues/4810#issuecomment-3388129843
+        foreground: true,
+      },
+      primaryButton: {
+        color: colors.ripples.primaryButton,
+        // https://github.com/callstack/react-native-paper/issues/4810#issuecomment-3388129843
+        foreground: true,
+      },
+      transparentButton: {
+        color: colors.ripples.transparentButton,
+        // https://github.com/callstack/react-native-paper/issues/4810#issuecomment-3388129843
+        foreground: true,
+      },
     },
   };
 }
