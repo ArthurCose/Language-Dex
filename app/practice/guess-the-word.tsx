@@ -100,7 +100,7 @@ function GuessCharacter({
 }: GuessCharacterProps) {
   const sharedStyleValues = useSharedValue({
     color: theme.colors.text,
-    backgroundColor: "transparent",
+    backgroundColor: colors.default,
   });
 
   const animatedStyle = useAnimatedStyle(() => sharedStyleValues.value);
@@ -116,7 +116,7 @@ function GuessCharacter({
       sharedStyleValues.value = withTiming(
         {
           color: theme.colors.disabledText,
-          backgroundColor: "transparent",
+          backgroundColor: colors.default,
         },
         { duration: guessCharAnimationDuration }
       );
@@ -465,6 +465,7 @@ const styles = StyleSheet.create({
 });
 
 export const colors = {
+  default: "#0000",
   incorrectBackground: "#555",
   correctBackground: "#1aba1f",
   incorrectPositionBackground: "#eeaa1f",
