@@ -22,6 +22,7 @@ import { Span } from "@/lib/components/text";
 import { useTheme } from "@/lib/contexts/theme";
 import useKeyboardVisible from "../hooks/use-keyboard-visible";
 import Dialog from "./dialog";
+import { NavigationBarSpacer } from "./system-bar-spacers";
 
 type Props<T> = {
   style?: StyleProp<ViewStyle>;
@@ -144,7 +145,10 @@ export default function BottomListPopup<T>({
           onDismiss={() => setOpen(false)}
           ref={bottomSheetModalRef}
         >
-          <BottomSheetScrollView>{itemElements}</BottomSheetScrollView>
+          <BottomSheetScrollView>
+            {itemElements}
+            <NavigationBarSpacer />
+          </BottomSheetScrollView>
         </BottomSheetModal>
       )}
     </>
