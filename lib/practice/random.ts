@@ -103,16 +103,39 @@ export function swap<T>(list: T[], indexA: number, indexB: number) {
   list[indexB] = temp;
 }
 
+/// Avoids matching the original order
 export function shuffle<T>(list: T[]) {
+  if (list.length <= 1) {
+    return;
+  }
+
+  if (list.length == 2) {
+    const temp = list[0];
+    list[0] = list[1];
+    list[1] = temp;
+    return;
+  }
+
+  let shuffled = false;
+
   for (let i = 0; i < list.length - 1; i++) {
     const remaining = list.length - i;
     const offset = Math.floor(Math.random() * remaining);
     const j = i + offset;
 
+    if (i != j) {
+      shuffled = true;
+    }
+
     // swap
     const temp = list[j];
     list[j] = list[i];
     list[i] = temp;
+  }
+
+  if (!shuffled) {
+    // try again
+    shuffle(list);
   }
 }
 

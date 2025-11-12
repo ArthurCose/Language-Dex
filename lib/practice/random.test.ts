@@ -3,6 +3,7 @@ import {
   shiftToEnd,
   swapNToEndWith,
   shiftNToEndWith,
+  cloneAndShuffle,
 } from "./random";
 import { describe, expect, test } from "@jest/globals";
 
@@ -114,5 +115,19 @@ describe("shiftNToEndWith", () => {
     const len = 2;
     const n = 3;
     expect(shiftNToEndWith([1, 2, 3], len, n, () => 0).length).toBe(2);
+  });
+
+  test("shuffle", () => {
+    expect(cloneAndShuffle([])).toEqual([]);
+    expect(cloneAndShuffle([1])).toEqual([1]);
+
+    const originalLen2 = [1, 2];
+    const expectedLen2 = [2, 1];
+    const originalLen3 = [1, 2, 3];
+
+    for (let i = 0; i < 20; i++) {
+      expect(cloneAndShuffle(originalLen2)).toEqual(expectedLen2);
+      expect(cloneAndShuffle(originalLen3)).not.toEqual(originalLen3);
+    }
   });
 });
