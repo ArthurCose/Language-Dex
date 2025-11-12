@@ -61,10 +61,5 @@
     "experiments": {
       "typedRoutes": true
     }
-  },
-  "react-native-google-mobile-ads": {
-    "android_app_id": "ca-app-pub-1435328633777702~2026953023",
-    "ios_app_id": "",
-    "delay_app_measurement_init": true
   }
 }
