@@ -1,130 +1,49 @@
-import React, { useEffect } from "react";
-import { View } from "react-native";
-import mobileAds, {
-  AdsConsent,
-  AdsConsentInfo,
-  AdsConsentPrivacyOptionsRequirementStatus,
-  BannerAd,
-  BannerAdSize,
-  MaxAdContentRating,
-  TestIds,
-} from "react-native-google-mobile-ads";
-import { logError } from "../log";
-import { useTheme } from "../contexts/theme";
+import React, { useEffect, useState } from "react";
+import { log } from "../log";
 import { UserData } from "../data";
-import { useUserDataSignal } from "../contexts/user-data";
-import { useSignalLens } from "../hooks/use-signal";
 
-const devEnvironment = false;
-
-let isMobileAdsStartCalled = false;
-let adsConsentInfo: AdsConsentInfo | undefined;
-
-function handleConsentInfo(consentInfo: AdsConsentInfo) {
-  adsConsentInfo = consentInfo;
-
-  if (consentInfo.canRequestAds) {
-    startGoogleMobileAdsSDK().catch(logError);
-  }
-}
+const adsModule = import("./optional/ads").catch(() => {
+  log("Ads excluded from this build.");
+});
 
 export function initAds(userData: UserData) {
-  if (userData.removeAds) {
-    return;
-  }
-
-  // 1. Request consent information and load/present a consent form if necessary.
-  // 2. Check if you can initialize the Google Mobile Ads SDK in parallel
-  // using consent obtained in the previous session.
-  [
-    AdsConsent.gatherConsent({ tagForUnderAgeOfConsent: true }),
-    AdsConsent.getConsentInfo(),
-  ].forEach((result) => result.then(handleConsentInfo).catch(logError));
+  adsModule.then((adsModule) => {
+    if (adsModule) {
+      adsModule.initAds(userData);
+    }
+  });
 }
 
 export function showPrivacyOptionsForm() {
-  AdsConsent.showPrivacyOptionsForm().then(handleConsentInfo).catch(logError);
+  adsModule.then((adsModule) => {
+    if (adsModule) {
+      adsModule.showPrivacyOptionsForm();
+    }
+  });
 }
 
 export function isPrivacyOptionsFormRequired() {
-  return (
-    adsConsentInfo?.privacyOptionsRequirementStatus ==
-    AdsConsentPrivacyOptionsRequirementStatus.REQUIRED
-  );
-}
+  let result = false;
 
-async function startGoogleMobileAdsSDK() {
-  if (isMobileAdsStartCalled) return;
-  isMobileAdsStartCalled = true;
-
-  await mobileAds().setRequestConfiguration({
-    // Update all future requests suitable for parental guidance
-    maxAdContentRating: MaxAdContentRating.G,
-
-    // Indicates that you want your content treated as child-directed for purposes of COPPA.
-    tagForChildDirectedTreatment: true,
-
-    // Indicates that you want the ad request to be handled in a
-    // manner suitable for users under the age of consent.
-    tagForUnderAgeOfConsent: true,
+  adsModule.then((adsModule) => {
+    if (adsModule) {
+      result = adsModule.isPrivacyOptionsFormRequired();
+    }
   });
 
-  // (Optional, iOS) Handle Apple's App Tracking Transparency manually.
-  const gdprApplies = await AdsConsent.getGdprApplies();
-  const hasConsentForPurposeOne =
-    gdprApplies && (await AdsConsent.getPurposeConsents()).startsWith("1");
-
-  if (!gdprApplies || hasConsentForPurposeOne) {
-    // Request ATT...
-  }
-
-  // Initialize the Google Mobile Ads SDK.
-  await mobileAds().initialize();
-
-  // Request an ad...
+  return result;
 }
 
-export const PracticeAd = React.memo(
-  ({ onSizeChange }: { onSizeChange?: () => void }) => {
-    const theme = useTheme();
-    const userDataSignal = useUserDataSignal();
-    const removeAds = useSignalLens(userDataSignal, (data) => data.removeAds);
+export function PracticeAd({ onSizeChange }: { onSizeChange?: () => void }) {
+  const [node, setNode] = useState<React.ReactNode>(null);
 
-    useEffect(() => {
-      if (!adsConsentInfo?.canRequestAds || removeAds) {
-        onSizeChange?.();
+  useEffect(() => {
+    adsModule.then((adsModule) => {
+      if (adsModule) {
+        setNode(<adsModule.PracticeAd onSizeChange={onSizeChange} />);
       }
-    }, []);
+    });
+  }, [onSizeChange]);
 
-    if (!adsConsentInfo?.canRequestAds || removeAds) {
-      return;
-    }
-
-    return (
-      <View style={{ backgroundColor: theme.colors.borders }}>
-        <BannerAd
-          requestOptions={{
-            requestNonPersonalizedAdsOnly: true,
-            keywords: [
-              "education",
-              "learn",
-              "learning",
-              "language",
-              "words",
-              "word",
-              "game",
-              "practice",
-            ],
-          }}
-          onSizeChange={onSizeChange}
-          unitId={
-            devEnvironment || !isMobileAdsStartCalled
-              ? TestIds.BANNER
-              : "ca-app-pub-1435328633777702/8919664433"
-          }
-          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-        />
-      </View>
-    );
-  }
-);
+  return node;
+}

@@ -1,94 +1,56 @@
-import {
-  initConnection,
-  purchaseErrorListener,
-  purchaseUpdatedListener,
-  finishTransaction,
-  getAvailablePurchases,
-  MutationRequestPurchaseArgs,
-  requestPurchase,
-  fetchProducts,
-  ErrorCode,
-} from "react-native-iap";
-import { logError } from "./log";
+import { log, logError } from "./log";
 import { UserData } from "./data";
-import { Signal, useSignalValue } from "./hooks/use-signal";
+import { Signal } from "./hooks/use-signal";
 import { useEffect, useState } from "react";
 
-const REMOVE_ADS_PRODUCT_ID = "remove_ads";
-const ignoredErrors = [ErrorCode.UserCancelled, ErrorCode.NetworkError];
+let iap: typeof import("./optional/in-app-purchases") | null = null;
+const iapModule = import("./optional/in-app-purchases")
+  .then((module) => (iap = module))
+  .catch(() => {
+    log("IAP excluded from this build.");
+  });
 
-export function initInAppPurchases(userDataSignal: Signal<UserData>) {
-  const promise = (async function () {
-    await initConnection();
-    await restorePurchases(userDataSignal).catch(() => logError);
-
-    purchaseUpdatedListener((purchase) => {
-      const receipt = purchase.transactionId;
-
-      if (receipt != null) {
-        finishTransaction({ purchase, isConsumable: false })
-          .then(() =>
-            userDataSignal.set({ ...userDataSignal.get(), removeAds: true })
-          )
-          .catch(logError);
-      }
-    });
-
-    purchaseErrorListener((err) => {
-      if (err.code == undefined || !ignoredErrors.includes(err.code)) {
-        logError(err);
-      }
-    });
-
-    updateProducts();
-  })();
-
-  promise.catch(logError);
+export function isIapAvailable() {
+  return !!iap;
 }
 
-const canRequestAdRemovalSignal = new Signal(false);
-
-function updateProducts() {
-  fetchProducts({ skus: [REMOVE_ADS_PRODUCT_ID] })
-    .then((products) =>
-      canRequestAdRemovalSignal.set((products?.length ?? 0) > 0)
-    )
+export function initInAppPurchases(userDataSignal: Signal<UserData>) {
+  // reading from the promise, as we don't want to risk operation order bugs
+  iapModule
+    .then((module) => {
+      if (module) {
+        return module.initInAppPurchases(userDataSignal);
+      }
+    })
     .catch(logError);
 }
 
 export function useCanRequestAdRemoval() {
+  const [canRequest, setCanRequest] = useState(
+    iap?.canRequestAdRemovalSignal.get() ?? false
+  );
+
   useEffect(() => {
-    if (!canRequestAdRemovalSignal.get()) {
-      updateProducts();
+    const listener = (b: boolean) => setCanRequest(b);
+
+    if (iap) {
+      iap.canRequestAdRemovalSignal.subscribe(listener);
     }
+
+    return () => {
+      if (iap) {
+        iap.canRequestAdRemovalSignal.unsubscribe(listener);
+      }
+    };
   }, []);
 
-  return useSignalValue(canRequestAdRemovalSignal);
+  return canRequest;
 }
 
 export async function requestAdRemoval() {
-  const purchaseParams: MutationRequestPurchaseArgs = {
-    request: {
-      android: {
-        skus: [REMOVE_ADS_PRODUCT_ID],
-      },
-    },
-    type: "in-app",
-  };
+  const module = await iapModule;
 
-  requestPurchase(purchaseParams).catch(() => {});
-}
-
-async function restorePurchases(userDataSignal: Signal<UserData>) {
-  if (userDataSignal.get().removeAds) {
-    return;
-  }
-
-  const purchases = await getAvailablePurchases();
-
-  for (const purchase of purchases) {
-    if (purchase.productId == REMOVE_ADS_PRODUCT_ID) {
-      userDataSignal.set({ ...userDataSignal.get(), removeAds: true });
-    }
+  if (module) {
+    await module.requestAdRemoval();
   }
 }

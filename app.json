@@ -12,7 +12,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "dev.arthurcose.languagedex",
+      "package": "dev.arthurcose.languagedex.dev",
       "versionCode": 51,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -53,15 +53,6 @@
           }
         }
       ],
-      [
-        "react-native-google-mobile-ads",
-        {
-          "androidAppId": "ca-app-pub-1435328633777702~2026953023",
-          "iosAppId": "",
-          "delayAppMeasurementInit": true
-        }
-      ],
-      "react-native-iap",
       "expo-localization",
       "expo-sqlite",
       "expo-audio",

@@ -34,6 +34,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { bumpDictionaryVersion } from "@/lib/hooks/use-word-definitions";
 import RouteRoot from "@/lib/components/route-root";
 import {
+  isIapAvailable,
   requestAdRemoval,
   useCanRequestAdRemoval,
 } from "@/lib/in-app-purchases";
@@ -588,7 +589,7 @@ export default function () {
       <ScrollView>
         <CustomizationSection />
         <DictionariesSection longTaskSignal={longTaskSignal} />
-        <AdsSection longTaskSignal={longTaskSignal} />
+        {isIapAvailable() && <AdsSection longTaskSignal={longTaskSignal} />}
         <HelpSection />
         <DevelopmentSection longTaskSignal={longTaskSignal} />
         <NavigationBarSpacer />

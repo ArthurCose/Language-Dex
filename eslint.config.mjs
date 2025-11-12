@@ -5,7 +5,10 @@ import pluginReact from "eslint-plugin-react";
 
 export default tseslint.config([
   {
-    files: ["**/*.{js,ts,jsx,tsx}"],
+    ignores: ["**/*.js"],
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
   },
   { languageOptions: { globals: globals.browser } },
   pluginJs.configs.recommended,
@@ -14,7 +17,9 @@ export default tseslint.config([
   {
     languageOptions: {
       parserOptions: {
-        projectService: true,
+        projectService: {
+          allowDefaultProject: ["*.js"],
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -28,6 +33,7 @@ export default tseslint.config([
       "no-unused-private-class-members": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/require-await": "off",
+      "@typescript-eslint/ban-ts-comment": "off",
       "@typescript-eslint/strict-boolean-expressions": [
         "error",
         {
