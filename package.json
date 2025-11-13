@@ -3,13 +3,14 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-    "android": "APP_VARIANT=development expo prebuild -p android && expo run:android",
-    "build-android": "npm run licenses && expo prebuild -p android && cd android && dotenv -c -- ./gradlew app:bundleRelease && echo bundle saved to android/app/build/outputs/bundle/release",
+    "android": "APP_VARIANT=development npm run prebuild-android && expo run:android",
+    "build-android": "npm run licenses && npm run prebuild-android && cd android && dotenv -c -- ./gradlew app:bundleRelease && echo bundle saved to android/app/build/outputs/bundle/release",
     "ios": "expo run:ios",
     "web": "expo start --web",
     "go": "expo start --go",
     "test": "jest --watchAll",
     "lint": "expo lint",
+    "prebuild-android": "rimraf android/build; expo prebuild -p android",
     "licenses": "license-ripper --config license-ripper-config.json --output -licenses.json --compress; npx tsx scripts/license-post-rip.ts"
   },
   "dependencies": {
@@ -61,6 +62,7 @@
     "@eslint/js": "^9.19.0",
     "@jest/globals": "^29.7.0",
     "@types/react": "~19.1.10",
+    "dotenv-cli": "11",
     "eslint": "^9.19.0",
     "eslint-plugin-react": "^7.37.4",
     "globals": "^15.14.0",
@@ -69,10 +71,10 @@
     "metro-react-native-babel-transformer": "^0.77.0",
     "react-native-nitro-modules": "^0.31.5",
     "react-native-svg-transformer": "^1.5.0",
+    "rimraf": "^6.1.0",
     "tsx": "^4.19.2",
     "typescript": "~5.9.2",
-    "typescript-eslint": "^8.21.0",
-    "dotenv-cli": "11"
+    "typescript-eslint": "^8.21.0"
   },
   "private": true
 }
