@@ -1,4 +1,4 @@
-package dev.arthurcose.languagedex.dev
+package dev.arthurcose.languagedex
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

@@ -1,4 +1,4 @@
-package dev.arthurcose.languagedex.dev
+package dev.arthurcose.languagedex
 
 import android.app.Application
 import android.content.res.Configuration

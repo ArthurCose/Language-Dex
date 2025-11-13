@@ -12,7 +12,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "dev.arthurcose.languagedex.dev",
+      "package": "dev.arthurcose.languagedex",
       "versionCode": 51,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
