@@ -104,11 +104,6 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-    }
-    buildTypes {
-        debug {
-            signingConfig signingConfigs.debug
-        }
         release {
             if (System.getenv("UPLOAD_STORE_FILE") != null) {
                 println("Signing build...")
@@ -118,6 +113,14 @@ android {
                 keyAlias System.getenv("UPLOAD_KEY_ALIAS")
                 keyPassword System.getenv("UPLOAD_KEY_PASSWORD")
             }
+        }
+    }
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            signingConfig signingConfigs.release
         }
     }
     packagingOptions {
