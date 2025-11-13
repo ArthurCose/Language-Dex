@@ -95,14 +95,7 @@ export default function RootLayout() {
             <KeyboardDismisser>
               <Stack
                 screenOptions={{
-                  navigationBarColor:
-                    typeof theme.colors.bottomNav == "string"
-                      ? theme.colors.bottomNav
-                      : undefined,
-                  navigationBarTranslucent: EDGE_TO_EDGE,
-                  statusBarBackgroundColor: "transparent",
                   statusBarStyle: colorScheme == "light" ? "dark" : "light",
-                  statusBarTranslucent: true,
                   headerShown: false,
                   contentStyle: theme.styles.root,
                   animation: "fade",
