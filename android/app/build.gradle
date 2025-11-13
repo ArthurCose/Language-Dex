@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'dev.arthurcose.languagedex'
+    namespace 'dev.arthurcose.languagedex.dev'
     defaultConfig {
-        applicationId 'dev.arthurcose.languagedex'
+        applicationId 'dev.arthurcose.languagedex.dev'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 51
@@ -106,8 +106,6 @@ android {
         }
         release {
             if (System.getenv("UPLOAD_STORE_FILE") != null) {
-                println("Signing build...")
-
                 storeFile file(System.getenv("UPLOAD_STORE_FILE"))
                 storePassword System.getenv("UPLOAD_STORE_PASSWORD")
                 keyAlias System.getenv("UPLOAD_KEY_ALIAS")
