@@ -434,6 +434,23 @@ function DevelopmentSection({
         <Span style={styles.label}>{t("GitHub")}</Span>
       </Pressable>
 
+      {!isIapAvailable() && (
+        <>
+          <View style={theme.styles.separator} />
+
+          <Pressable
+            style={styles.row}
+            android_ripple={theme.ripples.transparentButton}
+            pointerEvents="box-only"
+            onPress={() => {
+              Linking.openURL("https://ko-fi.com/arthurcose").catch(logError);
+            }}
+          >
+            <Span style={styles.label}>{t("Ko-fi")}</Span>
+          </Pressable>
+        </>
+      )}
+
       <View style={theme.styles.separator} />
 
       <Pressable
