@@ -75,5 +75,14 @@
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.21.0"
   },
+  "expo": {
+    "autolinking": {
+      "android": {
+        "buildFromSource": [
+          ".*"
+        ]
+      }
+    }
+  },
   "private": true
 }
