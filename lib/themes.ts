@@ -292,8 +292,8 @@ export const themeConstructors: {
         hintScore: "#e8a200",
         ripples: {
           popup: "rgba(255,255,255,0.05)",
-          primaryButton: "rgba(255,255,255,0.3)",
-          transparentButton: "rgba(255,255,255,0.3)",
+          primaryButton: "rgba(255,255,255,0.2)",
+          transparentButton: "rgba(255,255,255,0.15)",
         },
       });
     }
@@ -319,9 +319,9 @@ export const themeConstructors: {
       definitionBorder: "#eeeef2",
       hintScore: "#ffb200",
       ripples: {
-        popup: "rgba(0,0,0,0.05)",
+        popup: "rgba(0,0,0,0.25)",
         primaryButton: "rgba(255,255,255,0.3)",
-        transparentButton: "rgba(0,0,0,0.3)",
+        transparentButton: "rgba(0,0,0,0.25)",
       },
     });
   },
