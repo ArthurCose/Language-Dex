@@ -14,9 +14,9 @@ import { useTranslation } from "react-i18next";
 import {
   ResultsClock,
   ResultsDialog,
+  ResultsHintScore,
   ResultsLabel,
   ResultsRow,
-  ResultsScore,
 } from "@/lib/components/practice/results";
 import { useUserDataSignal } from "@/lib/contexts/user-data";
 import { useSignalLens } from "@/lib/hooks/use-signal";
@@ -427,7 +427,7 @@ export default function () {
 
         <ResultsRow>
           <ResultsLabel>{t("Guesses")}</ResultsLabel>
-          <ResultsScore score={gameState.guesses.length} />
+          <ResultsHintScore score={gameState.guesses.length} />
         </ResultsRow>
       </ResultsDialog>
     </RouteRoot>

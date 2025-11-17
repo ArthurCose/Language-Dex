@@ -163,6 +163,10 @@ export function ConcedeIcon(props: IconProps) {
   return <MaterialDesignIcons name="flag-variant-outline" {...props} />;
 }
 
+export function ScoreIcon(props: IconProps) {
+  return <MaterialDesignIcons name="star-outline" {...props} />;
+}
+
 export function UnlockedIcon(props: IconProps) {
   return <MaterialDesignIcons name="lock-open-variant" {...props} />;
 }

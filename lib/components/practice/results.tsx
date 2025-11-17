@@ -1,9 +1,23 @@
 import { useTheme } from "@/lib/contexts/theme";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Pressable, Text, View, StyleSheet } from "react-native";
+import {
+  Pressable,
+  Text,
+  View,
+  StyleSheet,
+  TextStyle,
+  StyleProp,
+} from "react-native";
 import CatDialog from "../cat-dialog";
 import { useEffect, useState } from "react";
+import {
+  ConcedeIcon,
+  HintIcon,
+  IconProps,
+  ScoreIcon,
+  TimerIcon,
+} from "../icons";
 
 type ResultsDialogProps = {
   open: boolean;
@@ -77,32 +91,59 @@ export function ResultsLabel({ children }: React.PropsWithChildren) {
   return <Text style={[styles.label, theme.styles.text]}>{children}</Text>;
 }
 
+function ResultsIcon({
+  icon: Icon,
+  style,
+}: {
+  icon: React.FunctionComponent<IconProps>;
+  style: StyleProp<TextStyle>;
+}) {
+  return (
+    <Text style={style}>
+      <Icon size={26} />
+    </Text>
+  );
+}
+
 export function ResultsScore({ score }: { score: number }) {
   const theme = useTheme();
+  const textStyles = [styles.resultText, theme.styles.poppingText];
 
-  return <Text style={[styles.result, theme.styles.poppingText]}>{score}</Text>;
+  return (
+    <View style={styles.result}>
+      <Text style={textStyles}>{score}</Text>
+
+      <ResultsIcon icon={ScoreIcon} style={textStyles} />
+    </View>
+  );
 }
 
 export function ResultsHintScore({ score }: { score: number }) {
   const theme = useTheme();
+  const textStyles = [styles.resultText, theme.styles.hintScoreText];
 
   return (
-    <Text style={[styles.result, theme.styles.hintScoreText]}>{score}</Text>
+    <View style={styles.result}>
+      <Text style={textStyles}>{score}</Text>
+
+      <ResultsIcon icon={HintIcon} style={textStyles} />
+    </View>
   );
 }
 
 export function ResultsConcededScore({ score }: { score: number }) {
   const theme = useTheme();
+  const textStyles = [
+    styles.resultText,
+    score == 0 ? theme.styles.disabledText : theme.styles.text,
+  ];
 
   return (
-    <Text
-      style={[
-        styles.result,
-        score == 0 ? theme.styles.disabledText : theme.styles.text,
-      ]}
-    >
-      {score}
-    </Text>
+    <View style={styles.result}>
+      <Text style={textStyles}>{score}</Text>
+
+      <ResultsIcon icon={ConcedeIcon} style={textStyles} />
+    </View>
   );
 }
 
@@ -114,14 +155,19 @@ export function ResultsClock({
   maxSeconds: number;
 }) {
   const theme = useTheme();
+  const textStyles = [styles.resultText, theme.styles.disabledText];
 
   seconds = Math.min(Math.max(Math.ceil(seconds), 0), maxSeconds);
 
   return (
-    <Text style={[styles.result, theme.styles.disabledText]}>
-      {Math.floor(seconds / 60)}:{seconds % 60 < 10 ? "0" : ""}
-      {seconds % 60}
-    </Text>
+    <View style={styles.result}>
+      <Text style={textStyles}>
+        {Math.floor(seconds / 60)}:{seconds % 60 < 10 ? "0" : ""}
+        {seconds % 60}
+      </Text>
+
+      <ResultsIcon icon={TimerIcon} style={textStyles} />
+    </View>
   );
 }
 
@@ -146,10 +192,21 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    verticalAlign: "middle",
   },
   result: {
+    flexDirection: "row",
+    gap: 4,
+  },
+  resultText: {
     fontSize: 22,
     fontWeight: "bold",
+    textAlignVertical: "center",
+  },
+  resultIcon: {
+    textAlignVertical: "center",
   },
   buttons: {
     flexDirection: "row",
