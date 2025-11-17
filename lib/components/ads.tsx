@@ -119,6 +119,10 @@ export const PracticeAd = React.memo(
       TestIds == undefined ||
       BannerAdSize == undefined
     ) {
+      useEffect(() => {
+        onSizeChange?.();
+      }, []);
+
       return;
     }
 
