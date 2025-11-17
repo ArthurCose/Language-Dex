@@ -90,7 +90,9 @@ function Definition({
               <Span style={[styles.notes]}>{item.notes}</Span>
             )}
           </View>
+        </Pressable>
 
+        <View style={styles.zeroWidth}>
           <View style={styles.stickersContainer}>
             {item.confidence != 0 && (
               <ConfidenceIcon confidence={item.confidence} size={24} />
@@ -108,7 +110,7 @@ function Definition({
               />
             )}
           </View>
-        </Pressable>
+        </View>
       </View>
 
       <View style={theme.styles.separator} />
@@ -300,6 +302,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "stretch",
+    position: "relative",
   },
   definitionBlock: {
     padding: 8,
@@ -326,5 +329,14 @@ const styles = StyleSheet.create({
   stickersContainer: {
     flexDirection: "column",
     alignItems: "center",
+    position: "relative",
+    transform: [{ translateX: "-100%" }],
+    marginTop: 8,
+    marginBottom: 8,
+    gap: 2,
+    width: 56,
+  },
+  zeroWidth: {
+    width: 0,
   },
 });

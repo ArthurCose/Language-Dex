@@ -1,1 +1,2 @@
 - Fixed pronunciation recordings failing to save
+- Fixed unpressable pronunciation playback button in definition list
