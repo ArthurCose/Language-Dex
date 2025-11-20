@@ -85,6 +85,7 @@ yarn run android
 - `/lib`: Components and utility files
 - `/assets`: App assets (icons, splash screens)
 - `/licenses`: Extra license files for license-ripper
+- `/locales`: Localization files
 - `/scripts`: Tools and build scripts
 
 `@/` in `import` statements point to the project root. (`@/lib` points to `/lib`)
