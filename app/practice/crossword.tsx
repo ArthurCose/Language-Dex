@@ -405,32 +405,35 @@ export default function () {
                   : t("short_answer_mystery")}
               </Span>
 
-              <View style={styles.concedeButton}>
-                <IconButton
-                  icon={ConcedeIcon}
-                  disabled={gameState.board.words[hintIndex].conceded}
-                  onPress={() => {
-                    const updatedGameState = {
-                      ...gameState,
-                    };
-                    const word = updatedGameState.board.words[hintIndex];
-                    word.conceded = true;
-                    updatedGameState.conceded += 1;
+              {(!gameState.over ||
+                gameState.board.words[hintIndex].conceded) && (
+                <View style={styles.concedeButton}>
+                  <IconButton
+                    icon={ConcedeIcon}
+                    disabled={gameState.board.words[hintIndex].conceded}
+                    onPress={() => {
+                      const updatedGameState = {
+                        ...gameState,
+                      };
+                      const word = updatedGameState.board.words[hintIndex];
+                      word.conceded = true;
+                      updatedGameState.conceded += 1;
 
-                    setWordGuess(word.word);
+                      setWordGuess(word.word);
 
-                    for (let i = 0; i < word.cells.length; i++) {
-                      const cell =
-                        updatedGameState.board.cellMap[word.cells[i]];
-                      cell.submitted = cell.expected;
-                      cell.locked = true;
-                    }
+                      for (let i = 0; i < word.cells.length; i++) {
+                        const cell =
+                          updatedGameState.board.cellMap[word.cells[i]];
+                        cell.submitted = cell.expected;
+                        cell.locked = true;
+                      }
 
-                    testBoard(updatedGameState);
-                    setGameState(updatedGameState);
-                  }}
-                />
-              </View>
+                      testBoard(updatedGameState);
+                      setGameState(updatedGameState);
+                    }}
+                  />
+                </View>
+              )}
             </View>
 
             <ScrollView

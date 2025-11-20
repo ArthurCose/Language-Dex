@@ -1,1 +1,2 @@
 - Fixed Rush practice mode capping total time at 10s
+- Fixed Crossword's concede button pressable after the game ends
