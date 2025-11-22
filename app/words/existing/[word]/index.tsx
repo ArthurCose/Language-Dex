@@ -308,6 +308,8 @@ const styles = StyleSheet.create({
     padding: 8,
     flex: 1,
     flexDirection: "row",
+    // make room for the stickers container
+    paddingRight: 60,
   },
   definitionBody: {
     flex: 1,
