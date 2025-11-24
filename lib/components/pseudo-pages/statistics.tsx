@@ -149,7 +149,7 @@ function StatsBlock({ theme, userData }: { theme: Theme; userData: UserData }) {
       <View style={listBlockStyles}>
         <View style={styles.list}>
           <Span>
-            {t("Longest Word")}{" "}
+            {t("label", { label: t("Longest_Word") })}{" "}
             <Span style={theme.styles.poppingText}>
               {longestWord != undefined ? longestWord : t("NA")}
             </Span>
