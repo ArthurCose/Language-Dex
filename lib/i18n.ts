@@ -37,8 +37,9 @@ function flattenTranslations(translation: OrganizedTranslation) {
   const tasks = [translation];
 
   while (tasks.length > 0) {
+    const obj = tasks[0];
     tasks[0] = tasks[tasks.length - 1];
-    const obj = tasks.pop();
+    tasks.pop();
 
     for (const key in obj) {
       const value = obj[key];

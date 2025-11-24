@@ -25,7 +25,7 @@ export default function Tutorial({
   const userDataSignal = useUserDataSignal();
   const [t] = useTranslation();
   const [open, setOpen] = useState(true);
-  const [description, setDescription] = useState(t(tutorialSteps[0].textKey));
+  const [description, setDescription] = useState(tutorialSteps[0].textKey);
   const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {}, []);
@@ -47,14 +47,14 @@ export default function Tutorial({
     setCurrentPage(nextStep.page);
 
     setTimeout(() => {
-      setDescription(t(nextStep.textKey));
+      setDescription(nextStep.textKey);
       setOpen(true);
     }, 500);
   };
 
   return (
     <CatDialog open={open}>
-      <DialogDescription>{description}</DialogDescription>
+      <DialogDescription>{t(description)}</DialogDescription>
 
       <ConfirmationDialogActions>
         {stepIndex > 0 && (
