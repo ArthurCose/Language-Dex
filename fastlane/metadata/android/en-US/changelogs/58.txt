@@ -1,0 +1,2 @@
+- Fixed tutorial text failing to load
+- Fixed missing `:` after Longest Word in statistics
