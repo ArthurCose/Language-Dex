@@ -36,7 +36,8 @@ export default function ScanOutput({ text }: Props) {
   const [segments, setSegments] = useState<SegmentationResult[]>([]);
 
   useEffect(() => {
-    const segments = extractWords(text.toLowerCase());
+    const lowerCaseText = text.toLowerCase();
+    const segments = extractWords(lowerCaseText);
     setSegments(segments);
 
     // update statistics
@@ -82,12 +83,12 @@ export default function ScanOutput({ text }: Props) {
         for (const word of wordList) {
           // see if the input text matches the word
           const matchEndIndex = segment.rawIndex + word.length;
-          const matchSubstring = text.slice(
+          const matchSubstring = lowerCaseText.slice(
             segment.rawIndex,
             segment.rawIndex + word.length
           );
 
-          if (matchSubstring.toLowerCase() != word.toLowerCase()) {
+          if (matchSubstring != word.toLowerCase()) {
             continue;
           }
 
