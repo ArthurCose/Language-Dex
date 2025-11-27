@@ -1,2 +1,4 @@
 - Fixed tutorial text failing to load
 - Fixed missing `:` after Longest Word in statistics
+- Fixed Read tab treating known compound words as new words
+- Adjusted padding for spelling in definition bubbles
