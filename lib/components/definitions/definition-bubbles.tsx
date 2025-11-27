@@ -178,6 +178,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textAlignVertical: "center",
     paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   definitionBlock: {
     paddingVertical: 4,
