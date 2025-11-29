@@ -5,13 +5,13 @@ import { useTranslation } from "react-i18next";
 import { useTheme } from "@/lib/contexts/theme";
 import { useUserDataSignal } from "@/lib/contexts/user-data";
 import { useSignalLens } from "@/lib/hooks/use-signal";
-import CustomTextInput from "@/lib/components/custom-text-input";
-import { CloseIcon, ArrowUpIcon, ArrowDownIcon } from "../icons";
+import { ArrowUpIcon, ArrowDownIcon } from "../icons";
 import { listWords, wordOrderOptions } from "@/lib/data";
 import { Span } from "../text";
 import { router } from "expo-router";
 import { logError } from "@/lib/log";
 import { useDictionaryVersioning } from "@/lib/hooks/use-word-definitions";
+import SearchInput from "../search-input";
 
 const PART_OF_SPEECH_ALL = -1;
 const PART_OF_SPEECH_UNKNOWN = -2;
@@ -75,8 +75,9 @@ export default function Dictionary() {
   // resolve final word list
   const filteredWords = useMemo(() => {
     if (searchValue) {
+      const lowerCaseSearchValue = searchValue.toLowerCase();
       return allWords.filter((w) =>
-        w.toLowerCase().includes(searchValue.toLowerCase())
+        w.toLowerCase().startsWith(lowerCaseSearchValue)
       );
     }
 
@@ -195,20 +196,7 @@ export default function Dictionary() {
         style={[styles.optionsRows, theme.styles.backgroundDefinitionBorder]}
       >
         <View style={styles.optionsRow}>
-          <View style={[styles.searchBar, theme.styles.searchInputContainer]}>
-            <CustomTextInput
-              style={[styles.searchInput, theme.styles.searchInput]}
-              placeholder={t("search_placeholder")}
-              value={searchValue}
-              onChangeText={setSearchValue}
-            />
-
-            {searchValue && (
-              <Pressable onPress={() => setSearchValue("")}>
-                <CloseIcon size={24} color={theme.colors.text} />
-              </Pressable>
-            )}
-          </View>
+          <SearchInput value={searchValue} onChangeText={setSearchValue} />
         </View>
 
         <View style={[styles.optionsRow, styles.dropdownsRow]}>
@@ -276,19 +264,6 @@ const styles = StyleSheet.create({
     height: 44,
     marginTop: 0,
     flex: 0,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    height: 40,
-    paddingHorizontal: 16,
-  },
-  searchBar: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    paddingRight: 10,
   },
   optionsRows: {
     padding: 8,
