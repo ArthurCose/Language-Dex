@@ -30,17 +30,26 @@ type Props = {
 
 let idCounter = 0;
 
-export function DialogTitle({ children }: React.PropsWithChildren) {
+export function DialogHeader({
+  style,
+  children,
+}: { style?: StyleProp<ViewStyle> } & React.PropsWithChildren) {
   const theme = useTheme();
 
   return (
     <>
-      <View style={styles.header}>
-        <Span>{children}</Span>
-      </View>
+      <View style={[styles.header, style]}>{children}</View>
 
       <View style={theme.styles.separator} />
     </>
+  );
+}
+
+export function DialogTitle({ children }: React.PropsWithChildren) {
+  return (
+    <DialogHeader>
+      <Span style={styles.title}>{children}</Span>
+    </DialogHeader>
   );
 }
 
@@ -93,7 +102,7 @@ export default function Dialog({
       onClose();
       return true;
     }
-  }, [open]);
+  }, [open, onClose]);
 
   useEffect(() => {
     if (!open && closing.value) {
@@ -206,6 +215,10 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   header: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  title: {
     paddingHorizontal: 16,
     paddingVertical: 16,
   },
