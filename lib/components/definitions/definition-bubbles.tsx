@@ -14,6 +14,7 @@ import { router } from "expo-router";
 import { logError } from "@/lib/log";
 import { useTheme } from "@/lib/contexts/theme";
 import { Span } from "@/lib/components/text";
+import { NavigationBarSpacer } from "../system-bar-spacers";
 
 type DefinitionsBubbleProps = {
   text: string;
@@ -162,6 +163,8 @@ export function DefinitionsBubble({
               <Span>{t("Copy")}</Span>
             </Pressable>
           </View>
+
+          <NavigationBarSpacer />
         </DropDownPrimitive.Content>
       </DropDownPrimitive.Overlay>
     </DropDownPrimitive.Portal>
