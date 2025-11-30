@@ -12,7 +12,7 @@ import SearchInput from "../search-input";
 import useWordDefinitions from "@/lib/hooks/use-word-definitions";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "../icons";
 
-function ListWordDefinitions({
+function ListWordDefinitions<T extends { id: number }>({
   dictionaryId,
   spelling,
   selectedDefinitions,
@@ -20,7 +20,7 @@ function ListWordDefinitions({
 }: {
   dictionaryId: number;
   spelling: string;
-  selectedDefinitions: WordDefinitionData[];
+  selectedDefinitions: T[];
   onSelect: (definition: WordDefinitionData) => void;
 }) {
   const [t] = useTranslation();
@@ -82,29 +82,37 @@ function ListWordDefinitions({
   );
 }
 
-type Props = { open: boolean; onClose: () => void } & (
+type Props<T extends { id: number }> = {
+  open: boolean;
+  onClose: () => void;
+} & (
   | {
       multi?: false;
+      value?: T;
       onSelect: (definition: WordDefinitionData) => void;
     }
   | {
       multi: true;
-      onSelect: (definitions: WordDefinitionData[]) => void;
+      value?: T[];
+      onSelect: (definitions: (T | WordDefinitionData)[]) => void;
     }
 );
 
-export default function SearchWordDialog({
+export default function SearchWordDialog<T extends { id: number }>({
   open,
   multi,
+  value,
   onSelect,
   onClose,
-}: Props) {
+}: Props<T>) {
   const theme = useTheme();
   const [words, setWords] = useState<string[]>([]);
   const [filteredWords, setFilteredWords] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState("");
   const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
-  const [selectedList, setSelectedList] = useState<WordDefinitionData[]>([]);
+  const [selectedList, setSelectedList] = useState<(T | WordDefinitionData)[]>(
+    []
+  );
 
   const userDataSignal = useUserDataSignal();
   const activeDictionary = useSignalLens(
@@ -116,9 +124,14 @@ export default function SearchWordDialog({
   useEffect(() => {
     if (open) {
       setExpanded({});
-      setSelectedList([]);
     }
   }, [open]);
+
+  useEffect(() => {
+    if (multi && value) {
+      setSelectedList(value);
+    }
+  }, [multi, value]);
 
   // possibly causes a lag spike when loading definition editor
   // but prevents visual issues when opening the dialog
