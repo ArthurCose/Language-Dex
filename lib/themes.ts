@@ -56,6 +56,8 @@ type Palette = {
   body: string;
   bottomNav: string;
   popup: string;
+  popupInput: string;
+  popupExpanded: string;
   scanInput: string;
   gameListing: string;
   definitionBackground: string;
@@ -275,6 +277,8 @@ export const themeConstructors: {
         body: "#09090b",
         bottomNav: "#1a1a1f",
         popup: "#1f1f24",
+        popupInput: "#0005",
+        popupExpanded: "#00000038",
         scanInput: "#1a1a1f",
         definitionBackground: "#1a1a1f",
         gameListing: "transparent",
@@ -302,6 +306,8 @@ export const themeConstructors: {
       primary,
       body: "#eeeef2",
       popup: "white",
+      popupInput: "#dfdfe2",
+      popupExpanded: "#eeeef2",
       bottomNav: "white",
       scanInput: "#f5f5f7",
       gameListing: "#f5f5f7",

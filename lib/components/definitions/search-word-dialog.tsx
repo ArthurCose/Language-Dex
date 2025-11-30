@@ -37,7 +37,11 @@ function ListWordDefinitions<T extends { id: number }>({
     data.dictionaries.find((d) => d.id == dictionaryId)
   )!;
 
-  const buttonStyles = [styles.definitionButton, styles.row];
+  const buttonStyles = [
+    styles.definitionButton,
+    styles.row,
+    { backgroundColor: theme.colors.popupExpanded },
+  ];
 
   return (
     <>
@@ -210,7 +214,10 @@ export default function SearchWordDialog<T extends { id: number }>({
 
       <View style={styles.actions}>
         <SearchInput
-          style={styles.searchInput}
+          style={[
+            styles.searchInput,
+            { backgroundColor: theme.colors.popupInput },
+          ]}
           value={searchValue}
           onChangeText={setSearchValue}
         />
@@ -253,7 +260,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   searchInput: {
-    backgroundColor: "#0004",
     flex: 1,
   },
   confirm: {
@@ -264,7 +270,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   definitionButton: {
-    backgroundColor: "#0002",
     paddingVertical: 8,
     paddingLeft: 32,
     paddingRight: 16,
