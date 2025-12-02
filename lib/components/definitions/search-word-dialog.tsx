@@ -159,7 +159,16 @@ export default function SearchWordDialog<T extends { id: number }>({
   }, [words, searchValue]);
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog
+      open={open}
+      onClose={() => {
+        onClose();
+
+        if (multi && value) {
+          setSelectedList(value);
+        }
+      }}
+    >
       <VirtualizedList
         data={filteredWords}
         initialNumToRender={20}
