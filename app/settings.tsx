@@ -58,7 +58,7 @@ type LongTaskMeta = {
 
 function getColorSchemeText(
   t: TFunction<"translation", undefined>,
-  value?: UserData["colorScheme"]
+  value?: UserData["colorScheme"],
 ) {
   if (value == "light") {
     return t("Light");
@@ -73,7 +73,7 @@ const progressThrottleMs = 1000 / 60;
 
 function throttle<T extends any[]>(
   ms: number,
-  callback: (...args: T) => void
+  callback: (...args: T) => void,
 ): (...args: T) => void {
   let lastCall = 0;
 
@@ -216,7 +216,7 @@ function DictionariesSection({
                     messageSignal.set(t("importing_" + stage + "_stage"));
                   }
                   progressSignal.set(i / total);
-                }
+                },
               );
 
               importData(
@@ -225,7 +225,7 @@ function DictionariesSection({
                   userDataSignal.set(userData);
                 },
                 asset.uri,
-                progressCallback
+                progressCallback,
               )
                 .then(() => messageSignal.set(t("Success_exclamation")))
                 .catch((err) => {
@@ -271,7 +271,7 @@ function DictionariesSection({
                 messageSignal.set(t("exporting_" + stage + "_stage"));
               }
               progressSignal.set(i / total);
-            }
+            },
           );
 
           exportData(userData, value?.id, progressCallback)
@@ -362,7 +362,7 @@ function AdsSection({
         pointerEvents="box-only"
         onPress={() => {
           Linking.openURL(
-            "https://arthurcose.dev/legal/language-dex/privacy-policy.html"
+            "https://arthurcose.dev/legal/language-dex/privacy-policy.html",
           ).catch(logError);
         }}
       >
@@ -426,7 +426,7 @@ function DevelopmentSection({
         pointerEvents="box-only"
         onPress={() => {
           Linking.openURL("https://github.com/arthurcose/language-dex").catch(
-            logError
+            logError,
           );
         }}
       >
@@ -480,6 +480,17 @@ function DevelopmentSection({
             style={styles.row}
             android_ripple={theme.ripples.transparentButton}
             pointerEvents="box-only"
+            onPress={() => router.navigate("/table-viewer")}
+          >
+            <Span style={styles.label}>View Tables</Span>
+          </Pressable>
+
+          <View style={theme.styles.separator} />
+
+          <Pressable
+            style={styles.row}
+            android_ripple={theme.ripples.transparentButton}
+            pointerEvents="box-only"
             onPress={() => {
               const totalWords = 5000;
 
@@ -517,7 +528,7 @@ function DevelopmentSection({
                 progressThrottleMs,
                 (i: number) => {
                   progressSignal.set(i / totalWords);
-                }
+                },
               );
 
               const longTask = async () => {
@@ -527,7 +538,7 @@ function DevelopmentSection({
 
                   for (let j = 0; j < length; j++) {
                     chars.push(
-                      String.fromCharCode(Math.floor(Math.random() * 26) + 65)
+                      String.fromCharCode(Math.floor(Math.random() * 26) + 65),
                     );
                   }
 
@@ -610,7 +621,7 @@ export default function () {
         completedSignal: new Signal(false),
         messageSignal: new Signal(""),
         progressSignal: new Signal<undefined | number>(0),
-      })
+      }),
   );
 
   return (
