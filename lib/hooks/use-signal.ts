@@ -51,6 +51,8 @@ export function useSignalValue<T>(signal: Signal<T>) {
   const [_, setValue] = useState(value);
 
   useEffect(() => {
+    setValue(signal.get());
+
     signal.subscribe(setValue);
 
     return () => {
