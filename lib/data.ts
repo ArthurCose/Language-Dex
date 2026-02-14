@@ -60,7 +60,7 @@ export type DictionaryData = {
 
 export function namePartOfSpeech(
   dictionary: DictionaryData | undefined,
-  id?: number | null
+  id?: number | null,
 ) {
   if (id == undefined) {
     return;
@@ -93,14 +93,14 @@ export type UserData = {
 // shallow clone userData, userData.dictionaries, and the active dictionary in the dictionary list
 export function prepareDictionaryUpdate(
   userData: UserData,
-  dictionaryId?: number
+  dictionaryId?: number,
 ): [UserData, DictionaryData] {
   dictionaryId = dictionaryId ?? userData.activeDictionary;
 
   userData = { ...userData };
   userData.dictionaries = [...userData.dictionaries];
   const dictionaryIndex = userData.dictionaries.findIndex(
-    (d) => d.id == dictionaryId
+    (d) => d.id == dictionaryId,
   );
 
   const updatedDictionary = { ...userData.dictionaries[dictionaryIndex] };
@@ -111,7 +111,7 @@ export function prepareDictionaryUpdate(
 
 export function updateStatistics(
   data: UserData,
-  callback: (stats: DictionaryStats) => void
+  callback: (stats: DictionaryStats) => void,
 ): UserData {
   let dictionary;
   [data, dictionary] = prepareDictionaryUpdate(data);
@@ -129,7 +129,7 @@ export function updateStatistics(
 
 export function resolveStatIncrease(
   hasNow: boolean,
-  hadBefore: boolean
+  hadBefore: boolean,
 ): number {
   if (hasNow == hadBefore) {
     // didn't change
@@ -268,7 +268,7 @@ export async function deleteDictionary(id: number) {
     "SELECT pronunciationAudio FROM word_definition_data WHERE dictionaryId = $dictionaryId",
     {
       $dictionaryId: id,
-    }
+    },
   );
 
   for await (const row of results) {
@@ -284,11 +284,11 @@ export async function deleteDictionary(id: number) {
   // delete words
   await db.runAsync(
     "DELETE FROM word_definition_data WHERE dictionaryId = $dictionaryId",
-    { $dictionaryId: id }
+    { $dictionaryId: id },
   );
   await db.runAsync(
     "DELETE FROM word_shared_data WHERE dictionaryId = $dictionaryId",
-    { $dictionaryId: id }
+    { $dictionaryId: id },
   );
   // await db.runAsync(
   //   "DELETE FROM scan_history WHERE dictionaryId = $dictionaryId",
@@ -300,13 +300,13 @@ export async function deleteDictionary(id: number) {
 
 export async function deletePartOfSpeech(
   dictionaryId: number,
-  partOfSpeech: number
+  partOfSpeech: number,
 ) {
   log("Deleting Part of Speech...");
 
   await db.runAsync(
     "UPDATE word_definition_data SET partOfSpeech = NULL WHERE dictionaryId = $dictionaryId AND partOfSpeech = $partOfSpeech",
-    { $dictionaryId: dictionaryId, $partOfSpeech: partOfSpeech }
+    { $dictionaryId: dictionaryId, $partOfSpeech: partOfSpeech },
   );
 
   log("Delete Complete!");
@@ -337,7 +337,7 @@ export async function isValidWord(dictionaryId: number, word: string) {
     {
       $dictionaryId: dictionaryId,
       $spelling: word.toLowerCase(),
-    }
+    },
   );
 
   return result != null && result["COUNT(*)"] != 0;
@@ -351,7 +351,7 @@ export async function listGameWords(
     minLength?: number;
     limit?: number;
     requirePronunciation?: boolean;
-  }
+  },
 ) {
   const params: SQLite.SQLiteBindParams = {
     $dictionaryId: dictionaryId,
@@ -384,7 +384,7 @@ export async function listGameWords(
 
   return await db.getAllAsync<{ spelling: string; orderKey: number }>(
     query.join(" "),
-    params
+    params,
   );
 }
 
@@ -398,7 +398,7 @@ export async function listWords(
     belowMaxConfidence?: boolean;
     startsWith?: string;
     limit?: number;
-  }
+  },
 ) {
   // build query
   const query = ["SELECT word.spelling FROM word_shared_data word"];
@@ -406,7 +406,7 @@ export async function listWords(
 
   if (options.partOfSpeech !== undefined) {
     query.push(
-      "INNER JOIN word_definition_data ON word_definition_data.sharedId = word.id"
+      "INNER JOIN word_definition_data ON word_definition_data.sharedId = word.id",
     );
   }
 
@@ -456,7 +456,7 @@ export async function listWords(
   switch (options.orderBy) {
     case "confidence":
       query.push(
-        `ORDER BY word.minConfidence ${ordering}, word.latestAt ${invOrdering}`
+        `ORDER BY word.minConfidence ${ordering}, word.latestAt ${invOrdering}`,
       );
       break;
     case "latest":
@@ -464,7 +464,7 @@ export async function listWords(
       break;
     case "longest":
       query.push(
-        `ORDER BY word.graphemeCount ${ordering}, word.spelling ${ordering}`
+        `ORDER BY word.graphemeCount ${ordering}, word.spelling ${ordering}`,
       );
       break;
     default:
@@ -478,7 +478,7 @@ export async function listWords(
 
   const results = await db.getAllAsync<{ spelling: string }>(
     query.join(" "),
-    bindParams
+    bindParams,
   );
 
   const output: string[] = [];
@@ -492,13 +492,13 @@ export async function listWords(
 
 export async function getWordDefinitions(
   dictionaryId: number,
-  lowerCaseSpelling: string
+  lowerCaseSpelling: string,
 ) {
   const definitions: WordDefinitionData[] = [];
 
   const wordResult = await db.getFirstAsync<{ id: number; spelling: string }>(
     "SELECT id, spelling FROM word_shared_data WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $spelling",
-    { $dictionaryId: dictionaryId, $spelling: lowerCaseSpelling }
+    { $dictionaryId: dictionaryId, $spelling: lowerCaseSpelling },
   );
 
   if (!wordResult) {
@@ -509,7 +509,7 @@ export async function getWordDefinitions(
     "SELECT * FROM word_definition_data WHERE sharedId = $id",
     {
       $id: wordResult.id,
-    }
+    },
   );
 
   for await (const row of results) {
@@ -524,7 +524,7 @@ export async function getWordDefinitions(
 async function getOrCreateWordId(
   dictionaryId: number,
   word: string,
-  options?: { confidence: number; time: number }
+  options?: { confidence: number; time: number },
 ) {
   const lowerCaseWord = word.toLowerCase();
 
@@ -533,7 +533,7 @@ async function getOrCreateWordId(
     {
       $lowerCase: lowerCaseWord,
       $dictionaryId: dictionaryId,
-    }
+    },
   );
 
   if (wordRow) {
@@ -570,7 +570,7 @@ async function getOrCreateWordId(
       $latestAt: time,
       $createdAt: time,
       $updatedAt: time,
-    }
+    },
   );
 
   return result.lastInsertRowId;
@@ -593,14 +593,14 @@ async function updateSharedData(sharedId: number) {
     "MAX(createdAt)": number;
   }>(
     "SELECT MIN(confidence), MAX(createdAt) FROM word_definition_data WHERE sharedId = $sharedId",
-    { $sharedId: sharedId }
+    { $sharedId: sharedId },
   );
 
   const spellingResult = await db.getFirstAsync<{
     spelling: string;
   }>(
     "SELECT spelling FROM word_definition_data WHERE sharedId = $sharedId AND orderKey = 0",
-    { $sharedId: sharedId }
+    { $sharedId: sharedId },
   );
 
   await db.runAsync(
@@ -610,14 +610,14 @@ async function updateSharedData(sharedId: number) {
       $spelling: spellingResult?.spelling ?? sharedDataResult.spelling,
       $minConfidence: statsResult?.["MIN(confidence)"] ?? 0,
       $latestAt: statsResult?.["MAX(createdAt)"] ?? sharedDataResult.createdAt,
-    }
+    },
   );
 }
 
 async function resolveNewOrderKey(sharedId: number) {
   const countResult = await db.getFirstAsync<{ "COUNT(*)": number }>(
     "SELECT COUNT(*) FROM word_definition_data WHERE sharedId = $sharedId",
-    { $sharedId: sharedId }
+    { $sharedId: sharedId },
   );
 
   return countResult?.["COUNT(*)"] ?? 0;
@@ -625,7 +625,7 @@ async function resolveNewOrderKey(sharedId: number) {
 
 export async function upsertDefinition(
   dictionaryId: number,
-  definition: WordDefinitionUpsertData
+  definition: WordDefinitionUpsertData,
 ) {
   log("Upserting Definition...");
 
@@ -689,7 +689,7 @@ export async function upsertDefinition(
         setList.map((k) => k + " = $" + k).join(", "),
         "WHERE id = $id",
       ].join(" "),
-      params
+      params,
     );
 
     // update old shared data to complete switching words
@@ -720,7 +720,7 @@ export async function upsertDefinition(
         setList.map((k) => "$" + k).join(", "),
         ")",
       ].join(" "),
-      params
+      params,
     );
 
     log("Upsert Complete!");
@@ -730,14 +730,14 @@ export async function upsertDefinition(
 
 export async function updateDefinitionOrderKey(
   definitionData: WordDefinitionData,
-  orderKey: number
+  orderKey: number,
 ) {
   await db.runAsync(
     "UPDATE word_definition_data SET orderKey = $orderKey WHERE id = $id",
     {
       $id: definitionData.id,
       $orderKey: orderKey,
-    }
+    },
   );
 
   if (orderKey == 0) {
@@ -746,7 +746,7 @@ export async function updateDefinitionOrderKey(
       {
         $id: definitionData.sharedId,
         $spelling: definitionData.spelling,
-      }
+      },
     );
   }
 }
@@ -757,7 +757,7 @@ async function shiftOrderKeys(sharedId: number, greaterThanOrderKey: number) {
     {
       $sharedId: sharedId,
       $orderKey: greaterThanOrderKey,
-    }
+    },
   );
 }
 
@@ -772,7 +772,7 @@ export async function deleteDefinition(id: number) {
     "SELECT sharedId,orderKey,pronunciationAudio FROM word_definition_data WHERE id = $id",
     {
       $id: id,
-    }
+    },
   );
 
   if (!result) {
@@ -800,7 +800,7 @@ export async function deleteDefinition(id: number) {
 
 export async function prepareNewPronunciation(
   definitionData?: WordDefinitionData,
-  uri?: string | null
+  uri?: string | null,
 ) {
   let pronunciationAudio = definitionData?.pronunciationAudio ?? null;
   const prevPronunciationUri = getFileObjectPath(pronunciationAudio);
@@ -854,7 +854,7 @@ export async function deleteWord(dictionaryId: number, word: string) {
 
   const result = await db.getFirstAsync<{ id: number }>(
     "SELECT id FROM word_shared_data WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $lowerCase",
-    { $dictionaryId: dictionaryId, $lowerCase: word }
+    { $dictionaryId: dictionaryId, $lowerCase: word },
   );
 
   if (!result) {
@@ -865,7 +865,7 @@ export async function deleteWord(dictionaryId: number, word: string) {
 
   const rows = db.getEachAsync<{ pronunciationAudio?: string }>(
     "SELECT pronunciationAudio FROM word_definition_data WHERE sharedId = $sharedId",
-    { $sharedId: sharedId }
+    { $sharedId: sharedId },
   );
 
   for await (const row of rows) {
@@ -874,7 +874,7 @@ export async function deleteWord(dictionaryId: number, word: string) {
 
   await db.runAsync(
     "DELETE FROM word_definition_data WHERE sharedId = $sharedId",
-    { $sharedId: sharedId }
+    { $sharedId: sharedId },
   );
 
   await db.runAsync("DELETE FROM word_shared_data WHERE id = $id", {
@@ -887,7 +887,7 @@ export async function deleteWord(dictionaryId: number, word: string) {
 // data in files
 
 export async function loadUserData(
-  translate: (s: string) => string
+  translate: (s: string) => string,
 ): Promise<UserData> {
   await initDb();
 
@@ -964,15 +964,15 @@ async function recalculateWordStatistics(data: UserData) {
       {
         $maxConfidence: maxConfidence,
         $id: dictionary.id,
-      }
+      },
     );
     const exampleResult = await db.getFirstAsync<{ [key: string]: number }>(
       "SELECT COUNT(*) FROM word_definition_data WHERE dictionaryId = $id AND example != ''",
-      { $id: dictionary.id }
+      { $id: dictionary.id },
     );
     const result = await db.getFirstAsync<{ [key: string]: number }>(
       "SELECT COUNT(*), COUNT(pronunciationAudio) FROM word_definition_data WHERE dictionaryId = $id",
-      { $id: dictionary.id }
+      { $id: dictionary.id },
     );
 
     if (!result) {
@@ -1001,7 +1001,7 @@ const FILE_OBJECT_DIR = FileSystem.documentDirectory + "file-objects/";
 function saveFileObject(id: string, data: any) {
   return FileSystem.writeAsStringAsync(
     FILE_OBJECT_DIR + id,
-    JSON.stringify(data)
+    JSON.stringify(data),
   );
 }
 
@@ -1067,7 +1067,7 @@ export type ExportImportStage = "metadata" | "words" | "definitions";
 async function extractCount(
   db: SQLite.SQLiteDatabase,
   query: string,
-  params?: SQLite.SQLiteBindParams
+  params?: SQLite.SQLiteBindParams,
 ) {
   const result = params
     ? await db.getFirstAsync<{ "COUNT(*)": number }>(query, params)
@@ -1079,7 +1079,11 @@ async function extractCount(
 export async function exportData(
   userData: UserData,
   dictionaryId: number | undefined,
-  progressCallback: (stage: ExportImportStage, i: number, total: number) => void
+  progressCallback: (
+    stage: ExportImportStage,
+    i: number,
+    total: number,
+  ) => void,
 ) {
   log("Exporting Data...");
   const startTime = performance.now();
@@ -1143,7 +1147,7 @@ CREATE TABLE files (
       {
         $key: "version",
         $data: userData.version,
-      }
+      },
     );
 
     // load dictionary meta data
@@ -1159,7 +1163,7 @@ CREATE TABLE files (
             name: dictionary.name,
             partsOfSpeech: dictionary.partsOfSpeech,
           }),
-        }
+        },
       );
     }
 
@@ -1167,7 +1171,7 @@ CREATE TABLE files (
     async function copyTable(
       stage: ExportImportStage,
       table: string,
-      keys: string[]
+      keys: string[],
     ) {
       const sourceCountQuery = ["SELECT COUNT(*) FROM ", table];
       const sourceQuery = ["SELECT", keys.join(", "), "FROM", table];
@@ -1182,15 +1186,15 @@ CREATE TABLE files (
       const sourceTotal = await extractCount(
         db,
         sourceCountQuery.join(" "),
-        sourceParams
+        sourceParams,
       );
       const sourceResults = db.getEachAsync<{ [key: string]: unknown }>(
         sourceQuery.join(" "),
-        sourceParams
+        sourceParams,
       );
 
       const insertQuery = `INSERT INTO ${table} (${keys.join(
-        ", "
+        ", ",
       )}) VALUES (${keys.map((k) => "$" + k).join(", ")})`;
 
       const bindParams: { [key: string]: any } = {};
@@ -1275,7 +1279,11 @@ export async function importData(
   userData: UserData,
   saveUserData: (userData: UserData) => void,
   uri: string,
-  progressCallback: (stage: ExportImportStage, i: number, total: number) => void
+  progressCallback: (
+    stage: ExportImportStage,
+    i: number,
+    total: number,
+  ) => void,
 ) {
   log("Importing Data...");
   const startTime = performance.now();
@@ -1315,7 +1323,7 @@ export async function importData(
         partsOfSpeech: data.partsOfSpeech,
         nextPartOfSpeechId: data.partsOfSpeech.reduce(
           (acc, p) => Math.max(acc, p.id + 1),
-          0
+          0,
         ),
         stats: {},
       };
@@ -1358,12 +1366,12 @@ export async function importData(
     async function bulkInsert(
       table: string,
       keys: string[],
-      callback: (statement: SQLite.SQLiteStatement) => Promise<void>
+      callback: (statement: SQLite.SQLiteStatement) => Promise<void>,
     ) {
       const statement = await db.prepareAsync(
         `INSERT INTO ${table} (${keys.join(", ")}) VALUES (${keys
           .map((k) => "$" + k)
-          .join(", ")})`
+          .join(", ")})`,
       );
 
       try {
@@ -1376,7 +1384,7 @@ export async function importData(
     // load words
     const totalWords = await extractCount(
       importDb,
-      "SELECT COUNT(*) FROM word_shared_data"
+      "SELECT COUNT(*) FROM word_shared_data",
     );
 
     const wordResults = importDb.getEachAsync<{
@@ -1426,13 +1434,13 @@ export async function importData(
 
           progressCallback("words", i, totalWords);
         }
-      }
+      },
     );
 
     // load definitions
     const totalDefinitions = await extractCount(
       importDb,
-      "SELECT COUNT(*) FROM word_definition_data"
+      "SELECT COUNT(*) FROM word_definition_data",
     );
 
     const definitionResults = importDb.getEachAsync<{
@@ -1497,7 +1505,7 @@ export async function importData(
 
           progressCallback("definitions", i, totalDefinitions);
         }
-      }
+      },
     );
 
     log(`Import completed in ${performance.now() - startTime}ms`);
@@ -1517,7 +1525,7 @@ function explainQueryPlan(queryString: string) {
       console.log(
         queryString,
         "\n  ",
-        results.map((value) => JSON.stringify(value)).join("\n   ")
+        results.map((value) => JSON.stringify(value)).join("\n   "),
       );
     })
     .catch(logError);
