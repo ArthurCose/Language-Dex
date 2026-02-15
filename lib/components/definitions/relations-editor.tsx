@@ -34,8 +34,17 @@ import IconButton from "../icon-button";
 import { CloseIcon, UnlinkIcon } from "../icons";
 import { logError } from "@/lib/log";
 import { useTheme } from "@/lib/contexts/theme";
-import { createSetFromMapped } from "@/lib/structures/existence-set";
+import {
+  addMappedToSet,
+  createSetFromMapped,
+} from "@/lib/structures/existence-set";
 import { findAndSwapRemove } from "@/lib/structures/array";
+
+function ifTruthy<T>(condition: any, v: T) {
+  if (condition) {
+    return v;
+  }
+}
 
 function RelationList({
   style,
@@ -51,7 +60,7 @@ function RelationList({
   backgroundColor: ColorValue;
   definitionMap: DefinitionMap;
   words: RelationWord[];
-  setWords: (words: RelationWord[]) => void;
+  setWords?: (words: RelationWord[]) => void;
   onAdd?: () => void;
 }) {
   const theme = useTheme();
@@ -84,9 +93,13 @@ function RelationList({
                 definition={definition}
                 readOnly
                 contrast
-                onRemove={() => {
-                  setWords(words.filter((w) => w.id != word.id));
-                }}
+                onRemove={
+                  setWords
+                    ? () => {
+                        setWords(words.filter((w) => w.id != word.id));
+                      }
+                    : undefined
+                }
                 close={() => {
                   setSelectedWord(null);
                   triggerRef.current?.close();
@@ -472,8 +485,10 @@ export function RelationsEditor({
             backgroundColor={colors.correct.backgroundColor}
             definitionMap={definitionMap}
             words={synonyms}
-            setWords={(words) => data.updateWords("Synonyms", words)}
-            onAdd={() => setSearchOpen(true)}
+            setWords={ifTruthy(!loadingWords, (words) =>
+              data.updateWords("Synonyms", words),
+            )}
+            onAdd={ifTruthy(!loadingWords, () => setSearchOpen(true))}
           />
         )}
 
@@ -484,8 +499,10 @@ export function RelationsEditor({
             definitionMap={definitionMap}
             backgroundColor={colors.mistake.backgroundColor}
             words={antonyms}
-            setWords={(words) => data.updateWords("Antonyms", words)}
-            onAdd={() => setSearchOpen(true)}
+            setWords={ifTruthy(!loadingWords, (words) =>
+              data.updateWords("Antonyms", words),
+            )}
+            onAdd={ifTruthy(!loadingWords, () => setSearchOpen(true))}
           />
         )}
 
