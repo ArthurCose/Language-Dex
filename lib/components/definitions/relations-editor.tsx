@@ -125,7 +125,7 @@ function sortWords(words: RelationWord[]) {
 }
 
 type TabName = "Synonyms" | "Antonyms";
-type RelationEditorWord = {
+export type RelationEditorSynonym = {
   id: number;
   spelling: string;
   synonymsId?: number | null;
@@ -136,8 +136,8 @@ export class RelationsEditorData {
   synonymsId: Signal<number | null | undefined>;
   unlinkedSynonymsId?: number | null;
   antonymsId?: number | null;
-  synonyms: Signal<RelationEditorWord[]>;
-  antonyms: Signal<RelationEditorWord[]>;
+  synonyms: Signal<RelationEditorSynonym[]>;
+  antonyms: Signal<RelationEditorSynonym[]>;
   totalLoading: Signal<number>;
   modified: Signal<boolean>;
   loadedSynonymClusters: Set<number>;
@@ -159,10 +159,15 @@ export class RelationsEditorData {
 
       // load synonyms
       listWordsInSynonymCluster(synonymsId)
-        .then((words) => {
+        .then((words: RelationEditorSynonym[]) => {
           // remove ourself from the synonym list
           findAndSwapRemove(words, (word) => word.id == this.definitionId);
           sortWords(words);
+
+          for (const word of words) {
+            word.synonymsId = synonymsId;
+          }
+
           this.synonyms.set(words);
         })
         .catch(logError)
@@ -172,23 +177,31 @@ export class RelationsEditorData {
       getClusterAntonymsId(synonymsId)
         .then((clusterId) => {
           if (clusterId == null) {
-            return [];
+            this.antonyms.set([]);
+            return;
           }
 
           this.antonymsId = clusterId;
           this.loadedSynonymClusters.add(clusterId);
-          return listWordsInSynonymCluster(clusterId);
-        })
-        .then((words) => {
-          sortWords(words);
-          this.antonyms.set(words);
+
+          return listWordsInSynonymCluster(clusterId).then(
+            (words: RelationEditorSynonym[]) => {
+              sortWords(words);
+
+              for (const word of words) {
+                word.synonymsId = clusterId;
+              }
+
+              this.antonyms.set(words);
+            },
+          );
         })
         .catch(logError)
         .finally(() => this.totalLoading.subtract(1));
     }
   }
 
-  updateWords(tab: TabName, words: RelationEditorWord[]) {
+  updateWords(tab: TabName, words: RelationEditorSynonym[]) {
     this.modified.set(true);
 
     let appendSignal = this.synonyms;
@@ -220,11 +233,12 @@ export class RelationsEditorData {
 
       // load synonyms
       const promise = listWordsInSynonymCluster(synonymsId).then(
-        (clusterWords) => {
+        (clusterWords: RelationEditorSynonym[]) => {
           for (const word of clusterWords) {
             if (!wordSet.has(word.id)) {
               wordSet.add(word.id);
               words.push(word);
+              word.synonymsId = synonymsId;
             }
           }
         },
@@ -240,12 +254,14 @@ export class RelationsEditorData {
           return;
         }
 
-        const clusterWords = await listWordsInSynonymCluster(antonymsId);
+        const clusterWords: RelationEditorSynonym[] =
+          await listWordsInSynonymCluster(antonymsId);
 
         for (const word of clusterWords) {
           if (!wordSet.has(word.id)) {
             wordSet.add(word.id);
             antonyms.push(word);
+            word.synonymsId = antonymsId;
           }
         }
       };
@@ -303,7 +319,7 @@ export class RelationsEditorData {
   async #saveSynonymCluster(
     clusterId: number | null | undefined,
     antonymsId: number | null | undefined,
-    words: RelationEditorWord[],
+    words: RelationEditorSynonym[],
   ): Promise<number> {
     if (clusterId == null) {
       clusterId = await createSynonymCluster(antonymsId);
@@ -334,7 +350,7 @@ export class RelationsEditorData {
     return clusterId;
   }
 
-  async save(definition: RelationEditorWord) {
+  async save(definition: RelationEditorSynonym) {
     this.modified.set(false);
 
     await this.#saveClusters(definition);
@@ -352,7 +368,7 @@ export class RelationsEditorData {
     }
   }
 
-  async #saveClusters(definition: RelationEditorWord) {
+  async #saveClusters(definition: RelationEditorSynonym) {
     const synonyms = [...this.synonyms.get()];
     const antonyms = this.antonyms.get();
     const creatingAntonyms = this.antonymsId == null && antonyms.length > 0;
@@ -488,7 +504,7 @@ export function RelationsEditor({
         </View>
       </View>
 
-      <SearchWordDialog<RelationEditorWord>
+      <SearchWordDialog<RelationEditorSynonym>
         open={searchOpen}
         multi
         value={tab == "Synonyms" ? synonyms : antonyms}
