@@ -330,23 +330,6 @@ export class RelationsEditorData {
 
     await Promise.all(words.map((w) => setSynonymCluster(w, clusterId)));
 
-    // delete external clusters that we've fully taken words from
-    const checkedEmpty = new Set();
-
-    for (const word of words) {
-      if (
-        word.synonymsId == clusterId ||
-        word.synonymsId == null ||
-        checkedEmpty.has(word.synonymsId)
-      ) {
-        continue;
-      }
-
-      checkedEmpty.add(word.synonymsId);
-      await deleteEmptySynonymCluster(word.synonymsId);
-      word.synonymsId = clusterId;
-    }
-
     return clusterId;
   }
 
@@ -398,6 +381,11 @@ export class RelationsEditorData {
     // add ourself to the synonym cluster
     synonyms.push(definition);
 
+    // track prev clusters for cleanup before we update anything
+    const prevClusters = createSetFromMapped(synonyms, (w) => w.synonymsId);
+    addMappedToSet(prevClusters, antonyms, (w) => w.synonymsId);
+
+    // save synonyms
     synonymsId = await this.#saveSynonymCluster(
       synonymsId,
       this.antonymsId,
@@ -406,6 +394,7 @@ export class RelationsEditorData {
 
     this.synonymsId.set(synonymsId);
 
+    // save antonyms
     if (antonyms.length > 0 || this.antonymsId != null) {
       this.antonymsId = await this.#saveSynonymCluster(
         this.antonymsId,
@@ -417,7 +406,14 @@ export class RelationsEditorData {
         // antonymsId didn't exist when creating the synonym cluster
         await setClusterAntonyms(synonymsId, this.antonymsId);
       } else if (antonyms.length == 0) {
-        await deleteEmptySynonymCluster(this.antonymsId);
+        prevClusters.add(this.antonymsId);
+      }
+    }
+
+    // delete clusters that we've fully taken words from
+    for (const clusterId of prevClusters.values()) {
+      if (clusterId != null) {
+        await deleteEmptySynonymCluster(clusterId);
       }
     }
   }
