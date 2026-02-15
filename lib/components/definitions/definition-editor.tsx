@@ -126,7 +126,7 @@ export default function DefinitionEditor(props: Props) {
   const [definition, setDefinition] = useState(defaultDefinition);
   const [example, setExample] = useState(defaultExample);
   const [notes, setNotes] = useState(defaultNotes);
-  const [relationsEditorData, setRelationsEditorData] = useState(
+  const [relationsEditorData] = useState(
     () => new RelationsEditorData(definitionData),
   );
   const relationsEdited = useSignalValue(relationsEditorData.modified);
@@ -142,7 +142,8 @@ export default function DefinitionEditor(props: Props) {
       setDefinition(definitionData.definition);
       setExample(definitionData.example);
       setNotes(definitionData.notes);
-      setRelationsEditorData(new RelationsEditorData(definitionData));
+      // uncomment and adjust if we can ever transition from one definition editor to another
+      // setRelationsEditorData(new RelationsEditorData(definitionData));
     }
   }, [definitionData]);
 

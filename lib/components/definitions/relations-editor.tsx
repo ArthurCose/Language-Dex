@@ -388,6 +388,7 @@ export class RelationsEditorData {
         // delete the antonyms cluster
         await clearSynonymCluster(this.antonymsId);
         await deleteEmptySynonymCluster(this.antonymsId);
+        this.antonymsId = null;
       }
 
       return;
