@@ -553,9 +553,9 @@ const styles = StyleSheet.create({
   wordPressable: {
     overflow: "hidden",
     justifyContent: "center",
-    borderRadius: 16,
-    height: 32,
-    paddingHorizontal: 16,
+    borderRadius: 18,
+    height: 36,
+    paddingHorizontal: 18,
     margin: 4,
   },
 });
