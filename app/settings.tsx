@@ -47,6 +47,7 @@ import {
   NavigationBarSpacer,
   NavigationBarUnderlay,
 } from "@/lib/components/system-bar-spacers";
+import IntegrationTestsDialog from "@/lib/components/dev-tools/integration-tests-dialog";
 
 type LongTaskMeta = {
   open: boolean;
@@ -491,6 +492,15 @@ function DevelopmentSection({
 
       {__DEV__ && (
         <>
+          <View style={theme.styles.separator} />
+
+          <IntegrationTestsDialog
+            style={styles.row}
+            android_ripple={theme.ripples.transparentButton}
+          >
+            <Span style={styles.label}>Integration Tests</Span>
+          </IntegrationTestsDialog>
+
           <View style={theme.styles.separator} />
 
           <Pressable
