@@ -14,6 +14,26 @@ export function createWord(dictionaryId: number, spelling: string) {
   });
 }
 
+export async function createWords(dictionaryId: number, spellings: string[]) {
+  const ids = [];
+
+  // Promise.all creates race conditions for shared word data
+  // Users can't enter multiple words in parallel normally so we don't handle this issue
+  for (const spelling of spellings) {
+    ids.push(
+      await upsertDefinition(dictionaryId, {
+        spelling,
+        confidence: 0,
+        definition: "",
+        example: "",
+        notes: "",
+      }),
+    );
+  }
+
+  return ids;
+}
+
 export function assertDeepEq(a: any, b: any, message: string) {
   // expo-sqlite's type definitions are wrong, casting to undefined to avoid type errors
   if (!deepEqual(a as undefined, b as undefined)) {

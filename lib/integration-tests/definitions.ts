@@ -1,4 +1,4 @@
-import { assertDeepEq, createWord, LabeledTest } from "./util";
+import { assertDeepEq, createWords, LabeledTest } from "./util";
 import {
   deleteDefinition,
   deleteDictionary,
@@ -13,14 +13,12 @@ export const DEFINITION_TESTS: LabeledTest[] = [
     async (params) => {
       const dictionaryId = params.nextDictionaryId;
 
-      // Promise.all creates race conditions for shared word data
-      // Users can't enter multiple words in parallel normally so we don't handle this issue
-      const definitionIds = [
-        await createWord(dictionaryId, "A"),
-        await createWord(dictionaryId, "a"),
-        await createWord(dictionaryId, "a"),
-        await createWord(dictionaryId, "b"),
-      ];
+      const definitionIds = await createWords(dictionaryId, [
+        "A",
+        "a",
+        "a",
+        "b",
+      ]);
 
       function listSharedWords() {
         return listWords(dictionaryId, { orderBy: "alphabetical" });

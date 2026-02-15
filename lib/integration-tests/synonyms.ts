@@ -1,4 +1,4 @@
-import { assert, assertDeepEq, createWord, LabeledTest } from "./util";
+import { assert, assertDeepEq, createWords, LabeledTest } from "./util";
 import {
   RelationEditorSynonym,
   RelationsEditorData,
@@ -21,12 +21,7 @@ export const SYNONYM_TESTS: LabeledTest[] = [
 
       const dictionaryId = params.nextDictionaryId;
 
-      // Promise.all creates race conditions for shared word data
-      // Users can't enter multiple words in parallel normally so we don't handle this issue
-      await createWord(dictionaryId, "a");
-      await createWord(dictionaryId, "b");
-      await createWord(dictionaryId, "c");
-      await createWord(dictionaryId, "d");
+      await createWords(dictionaryId, ["a", "b", "c", "d"]);
 
       async function getDefinition(lowercaseSpelling: string) {
         return (await getWordDefinitions(dictionaryId, lowercaseSpelling))!
