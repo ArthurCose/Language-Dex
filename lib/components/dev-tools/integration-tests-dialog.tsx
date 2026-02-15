@@ -66,10 +66,10 @@ export default function ({ style, android_ripple, children }: Props) {
             }
 
             setResults({ ...results });
-          }
 
-          // make sure we've cleaned up in case a test fails
-          await deleteDictionary(testParams.nextDictionaryId);
+            // clean up for the next test
+            await deleteDictionary(testParams.nextDictionaryId);
+          }
 
           setCompleted(true);
         }}

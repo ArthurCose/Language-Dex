@@ -7,7 +7,9 @@ import {
 } from "./util";
 import { RelationsEditorData } from "@/lib/components/definitions/relations-editor";
 import {
+  deleteDefinition,
   deleteDictionary,
+  deleteWord,
   getWordDefinitions,
   WordDefinitionData,
 } from "@/lib/data";
@@ -213,15 +215,13 @@ class SynonymEditorWrapper {
 
 export const SYNONYM_TESTS: LabeledTest[] = [
   [
-    "Synonyms",
+    "Synonym Basics",
     async (params) => {
-      const originalClusterCount = await countClusters();
-
       const dictionaryId = params.nextDictionaryId;
+      const originalClusterCount = await countClusters();
+      const env = new SynonymTestEnvironment(params);
 
       await createWords(dictionaryId, ["a", "b", "c", "d"]);
-
-      const env = new SynonymTestEnvironment(params);
 
       // set relation between 'a' and 'b'
       const relationsA = await env.loadEditor("a");
@@ -244,7 +244,7 @@ export const SYNONYM_TESTS: LabeledTest[] = [
         "We should have a cluster created for synonyms and antoynms",
       );
 
-      // reload words
+      // check definitions
       const wordA = await getDefinition(dictionaryId, "a");
       const wordB = await getDefinition(dictionaryId, "b");
       const wordC = await getDefinition(dictionaryId, "c");
@@ -259,6 +259,42 @@ export const SYNONYM_TESTS: LabeledTest[] = [
         wordC.synonymsId != null && wordC.synonymsId != wordA.synonymsId,
         "Separate synonym cluster for 'c'",
       );
+    },
+  ],
+  [
+    "Synonym Switching",
+    async (params) => {
+      const dictionaryId = params.nextDictionaryId;
+      const env = new SynonymTestEnvironment(params);
+
+      await createWords(dictionaryId, ["a", "b", "c"]);
+
+      // set relation between 'a' and 'b'
+      const relationsA = await env.loadEditor("a");
+      await relationsA.addSynonyms(["b", "c"]);
+
+      await relationsA.addAntonyms(["c"]);
+      relationsA.assertAntonyms(["c"], "Moved 'c' to antonyms");
+      relationsA.assertSynonyms(["b"], "Removed 'c' from synonyms");
+
+      await relationsA.addSynonyms(["c"]);
+      relationsA.assertSynonyms(["b", "c"], "Moved 'c' back to synonyms");
+      relationsA.assertAntonyms([], "Removed 'c' from antonyms");
+    },
+  ],
+  [
+    "Synonym Merging",
+    async (params) => {
+      const dictionaryId = params.nextDictionaryId;
+      const originalClusterCount = await countClusters();
+      const env = new SynonymTestEnvironment(params);
+
+      await createWords(dictionaryId, ["a", "b", "c", "d"]);
+
+      const relationsA = await env.loadEditor("a");
+      await relationsA.addSynonyms(["b"]);
+      await relationsA.addAntonyms(["c"]);
+      await relationsA.save();
 
       // loading existing synonyms into synonyms
       const relationsD = await env.loadEditor("d");
@@ -272,9 +308,29 @@ export const SYNONYM_TESTS: LabeledTest[] = [
         "Loaded 'c' from 'b's antonyms into antonyms",
       );
 
-      await relationsD.addAntonyms(["b"]);
+      // removing synonyms
+      await relationsD.setSynonyms(["a"]);
       relationsD.assertSynonyms(["a"], "Removed 'b' from synonyms");
-      relationsD.assertAntonyms(["b", "c"], "Moved 'b' to antonyms");
+      relationsD.assertAntonyms(["c"], "Only 'c' in antonyms");
+
+      // moving antonyms to synonyms
+      await relationsD.addSynonyms(["c"]);
+      relationsD.assertSynonyms(["a", "c"], "Moved 'c' to synonyms");
+      relationsD.assertAntonyms([], "Removed 'c' from antonyms");
+
+      // adding old synonyms into antonyms
+      await relationsD.addAntonyms(["b"]);
+      relationsD.assertSynonyms(["a", "c"], "Retained synonyms");
+      relationsD.assertAntonyms(["b"], "Added 'b' to antonyms");
+
+      // conflicting simultaneous synonyms
+      await relationsD.reload();
+      await relationsD.setSynonyms(["a", "c"]);
+      relationsD.assertSynonyms(
+        ["a", "b", "c"],
+        "Prioritizes the working list",
+      );
+      relationsD.assertAntonyms([], "No duplicates from conflicting additions");
 
       // loading existing synonyms into antonyms
       await relationsD.reload();
@@ -297,54 +353,199 @@ export const SYNONYM_TESTS: LabeledTest[] = [
         await countClusters(),
         "No extra clusters after merging synonym cluster",
       );
+    },
+  ],
+  [
+    "Synonym Unlink",
+    async (params) => {
+      const dictionaryId = params.nextDictionaryId;
+      const originalClusterCount = await countClusters();
+      const env = new SynonymTestEnvironment(params);
 
-      // unlink
-      relationsD.unlink();
-      await relationsD.save();
+      await createWords(dictionaryId, ["a", "b", "c", "d"]);
 
-      await relationsA.reload();
-      relationsA.assertAntonyms(
-        ["c"],
-        "'d' removed from 'a's antonyms after unlinking",
-      );
-
-      // deleting synonym group by emptying antonyms
-      await relationsA.setAntonyms([]);
-      await relationsA.save();
-
-      await relationsA.reload();
-      relationsA.assertAntonyms([], "No antonyms for 'a'");
-      assertDeepEq(
-        originalClusterCount + 1,
-        await countClusters(),
-        "Cluster deleted from empty antonyms",
-      );
-
-      // Add 'd' back to antonyms to prep for testing unlinking
-      await relationsA.setAntonyms(["d"]);
+      // set relations
+      const relationsA = await env.loadEditor("a");
+      await relationsA.addSynonyms(["b", "c"]);
+      await relationsA.addAntonyms(["d"]);
       await relationsA.save();
 
       assertDeepEq(
         originalClusterCount + 2,
         await countClusters(),
-        "New cluster for antonyms",
+        "Clusters should increase after saving synonyms",
       );
 
-      // unlink
-      await relationsD.reload();
+      // unlink 'a'
+      relationsA.unlink();
+      await relationsA.save();
+
+      assertDeepEq(
+        originalClusterCount + 2,
+        await countClusters(),
+        "Clusters shouldn't delete when 2 or more words remain",
+      );
+
+      // verify 'a' was unlinked, then unlink 'd'
+      const relationsD = await env.loadEditor("d");
+      relationsD.assertAntonyms(
+        ["b", "c"],
+        "'a' should no longer be synonymous with 'b' and 'c'",
+      );
       relationsD.unlink();
       await relationsD.save();
 
-      const wordD = await getDefinition(dictionaryId, "d");
-      assertDeepEq(
-        wordD.synonymsId,
-        null,
-        "No cluster associated after unlinking",
-      );
       assertDeepEq(
         originalClusterCount + 1,
         await countClusters(),
-        "Cluster deleted from unlinking",
+        "Clusters should delete when only antonyms exist",
+      );
+
+      // verify 'd' unlinked, then unlink 'b'
+      const relationsB = await env.loadEditor("b");
+      relationsB.assertSynonyms(
+        ["c"],
+        "'b' should still be synonymous with 'c'",
+      );
+      relationsB.assertAntonyms(
+        [],
+        "No antonyms should exist after 'd' unlinked",
+      );
+      relationsB.unlink();
+      await relationsB.save();
+
+      // todo: clusters should delete when there's only 1 synonym and no antonyms
+      const relationsC = await env.loadEditor("c");
+      relationsC.unlink();
+      await relationsC.save();
+
+      assertDeepEq(
+        originalClusterCount,
+        await countClusters(),
+        "Clusters should delete after completely unlinking",
+      );
+    },
+  ],
+  [
+    "Synonyms Emptied",
+    async (params) => {
+      const dictionaryId = params.nextDictionaryId;
+      const originalClusterCount = await countClusters();
+      const env = new SynonymTestEnvironment(params);
+
+      const words = ["a", "b", "c"];
+      await createWords(dictionaryId, words);
+
+      const relationsA = await env.loadEditor("a");
+
+      async function setRelations() {
+        await relationsA.addSynonyms(["b"]);
+        await relationsA.addAntonyms(["c"]);
+        await relationsA.save();
+
+        assertDeepEq(
+          originalClusterCount + 2,
+          await countClusters(),
+          "Clusters should increase after saving synonyms + antonyms",
+        );
+      }
+
+      async function assertNoRelation() {
+        for (const lowercaseSpelling of words) {
+          const definition = await getDefinition(
+            dictionaryId,
+            lowercaseSpelling,
+          );
+
+          assertDeepEq(
+            definition.synonymsId,
+            null,
+            "Synonym cluster should be null after clearing sets",
+          );
+        }
+
+        assertDeepEq(
+          originalClusterCount,
+          await countClusters(),
+          "Clusters should delete when clearing synonyms and antonyms",
+        );
+      }
+
+      // set relations
+      await setRelations();
+
+      // test separately clearing antonyms and synonyms
+      await relationsA.setAntonyms([]);
+      await relationsA.save();
+
+      await relationsA.setSynonyms([]);
+      await relationsA.save();
+
+      await assertNoRelation();
+
+      // reset relations
+      await setRelations();
+
+      // clear synonyms and antonyms at the same time and test
+      await relationsA.setAntonyms([]);
+      await relationsA.setSynonyms([]);
+      await relationsA.save();
+      await assertNoRelation();
+    },
+  ],
+  [
+    "Synonym Indirect Deletion",
+    async (params) => {
+      const dictionaryId = params.nextDictionaryId;
+      const originalClusterCount = await countClusters();
+      const env = new SynonymTestEnvironment(params);
+
+      const wordIds = await createWords(dictionaryId, [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+      ]);
+
+      // set relations
+      const relationsA = await env.loadEditor("a");
+      await relationsA.addSynonyms(["b"]);
+      await relationsA.save();
+
+      const relationsC = await env.loadEditor("c");
+      await relationsC.addSynonyms(["d"]);
+      await relationsC.save();
+
+      const relationsE = await env.loadEditor("e");
+      await relationsE.addSynonyms(["f"]);
+      await relationsE.save();
+
+      assertDeepEq(
+        originalClusterCount + 3,
+        await countClusters(),
+        "Clusters should increase after saving synonyms",
+      );
+
+      // deleting individual definitons
+      await deleteDefinition(wordIds[0]);
+      await deleteDefinition(wordIds[1]);
+
+      assertDeepEq(
+        originalClusterCount + 2,
+        await countClusters(),
+        "Clusters should delete with definitions",
+      );
+
+      // deleting shared word data
+      await deleteWord(dictionaryId, "c");
+      await deleteWord(dictionaryId, "d");
+
+      assertDeepEq(
+        originalClusterCount + 1,
+        await countClusters(),
+        "Clusters should delete with shared word data",
       );
 
       // clean up
