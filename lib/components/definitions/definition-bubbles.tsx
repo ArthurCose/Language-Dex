@@ -16,6 +16,14 @@ import { useTheme } from "@/lib/contexts/theme";
 import { Span } from "@/lib/components/text";
 import { NavigationBarSpacer } from "../system-bar-spacers";
 
+type DefinitionBubbleProps = {
+  definition: WordDefinitionData;
+  readOnly: boolean;
+  contrast?: boolean;
+  onRemove?: () => void;
+  close: () => void;
+};
+
 type DefinitionsBubbleProps = {
   text: string;
   lowercase: string;
@@ -55,6 +63,111 @@ function DefinitionContent({
   );
 }
 
+export function DefinitionBubble({
+  definition,
+  readOnly,
+  contrast,
+  onRemove,
+  close,
+}: DefinitionBubbleProps) {
+  const theme = useTheme();
+  const [t] = useTranslation();
+  const userDataSignal = useUserDataSignal();
+  const dictionary = useSignalLens(
+    userDataSignal,
+    (data) => data.dictionaries.find((d) => d.id == data.activeDictionary)!,
+  );
+
+  const lowercase = definition.spelling.toLowerCase();
+
+  return (
+    <DropDownPrimitive.Portal>
+      <DropDownPrimitive.Overlay
+        style={StyleSheet.absoluteFill}
+        onPress={close}
+      >
+        <DropDownPrimitive.Content align="center">
+          <View
+            style={[
+              styles.popup,
+              theme.styles.dialog,
+              theme.styles.definitionBubble,
+              contrast && theme.styles.popupContrast,
+            ]}
+          >
+            <Pressable
+              style={[styles.bordered, theme.styles.definitionBorders]}
+              android_ripple={theme.ripples.popup}
+              pointerEvents="box-only"
+              disabled={readOnly}
+              onPress={() => {
+                router.navigate(
+                  `/words/existing/${encodeURIComponent(lowercase)}`,
+                );
+                close();
+              }}
+            >
+              <Span style={[styles.wordTitle]}>{definition.spelling}</Span>
+            </Pressable>
+
+            <Pressable
+              style={[
+                styles.definitionBlock,
+                styles.bordered,
+                theme.styles.definitionBorders,
+              ]}
+              android_ripple={theme.ripples.popup}
+              pointerEvents="box-only"
+              disabled={readOnly}
+              onPress={() => {
+                router.navigate(
+                  `/words/existing/${encodeURIComponent(
+                    lowercase,
+                  )}/definition/${encodeURIComponent(definition.id)}`,
+                );
+                close();
+              }}
+            >
+              <DefinitionContent
+                dictionary={dictionary}
+                definition={definition}
+              />
+            </Pressable>
+
+            {onRemove ? (
+              <Pressable
+                style={styles.action}
+                android_ripple={theme.ripples.popup}
+                pointerEvents="box-only"
+                onPress={() => {
+                  onRemove();
+                  close();
+                }}
+              >
+                <Span>{t("Remove")}</Span>
+              </Pressable>
+            ) : (
+              <Pressable
+                style={styles.action}
+                android_ripple={theme.ripples.popup}
+                pointerEvents="box-only"
+                onPress={() => {
+                  Clipboard.setStringAsync(definition.spelling).catch(logError);
+                  close();
+                }}
+              >
+                <Span>{t("Copy")}</Span>
+              </Pressable>
+            )}
+          </View>
+
+          <NavigationBarSpacer />
+        </DropDownPrimitive.Content>
+      </DropDownPrimitive.Overlay>
+    </DropDownPrimitive.Portal>
+  );
+}
+
 export function DefinitionsBubble({
   text,
   lowercase,
@@ -66,7 +179,7 @@ export function DefinitionsBubble({
   const userDataSignal = useUserDataSignal();
   const dictionary = useSignalLens(
     userDataSignal,
-    (data) => data.dictionaries.find((d) => d.id == data.activeDictionary)!
+    (data) => data.dictionaries.find((d) => d.id == data.activeDictionary)!,
   );
 
   return (
@@ -91,7 +204,7 @@ export function DefinitionsBubble({
                   pointerEvents="box-only"
                   onPress={() => {
                     router.navigate(
-                      `/words/existing/${encodeURIComponent(lowercase)}`
+                      `/words/existing/${encodeURIComponent(lowercase)}`,
                     );
                     close();
                   }}
@@ -115,8 +228,8 @@ export function DefinitionsBubble({
                       onPress={() => {
                         router.navigate(
                           `/words/existing/${encodeURIComponent(
-                            lowercase
-                          )}/definition/${encodeURIComponent(definition.id)}`
+                            lowercase,
+                          )}/definition/${encodeURIComponent(definition.id)}`,
                         );
                         close();
                       }}
@@ -142,8 +255,8 @@ export function DefinitionsBubble({
               onPress={() => {
                 router.navigate(
                   `/words/existing/${encodeURIComponent(
-                    lowercase
-                  )}/definition/add`
+                    lowercase,
+                  )}/definition/add`,
                 );
                 close();
               }}
@@ -175,6 +288,8 @@ const styles = StyleSheet.create({
   popup: {
     marginHorizontal: 8,
     marginVertical: 4,
+    minWidth: 100,
+    maxWidth: 256,
   },
   wordTitle: {
     fontWeight: "bold",

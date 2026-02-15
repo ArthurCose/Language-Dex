@@ -38,6 +38,14 @@ export class Signal<T> {
       callback(value);
     }
   }
+
+  add(this: Signal<number>, value: number) {
+    this.set(this._value + value);
+  }
+
+  subtract(this: Signal<number>, value: number) {
+    this.set(this._value - value);
+  }
 }
 
 export function useSignal<T>(initialValue: T) {
@@ -65,7 +73,7 @@ export function useSignalValue<T>(signal: Signal<T>) {
 
 export function useSignalLens<T, R>(
   signal: Signal<T>,
-  transformation: (value: T) => R
+  transformation: (value: T) => R,
 ): R {
   const value = transformation(signal.get());
   const [_, setValue] = useState(value);

@@ -151,6 +151,7 @@ export type WordDefinitionData = {
   definition: string;
   example: string;
   notes: string;
+  synonymsId?: number | null;
   createdAt: number;
   updatedAt: number;
 };
@@ -178,6 +179,7 @@ async function initDb() {
   await db.execAsync(`
 PRAGMA journal_mode = WAL;
 PRAGMA auto_vacuum = FULL;
+PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS word_shared_data (
   id                  INTEGER PRIMARY KEY NOT NULL,
@@ -242,13 +244,16 @@ CREATE INDEX IF NOT EXISTS word_definition_data_confidence_index ON word_definit
   confidence ASC,
   createdAt DESC
 );
-`);
 
-  // CREATE TABLE IF NOT EXISTS word_relations (
-  //   groupId          INTEGER PRIMARY KEY NOT NULL,
-  //   wordDefinitionId INTEGER NOT NULL REFERENCES word_definition_data(id) ON DELETE CASCADE,
-  //   type             INTEGER
-  // );
+CREATE INDEX IF NOT EXISTS word_definition_data_synonyms_index ON word_definition_data(
+  synonymsId
+);
+
+CREATE TABLE IF NOT EXISTS synonym_clusters (
+  id         INTEGER PRIMARY KEY NOT NULL,
+  antonymsId INTEGER REFERENCES synonym_clusters(id) ON DELETE SET NULL
+);
+`);
 
   // CREATE TABLE IF NOT EXISTS scan_history (
   //   id            INTEGER PRIMARY KEY NOT NULL,
@@ -278,7 +283,31 @@ export async function deleteDictionary(id: number) {
       promises.push(deleteFileObject(row.pronunciationAudio));
     }
 
-    await Promise.all(promises);
+    try {
+      await Promise.all(promises);
+    } catch (err) {
+      logError(err);
+    }
+  }
+
+  // delete relations
+  const synonymsIdResults = db.getEachAsync<{ synonymsId: number }>(
+    "SELECT DISTINCT synonymsId FROM word_definition_data WHERE dictionaryId = $dictionaryId AND synonymsId IS NOT NULL",
+    { $dictionaryId: id },
+  );
+
+  const deleteClusterStatement = await db.prepareAsync(
+    "DELETE FROM synonym_clusters WHERE id = $clusterId",
+  );
+
+  try {
+    for await (const row of synonymsIdResults) {
+      await deleteClusterStatement.executeAsync({
+        $clusterId: row.synonymsId,
+      });
+    }
+  } finally {
+    await deleteClusterStatement.finalizeAsync();
   }
 
   // delete words
@@ -768,8 +797,9 @@ export async function deleteDefinition(id: number) {
     sharedId: number;
     orderKey: number;
     pronunciationAudio?: string | null;
+    synonymsId?: number | null;
   }>(
-    "SELECT sharedId,orderKey,pronunciationAudio FROM word_definition_data WHERE id = $id",
+    "SELECT sharedId,orderKey,pronunciationAudio,synonymsId FROM word_definition_data WHERE id = $id",
     {
       $id: id,
     },
@@ -789,6 +819,11 @@ export async function deleteDefinition(id: number) {
   await db.runAsync("DELETE FROM word_definition_data WHERE id = $id", {
     $id: id,
   });
+
+  // delete clusters after deleting the word
+  if (result.synonymsId != null) {
+    await deleteEmptySynonymCluster(result.synonymsId);
+  }
 
   // update ordering
   await shiftOrderKeys(result.sharedId, result.orderKey);
@@ -847,6 +882,94 @@ function deleteAssociatedFiles(result: { pronunciationAudio?: string }) {
   }
 }
 
+export type RelationWord = {
+  id: number;
+  spelling: string;
+};
+
+export async function listWordsInSynonymCluster(clusterId: number) {
+  const words = await db.getAllAsync<RelationWord>(
+    "SELECT id, spelling FROM word_definition_data WHERE synonymsId = $synonymsId",
+    { $synonymsId: clusterId },
+  );
+
+  return words;
+}
+
+export async function setSynonymCluster(
+  word: RelationWord,
+  synonymsId: number | null | undefined,
+) {
+  await db.runAsync(
+    "UPDATE word_definition_data SET synonymsId = $synonymsId WHERE id = $id",
+    {
+      $id: word.id,
+      $synonymsId: synonymsId ?? null,
+    },
+  );
+}
+
+export async function getClusterAntonymsId(
+  clusterId: number,
+): Promise<number | null> {
+  const result = await db.getFirstAsync<{ antonymsId: number | null }>(
+    "SELECT antonymsId FROM synonym_clusters WHERE id = $id",
+    {
+      $id: clusterId,
+    },
+  );
+
+  return result?.antonymsId ?? null;
+}
+
+export async function setClusterAntonyms(
+  synonymSetId: number,
+  antonymsId?: number | null,
+) {
+  await db.runAsync(
+    "UPDATE synonym_clusters SET antonymsId = $antonymsId WHERE id = $id",
+    {
+      $id: synonymSetId,
+      $antonymsId: antonymsId ?? null,
+    },
+  );
+}
+
+export async function createSynonymCluster(antonymsId?: number | null) {
+  const result = await db.runAsync(
+    "INSERT INTO synonym_clusters (antonymsId) VALUES ($antonymsId)",
+    {
+      $antonymsId: antonymsId ?? null,
+    },
+  );
+
+  return result.lastInsertRowId;
+}
+
+export async function clearSynonymCluster(clusterId: number) {
+  await db.runAsync(
+    "UPDATE word_definition_data SET synonymsId = NULL WHERE synonymsId = $clusterId",
+    {
+      $clusterId: clusterId,
+    },
+  );
+}
+
+export async function deleteEmptySynonymCluster(id: number) {
+  const countResult = await db.getFirstAsync<{ ["COUNT(*)"]: number }>(
+    "SELECT COUNT(*) FROM word_definition_data WHERE synonymsId = $id",
+    { $id: id },
+  );
+
+  const count = countResult?.["COUNT(*)"] ?? 0;
+
+  if (count > 0) {
+    return;
+  }
+
+  await db.runAsync("DELETE FROM synonym_clusters WHERE id = $id", { $id: id });
+}
+
 export async function deleteWord(dictionaryId: number, word: string) {
   log("Deleting Word...");
 
@@ -863,20 +986,38 @@ export async function deleteWord(dictionaryId: number, word: string) {
 
   const sharedId = result.id;
 
-  const rows = db.getEachAsync<{ pronunciationAudio?: string }>(
-    "SELECT pronunciationAudio FROM word_definition_data WHERE sharedId = $sharedId",
+  // delete associated data
+  const rows = db.getEachAsync<{
+    pronunciationAudio?: string;
+    synonymsId?: number;
+  }>(
+    "SELECT pronunciationAudio, synonymsId FROM word_definition_data WHERE sharedId = $sharedId",
     { $sharedId: sharedId },
   );
 
+  const clusterIds: number[] = [];
+
+  // delete files and resolve clusters to delete
   for await (const row of rows) {
     deleteAssociatedFiles(row);
+
+    if (row.synonymsId != null && !clusterIds.includes(row.synonymsId)) {
+      clusterIds.push(row.synonymsId);
+    }
   }
 
+  // delete definitions
   await db.runAsync(
     "DELETE FROM word_definition_data WHERE sharedId = $sharedId",
     { $sharedId: sharedId },
   );
 
+  // delete empty synonym clusters after deleting definitions
+  for (const clusterId of clusterIds) {
+    await deleteEmptySynonymCluster(clusterId);
+  }
+
+  // delete word
   await db.runAsync("DELETE FROM word_shared_data WHERE id = $id", {
     $id: sharedId,
   });
@@ -1062,7 +1203,11 @@ async function deleteImportDb() {
   }
 }
 
-export type ExportImportStage = "metadata" | "words" | "definitions";
+export type ExportImportStage =
+  | "metadata"
+  | "words"
+  | "definitions"
+  | "relations";
 
 async function extractCount(
   db: SQLite.SQLiteDatabase,
@@ -1132,8 +1277,14 @@ CREATE TABLE word_definition_data (
   definition         TEXT NOT NULL,
   example            TEXT NOT NULL,
   notes              TEXT NOT NULL,
+  synonymsId         INTEGER,
   createdAt          INTEGER NOT NULL,
   updatedAt          INTEGER NOT NULL
+);
+
+CREATE TABLE synonym_clusters (
+  id         INTEGER PRIMARY KEY NOT NULL,
+  antonymsId INTEGER
 );
 
 CREATE TABLE files (
@@ -1172,27 +1323,9 @@ CREATE TABLE files (
       stage: ExportImportStage,
       table: string,
       keys: string[],
+      sourceTotal: number,
+      sourceResults: AsyncIterableIterator<{ [key: string]: unknown }>,
     ) {
-      const sourceCountQuery = ["SELECT COUNT(*) FROM ", table];
-      const sourceQuery = ["SELECT", keys.join(", "), "FROM", table];
-      const sourceParams: SQLite.SQLiteBindParams = {};
-
-      if (dictionaryId != undefined) {
-        sourceCountQuery.push("WHERE dictionaryId = $dictionaryId");
-        sourceQuery.push("WHERE dictionaryId = $dictionaryId");
-        sourceParams.$dictionaryId = dictionaryId;
-      }
-
-      const sourceTotal = await extractCount(
-        db,
-        sourceCountQuery.join(" "),
-        sourceParams,
-      );
-      const sourceResults = db.getEachAsync<{ [key: string]: unknown }>(
-        sourceQuery.join(" "),
-        sourceParams,
-      );
-
       const insertQuery = `INSERT INTO ${table} (${keys.join(
         ", ",
       )}) VALUES (${keys.map((k) => "$" + k).join(", ")})`;
@@ -1218,7 +1351,41 @@ CREATE TABLE files (
       }
     }
 
-    await copyTable("words", "word_shared_data", [
+    async function copyDictionaryTable(
+      stage: ExportImportStage,
+      table: string,
+      keys: string[],
+    ) {
+      const sourceCountQuery = ["SELECT COUNT(*) FROM ", table];
+      const sourceQuery = ["SELECT", keys.join(", "), "FROM", table];
+      const sourceParams: SQLite.SQLiteBindParams = {};
+
+      if (dictionaryId != undefined) {
+        sourceCountQuery.push("WHERE dictionaryId = $dictionaryId");
+        sourceQuery.push("WHERE dictionaryId = $dictionaryId");
+        sourceParams.$dictionaryId = dictionaryId;
+      }
+
+      const sourceTotal = await extractCount(
+        db,
+        sourceCountQuery.join(" "),
+        sourceParams,
+      );
+      const sourceResults = db.getEachAsync(
+        sourceQuery.join(" "),
+        sourceParams,
+      );
+
+      await copyTable(
+        stage,
+        table,
+        keys,
+        sourceTotal,
+        sourceResults as AsyncIterableIterator<{ [key: string]: unknown }>,
+      );
+    }
+
+    await copyDictionaryTable("words", "word_shared_data", [
       "id",
       "dictionaryId",
       "spelling",
@@ -1229,7 +1396,7 @@ CREATE TABLE files (
       "updatedAt",
     ]);
 
-    await copyTable("definitions", "word_definition_data", [
+    await copyDictionaryTable("definitions", "word_definition_data", [
       "dictionaryId",
       "sharedId",
       "orderKey",
@@ -1240,9 +1407,59 @@ CREATE TABLE files (
       "definition",
       "example",
       "notes",
+      "synonymsId",
       "createdAt",
       "updatedAt",
     ]);
+
+    // estimating the synonym cluster count
+    let clustersWhereClause = "WHERE synonymsId IS NOT NULL";
+    const clustersBindParams: { [key: string]: any } = {};
+
+    if (dictionaryId != undefined) {
+      clustersWhereClause += " AND dictionaryId = $dictionaryId";
+      clustersBindParams.$dictionaryId = dictionaryId;
+    }
+
+    const clusterCountResult = await db.getFirstAsync<{
+      [key: string]: number;
+    }>(
+      `SELECT COUNT(DISTINCT synonymsId) FROM word_definition_data ${clustersWhereClause}`,
+      clustersBindParams,
+    );
+
+    const clusterCount = clusterCountResult!["COUNT(DISTINCT synonymsId)"] * 2;
+
+    await copyTable(
+      "relations",
+      "synonym_clusters",
+      ["id", "antonymsId"],
+      clusterCount,
+      (async function* () {
+        const synonymIdResults = db.getEachAsync<{ synonymsId: number }>(
+          `SELECT DISTINCT synonymsId FROM word_definition_data ${clustersWhereClause}`,
+          clustersBindParams,
+        );
+
+        const clusterBindParams: { $id: number } = { $id: 0 };
+        const statement = await db.prepareAsync(
+          `SELECT id, antonymsId FROM synonym_clusters WHERE id = $id`,
+        );
+
+        try {
+          for await (const synonymIdResult of synonymIdResults) {
+            clusterBindParams.$id = synonymIdResult.synonymsId;
+            const executeResult =
+              await statement.executeAsync(clusterBindParams);
+            const result = await executeResult.getFirstAsync();
+
+            yield result as any;
+          }
+        } finally {
+          await statement.finalizeAsync();
+        }
+      })(),
+    );
 
     // // copy audio files
     // const audioResults = db.getEachAsync<{ pronunciationAudio: string }>(
@@ -1437,6 +1654,62 @@ export async function importData(
       },
     );
 
+    // load synonym clusters
+    const synonymClusterIdMap: { [key: number]: number } = {};
+
+    try {
+      const insertStatement = await db.prepareAsync(
+        "INSERT INTO synonym_clusters DEFAULT VALUES",
+      );
+      const updateStatement = await db.prepareAsync(
+        `UPDATE synonym_clusters SET antonymsId = $antonymsId WHERE id = $id`,
+      );
+
+      try {
+        let i = 0;
+
+        const totalClusters = await extractCount(
+          importDb,
+          "SELECT COUNT(*) FROM synonym_clusters",
+        );
+
+        // import synonym clusters
+        const clusterResults = importDb.getEachAsync<{ id: number }>(
+          "SELECT id FROM synonym_clusters",
+        );
+
+        for await (const result of clusterResults) {
+          i++;
+
+          const insertResult = await insertStatement.executeAsync();
+          synonymClusterIdMap[result.id] = insertResult.lastInsertRowId;
+
+          progressCallback("relations", i, totalClusters);
+        }
+
+        // import antonym relationships
+        const antonymClusterResults = importDb.getEachAsync<{
+          id: number;
+          antonymsId: number;
+        }>(
+          "SELECT id, antonymsId FROM synonym_clusters WHERE antonymsId IS NOT NULL",
+        );
+
+        for await (const result of antonymClusterResults) {
+          await updateStatement.executeAsync({
+            $id: synonymClusterIdMap[result.id],
+            $antonymsId: synonymClusterIdMap[result.antonymsId],
+          });
+        }
+      } finally {
+        await insertStatement.finalizeAsync();
+        await updateStatement.finalizeAsync();
+      }
+    } catch (err) {
+      log("Failed to import relations:");
+      log(err);
+    }
+
     // load definitions
     const totalDefinitions = await extractCount(
       importDb,
@@ -1447,6 +1720,7 @@ export async function importData(
       dictionaryId: number;
       sharedId: number;
       example?: string | null;
+      synonymsId?: number | null;
       confidence: number;
       // pronunciationAudio?: string | null;
     }>("SELECT * FROM word_definition_data");
@@ -1466,7 +1740,7 @@ export async function importData(
 
     await bulkInsert(
       "word_definition_data",
-      ["dictionaryId", "sharedId", ...definitionCopyKeys],
+      ["dictionaryId", "sharedId", "synonymsId", ...definitionCopyKeys],
       async (statement) => {
         let i = 0;
 
@@ -1482,6 +1756,10 @@ export async function importData(
           const bindParams: { [key: string]: any } = {
             $dictionaryId: dictionary.id,
             $sharedId: sharedIdMap[result.sharedId],
+            $synonymsId:
+              result.synonymsId != null
+                ? synonymClusterIdMap[result.synonymsId]
+                : null,
           };
 
           for (const key of definitionCopyKeys) {

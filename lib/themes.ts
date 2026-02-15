@@ -14,6 +14,7 @@ export type Theme = {
     poppingText: TextStyle;
     hintScoreText: TextStyle;
     dialog: ViewStyle;
+    popupContrast: ViewStyle;
     bottomSheet: ViewStyle;
     dictionaryAddWordButton: ViewStyle;
     dictionaryAddWordButtonText: TextStyle;
@@ -56,8 +57,10 @@ type Palette = {
   body: string;
   bottomNav: string;
   popup: string;
+  popupContrast: string;
   popupInput: string;
   popupExpanded: string;
+  switcherBackground: string;
   scanInput: string;
   gameListing: string;
   definitionBackground: string;
@@ -113,6 +116,9 @@ function createSimpleTheme(colors: Palette): Theme {
         backgroundColor: colors.popup,
         borderRadius: 8,
         margin: 16,
+      },
+      popupContrast: {
+        backgroundColor: colors.popupContrast,
       },
       bottomSheet: {
         backgroundColor: colors.bottomNav,
@@ -279,8 +285,10 @@ export const themeConstructors: {
         popup: "#1f1f24",
         popupInput: "#0005",
         popupExpanded: "#00000038",
+        switcherBackground: "#3c3c3c",
         scanInput: "#1a1a1f",
         definitionBackground: "#1a1a1f",
+        popupContrast: "#1f1f24",
         gameListing: "transparent",
         text: "#bbb",
         label: "#aaa",
@@ -306,8 +314,10 @@ export const themeConstructors: {
       primary,
       body: "#eeeef2",
       popup: "white",
+      popupContrast: "#eeeef2",
       popupInput: "#dfdfe2",
       popupExpanded: "#eeeef2",
+      switcherBackground: "#bfbfbf",
       bottomNav: "white",
       scanInput: "#f5f5f7",
       gameListing: "#f5f5f7",

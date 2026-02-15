@@ -1,5 +1,6 @@
 import { ColorValue, StyleProp, TextStyle, Text } from "react-native";
 import MaterialDesignIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 export type IconProps = {
   color?: ColorValue;
@@ -51,6 +52,10 @@ export function CloseIcon(props: IconProps) {
   return <MaterialDesignIcons name="close" {...props} />;
 }
 
+export function UnlinkIcon(props: IconProps) {
+  return <MaterialDesignIcons name="link-off" {...props} />;
+}
+
 export function EditIcon(props: IconProps) {
   return <MaterialDesignIcons name="pencil" {...props} />;
 }
@@ -79,6 +84,18 @@ export function ArrowRightIcon(props: IconProps) {
   return <MaterialDesignIcons name="arrow-right" {...props} />;
 }
 
+export function ChevronUpIcon(props: IconProps) {
+  return <MaterialDesignIcons name="chevron-up" {...props} />;
+}
+
+export function ChevronDownIcon(props: IconProps) {
+  return <MaterialDesignIcons name="chevron-down" {...props} />;
+}
+
+export function CheckIcon(props: IconProps) {
+  return <MaterialDesignIcons name="check" {...props} />;
+}
+
 export function TextboxIcon(props: IconProps) {
   return <MaterialDesignIcons name="form-textbox" {...props} />;
 }
@@ -97,6 +114,10 @@ export function ExampleIcon(props: IconProps) {
 
 export function NotesIcon(props: IconProps) {
   return <MaterialDesignIcons name="alert-box-outline" {...props} />;
+}
+
+export function WordRelationIcon(props: IconProps) {
+  return <MaterialIcons name="join-left" {...props} />;
 }
 
 export function SaveIcon(props: IconProps) {

@@ -21,12 +21,12 @@ const practiceColors: { [scheme: string]: PracticeColors } = {
     correct: {
       color: "green",
       borderColor: "green",
-      backgroundColor: "#8f84",
+      backgroundColor: "#8f88",
     },
   },
   dark: {
     mistake: {
-      color: "#b14",
+      color: "#f14",
       borderColor: "#b14",
       backgroundColor: "#b144",
     },

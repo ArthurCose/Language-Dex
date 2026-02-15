@@ -17,6 +17,7 @@ import {
   PlayAudioIcon,
   SaveIcon,
   TrashIcon,
+  WordRelationIcon,
 } from "@/lib/components/icons";
 import IconButton, { SubMenuIconButton } from "@/lib/components/icon-button";
 import {
@@ -24,7 +25,7 @@ import {
   useWordDefinition,
 } from "@/lib/hooks/use-word-definitions";
 import { useUserDataSignal } from "@/lib/contexts/user-data";
-import { useSignalLens } from "@/lib/hooks/use-signal";
+import { useSignalLens, useSignalValue } from "@/lib/hooks/use-signal";
 import PartOfSpeechDropdown from "@/lib/components/definitions/part-of-speech-dropdown";
 import ConfirmationDialog, {
   DiscardDialog,
@@ -47,6 +48,7 @@ import useBackHandler from "@/lib/hooks/use-back-handler";
 import PronunciationEditor from "./pronunciation-editor";
 import { useAudioPlayer } from "expo-audio";
 import { stripProtocol } from "@/lib/path";
+import { RelationsEditorData, RelationsEditor } from "./relations-editor";
 
 import Cat from "@/assets/svgs/Definition-Editor.svg";
 import CatInteraction from "@/lib/components/cat-interaction";
@@ -91,13 +93,13 @@ export default function DefinitionEditor(props: Props) {
   const userDataSignal = useUserDataSignal();
   const activeDictionary = useSignalLens(
     userDataSignal,
-    (data) => data.activeDictionary
+    (data) => data.activeDictionary,
   );
 
   const [definitionLoaded, definitionData] = useWordDefinition(
     activeDictionary,
     props.lowerCaseWord,
-    props.definitionId
+    props.definitionId,
   );
 
   const [saving, setSaving] = useState(false);
@@ -117,25 +119,30 @@ export default function DefinitionEditor(props: Props) {
   // state
   const [spelling, setSpelling] = useState(defaultSpelling);
   const [pronunciationUri, setPronunciationUri] = useState(
-    defaultPronunciationUri
+    defaultPronunciationUri,
   );
   const [confidence, setConfidence] = useState(defaultConfidence);
   const [partOfSpeech, setPartOfSpeech] = useState(defaultPartOfSpeech);
   const [definition, setDefinition] = useState(defaultDefinition);
   const [example, setExample] = useState(defaultExample);
   const [notes, setNotes] = useState(defaultNotes);
+  const [relationsEditorData, setRelationsEditorData] = useState(
+    () => new RelationsEditorData(definitionData),
+  );
+  const relationsEdited = useSignalValue(relationsEditorData.modified);
 
   useEffect(() => {
     if (definitionData) {
       setSpelling(definitionData.spelling);
       setPronunciationUri(
-        getFileObjectPath(definitionData.pronunciationAudio) ?? null
+        getFileObjectPath(definitionData.pronunciationAudio) ?? null,
       );
       setConfidence(definitionData.confidence);
       setPartOfSpeech(definitionData.partOfSpeech ?? null);
       setDefinition(definitionData.definition);
       setExample(definitionData.example);
       setNotes(definitionData.notes);
+      setRelationsEditorData(new RelationsEditorData(definitionData));
     }
   }, [definitionData]);
 
@@ -147,7 +154,8 @@ export default function DefinitionEditor(props: Props) {
     definition != defaultDefinition ||
     example != defaultExample ||
     notes != defaultNotes ||
-    pronunciationUri != defaultPronunciationUri;
+    pronunciationUri != defaultPronunciationUri ||
+    relationsEdited;
 
   useBackHandler(() => {
     if (hasPendingChanges) {
@@ -168,7 +176,7 @@ export default function DefinitionEditor(props: Props) {
       // handle pronunciation files
       const preparedPronunciation = await prepareNewPronunciation(
         definitionData,
-        pronunciationUri
+        pronunciationUri,
       );
 
       // create or update the word
@@ -196,7 +204,7 @@ export default function DefinitionEditor(props: Props) {
           "documentedMaxConfidence",
           resolveStatIncrease(
             confidence == maxConfidence,
-            defaultConfidence == maxConfidence
+            defaultConfidence == maxConfidence,
           ),
         ],
         [
@@ -207,7 +215,7 @@ export default function DefinitionEditor(props: Props) {
           "totalPronounced",
           resolveStatIncrease(
             preparedPronunciation.pronunciationAudio != undefined,
-            defaultPronunciationUri != undefined
+            defaultPronunciationUri != undefined,
           ),
         ],
       ];
@@ -217,12 +225,18 @@ export default function DefinitionEditor(props: Props) {
           for (const [statKey, increase] of statChanges) {
             stats[statKey] = Math.max((stats[statKey] ?? 0) + increase, 0);
           }
-        })
+        }),
       );
 
       // keep identifiers in sync
       props.setLowerCaseWord(lowerCaseSpelling);
       props.setDefinitionId(definitionId);
+
+      // save relations
+      await relationsEditorData.save({
+        id: definitionId,
+        spelling: spelling.trim(),
+      });
 
       // invalidate the old word
       if (migratingWords && props.lowerCaseWord != undefined) {
@@ -380,7 +394,7 @@ export default function DefinitionEditor(props: Props) {
           <CustomMultilineTextInput
             style={[styles.input, styles.textInput]}
             verticalPadding={styles.textInput.paddingVertical}
-            minHeight={128}
+            minHeight={92}
             placeholder={t("definition_placeholder")}
             value={definition}
             onChangeText={setDefinition}
@@ -398,7 +412,7 @@ export default function DefinitionEditor(props: Props) {
           <CustomMultilineTextInput
             style={[styles.input, styles.textInput]}
             verticalPadding={styles.textInput.paddingVertical}
-            minHeight={128}
+            minHeight={92}
             placeholder={t("example_placeholder")}
             value={example}
             onChangeText={setExample}
@@ -416,7 +430,7 @@ export default function DefinitionEditor(props: Props) {
           <CustomMultilineTextInput
             style={[styles.input, styles.textInput]}
             verticalPadding={styles.textInput.paddingVertical}
-            minHeight={128}
+            minHeight={92}
             placeholder={t("notes_placeholder")}
             value={notes}
             onChangeText={setNotes}
@@ -424,6 +438,16 @@ export default function DefinitionEditor(props: Props) {
         </View>
 
         <View style={theme.styles.separator} />
+
+        <View style={styles.row}>
+          <WordRelationIcon
+            style={styles.iconLabel}
+            color={theme.colors.iconButton}
+            size={32}
+          />
+
+          <RelationsEditor style={styles.input} data={relationsEditorData} />
+        </View>
 
         <CatInteraction style={styles.cat}>
           <Cat width={128} height={128} />
@@ -464,10 +488,10 @@ export default function DefinitionEditor(props: Props) {
                 ) {
                   stats.totalPronounced = Math.max(
                     stats.totalPronounced - 1,
-                    0
+                    0,
                   );
                 }
-              })
+              }),
             );
           }
 
