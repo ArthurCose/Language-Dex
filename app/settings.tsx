@@ -467,7 +467,7 @@ function DevelopmentSection({
         style={styles.row}
         android_ripple={theme.ripples.transparentButton}
         pointerEvents="box-only"
-        onPress={() => router.navigate("/logs")}
+        onPress={() => router.navigate("/dev-tools/logs")}
       >
         <Span style={styles.label}>{t("View_Logs")}</Span>
       </Pressable>
@@ -480,7 +480,7 @@ function DevelopmentSection({
             style={styles.row}
             android_ripple={theme.ripples.transparentButton}
             pointerEvents="box-only"
-            onPress={() => router.navigate("/table-viewer")}
+            onPress={() => router.navigate("/dev-tools/table-viewer")}
           >
             <Span style={styles.label}>View Tables</Span>
           </Pressable>
