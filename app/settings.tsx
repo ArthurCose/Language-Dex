@@ -463,28 +463,34 @@ function DevelopmentSection({
 
       <View style={theme.styles.separator} />
 
-      <Pressable
-        style={styles.row}
-        android_ripple={theme.ripples.transparentButton}
-        pointerEvents="box-only"
-        onPress={() => router.navigate("/dev-tools/logs")}
-      >
-        <Span style={styles.label}>{t("View_Logs")}</Span>
-      </Pressable>
+      <View style={styles.buttonRow}>
+        <Pressable
+          style={__DEV__ ? styles.rowButton : styles.row}
+          android_ripple={theme.ripples.transparentButton}
+          pointerEvents="box-only"
+          onPress={() => router.navigate("/dev-tools/logs")}
+        >
+          <Span style={styles.label}>{t("View_Logs")}</Span>
+        </Pressable>
+
+        {__DEV__ && (
+          <>
+            <View style={theme.styles.verticalSeparator} />
+
+            <Pressable
+              style={styles.rowButton}
+              android_ripple={theme.ripples.transparentButton}
+              pointerEvents="box-only"
+              onPress={() => router.navigate("/dev-tools/table-viewer")}
+            >
+              <Span style={styles.label}>View Tables</Span>
+            </Pressable>
+          </>
+        )}
+      </View>
 
       {__DEV__ && (
         <>
-          <View style={theme.styles.separator} />
-
-          <Pressable
-            style={styles.row}
-            android_ripple={theme.ripples.transparentButton}
-            pointerEvents="box-only"
-            onPress={() => router.navigate("/dev-tools/table-viewer")}
-          >
-            <Span style={styles.label}>View Tables</Span>
-          </Pressable>
-
           <View style={theme.styles.separator} />
 
           <Pressable
@@ -652,6 +658,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     padding: 16,
     paddingLeft: 24,
+  },
+  buttonRow: {
+    flexDirection: "row",
+  },
+  rowButton: {
+    flex: 1,
+    alignItems: "center",
+    padding: 16,
   },
   label: {
     fontSize: 20,

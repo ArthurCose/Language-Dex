@@ -38,6 +38,7 @@ export type Theme = {
     partOfSpeech: TextStyle;
     example: TextStyle;
     separator: ViewStyle;
+    verticalSeparator: ViewStyle;
     borders: { borderColor: string };
     backgroundDefinitionBorder: ViewStyle;
     gameListing: ViewStyle;
@@ -220,6 +221,11 @@ function createSimpleTheme(colors: Palette): Theme {
         borderColor: colors.borders,
         borderBottomWidth: 1,
         width: "100%",
+      },
+      verticalSeparator: {
+        borderColor: colors.borders,
+        borderRightWidth: 1,
+        height: "100%",
       },
       borders: {
         borderColor: colors.borders,
