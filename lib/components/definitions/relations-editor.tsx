@@ -238,7 +238,7 @@ export class RelationsEditorData {
     for (const word of words) {
       const synonymsId = word.synonymsId;
 
-      if (this.loadedSynonymClusters.has(word.id) || synonymsId == null) {
+      if (synonymsId == null || this.loadedSynonymClusters.has(synonymsId)) {
         continue;
       }
 
@@ -263,9 +263,11 @@ export class RelationsEditorData {
       const loadAntonyms = async () => {
         const antonymsId = await getClusterAntonymsId(synonymsId);
 
-        if (antonymsId == null) {
+        if (antonymsId == null || this.loadedSynonymClusters.has(antonymsId)) {
           return;
         }
+
+        this.loadedSynonymClusters.add(antonymsId);
 
         const clusterWords: RelationEditorSynonym[] =
           await listWordsInSynonymCluster(antonymsId);
