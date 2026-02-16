@@ -27,6 +27,7 @@ import { useTheme } from "../contexts/theme";
 import { Theme } from "../themes";
 import Dialog from "./dialog";
 import CustomTextInput from "./custom-text-input";
+import { Signal, useSignal, useSignalValue } from "../hooks/use-signal";
 
 type Props<T> = {
   style?: StyleProp<ViewStyle>;
@@ -131,13 +132,14 @@ type BlurProps = {
 };
 
 function EditableRowDummy({
-  text,
+  textSignal,
   onRename,
   onDelete,
   onBlur,
-}: EditableRowProps & BlurProps) {
+}: Omit<EditableRowProps, "text"> &
+  BlurProps & { textSignal: Signal<string> }) {
   const theme = useTheme();
-  const [currentText, setCurrentText] = useState(text);
+  const currentText = useSignalValue(textSignal);
 
   return (
     <View style={styles.rowStyle}>
@@ -148,11 +150,10 @@ function EditableRowDummy({
       <CustomTextInput
         autoFocus
         style={[styles.renameInput, styles.textInput]}
-        onChangeText={(text) => {
-          setCurrentText(text);
-        }}
+        onChangeText={(text) => textSignal.set(text)}
         onBlur={() => {
           if (currentText != "") {
+            textSignal.set("");
             onRename?.(currentText);
           }
           onBlur();
@@ -166,23 +167,22 @@ function EditableRowDummy({
 }
 
 type RowDummyProps = {
-  text: string;
+  textSignal: Signal<string>;
   onRename?: (name: string) => void;
 } & BlurProps;
 
-function RowDummy({ text, onRename, onBlur }: RowDummyProps) {
-  const [currentText, setCurrentText] = useState(text);
+function RowDummy({ textSignal, onRename, onBlur }: RowDummyProps) {
+  const currentText = useSignalValue(textSignal);
 
   return (
     <View style={styles.rowStyle}>
       <CustomTextInput
         autoFocus
         style={[styles.plainItem, styles.renameInput, styles.textInput]}
-        onChangeText={(text) => {
-          setCurrentText(text);
-        }}
+        onChangeText={(text) => textSignal.set(text)}
         onBlur={() => {
           if (currentText != "") {
+            textSignal.set("");
             onRename?.(currentText);
           }
           onBlur();
@@ -216,6 +216,16 @@ export default function EditableListPopup<T>({
   const reorderableListRef = useRef<FlatList<T> | null>(null);
   const virtualListRef = useRef<VirtualizedList<T> | null>(null);
 
+  const newItemTextSignal = useSignal("");
+
+  const addPendingItem = () => {
+    const newItemText = newItemTextSignal.get();
+
+    if (addingItem && onAdd && newItemText.length > 0) {
+      onAdd(newItemText);
+    }
+  };
+
   useEffect(() => {
     if (open) {
       setEditing(false);
@@ -239,7 +249,11 @@ export default function EditableListPopup<T>({
 
           <IconButton
             icon={editing ? CancelEditIcon : EditIcon}
-            onPress={() => setEditing(!editing)}
+            onPress={() => {
+              addPendingItem();
+              setAddingItem(false);
+              setEditing(!editing);
+            }}
           />
         </View>
 
@@ -262,10 +276,13 @@ export default function EditableListPopup<T>({
               addingItem ? (
                 <EditableRowDummy
                   theme={theme}
-                  text=""
+                  textSignal={newItemTextSignal}
                   onRename={onAdd && ((name) => onAdd(name))}
-                  onDelete={onDelete && (() => {})}
-                  onBlur={() => setAddingItem(false)}
+                  onDelete={onDelete && (() => setAddingItem(false))}
+                  onBlur={() => {
+                    addPendingItem();
+                    setAddingItem(false);
+                  }}
                 />
               ) : undefined
             }
@@ -313,7 +330,7 @@ export default function EditableListPopup<T>({
             ListFooterComponent={
               addingItem ? (
                 <RowDummy
-                  text=""
+                  textSignal={newItemTextSignal}
                   onRename={onAdd && ((name) => onAdd(name))}
                   onBlur={() => setAddingItem(false)}
                 />
@@ -355,7 +372,9 @@ export default function EditableListPopup<T>({
               android_ripple={theme.ripples.transparentButton}
               pointerEvents="box-only"
               onPress={() => {
+                addPendingItem();
                 setAddingItem(true);
+                newItemTextSignal.set("");
               }}
             >
               <Span style={styles.addItem}>{addItemText}</Span>
