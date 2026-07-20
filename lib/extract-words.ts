@@ -20,7 +20,9 @@ for (const name of SCRIPT_WHITELIST) {
 const COMMON_SCRIPT_PROP = Unistring.SCRIPT["Common"];
 
 export default function extractWords(text: string) {
-  const unistringSegments = Unistring.getWords(text.toLowerCase(), true);
+  text = text.toLowerCase();
+
+  const unistringSegments = Unistring.getWords(text, true);
 
   const scriptPropCache: { [codePoint: number]: number } = {};
 
@@ -39,9 +41,14 @@ export default function extractWords(text: string) {
 
   let lastSegment: SegmentationResult | undefined;
 
-  return unistringSegments.flatMap((segment) => {
+  const words = [];
+  let nextChainedIndex: number | null = null;
+
+  for (let i = 0; i < unistringSegments.length; i++) {
+    const segment = unistringSegments[i];
+
     if (!SCRIPT_WHITELIST_MAP[segment.type]) {
-      return [];
+      continue;
     }
 
     const lastSegmentTailIndex = lastSegment
@@ -49,10 +56,17 @@ export default function extractWords(text: string) {
       : undefined;
 
     if (segment.type == UNKNOWN_OR_KANJI) {
+      if (segment.text == "-" && lastSegmentTailIndex == segment.index) {
+        // join by hyphen https://github.com/ArthurCose/Language-Dex/issues/10
+        nextChainedIndex = segment.index + segment.length;
+        continue;
+      }
+
+      // ignore characters that aren't used by words
       const codePoint = Unistring.getCodePointArray(segment.text)[0];
 
       if (getScriptProp(codePoint) == COMMON_SCRIPT_PROP) {
-        return [];
+        continue;
       }
     } else if (
       segment.type == HIRAGANA &&
@@ -78,10 +92,22 @@ export default function extractWords(text: string) {
       };
 
       lastSegment = segment;
-      return [particleSegment, newSegment];
+      words.push(particleSegment, newSegment);
+      continue;
+    }
+
+    if (segment.index == nextChainedIndex && lastSegment) {
+      const startI = lastSegment.rawIndex;
+      const length = segment.rawIndex - lastSegment.rawIndex + segment.length;
+
+      lastSegment.length = length;
+      lastSegment.text = text.slice(startI, startI + length);
+      continue;
     }
 
     lastSegment = segment;
-    return [segment];
-  });
+    words.push(segment);
+  }
+
+  return words;
 }
