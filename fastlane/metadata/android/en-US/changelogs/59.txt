@@ -1,0 +1,3 @@
+- Added Synonym and Antonym lists in the word editor
+- Hyphens between letters now join words into a single word in the reader
+- Bumped Android SDK to version 36
