@@ -47,13 +47,13 @@
     "react-native": "0.83.10",
     "react-native-gesture-handler": "~2.30.0",
     "react-native-progress": "^5.0.1",
-    "react-native-reanimated": "4.5.3",
+    "react-native-reanimated": "4.2.1",
     "react-native-reorderable-list": "^0.9.0",
     "react-native-safe-area-context": "~5.6.2",
     "react-native-screens": "~4.23.0",
     "react-native-svg": "15.15.3",
     "react-native-uuid": "^2.0.3",
-    "react-native-worklets": "0.7.4"
+    "react-native-worklets": "^0.7.4"
   },
   "optionalDependencies": {
     "react-native-google-mobile-ads": "^15.8.3",
