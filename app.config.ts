@@ -33,17 +33,17 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       config.android!.blockedPermissions = [];
     }
     config.android!.blockedPermissions.push(
-      "android.permission.SYSTEM_ALERT_WINDOW"
+      "android.permission.SYSTEM_ALERT_WINDOW",
     );
 
     const requiresInternet = dependenciesRequiringInternet.some((name) =>
-      fs.existsSync(path.join("node_modules", name))
+      fs.existsSync(path.join("node_modules", name)),
     );
 
     if (!requiresInternet) {
       config.android!.blockedPermissions.push(
         "android.permission.INTERNET",
-        "android.permission.ACCESS_NETWORK_STATE"
+        "android.permission.ACCESS_NETWORK_STATE",
       );
     }
   }

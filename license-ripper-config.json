@@ -50,6 +50,9 @@
     "@expo/metro-runtime": {
       "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
     },
+    "@expo/log-box": {
+      "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
+    },
     "expo": {
       "licenses": [{ "expression": "MIT", "file": "licenses/expo.txt" }]
     },

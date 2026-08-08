@@ -75,7 +75,7 @@ export function initInAppPurchases(userDataSignal: Signal<UserData>) {
       if (receipt != null) {
         finishTransaction({ purchase, isConsumable: false })
           .then(() =>
-            userDataSignal.set({ ...userDataSignal.get(), removeAds: true })
+            userDataSignal.set({ ...userDataSignal.get(), removeAds: true }),
           )
           .catch(logError);
       }
