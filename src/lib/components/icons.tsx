@@ -1,6 +1,5 @@
 import { ColorValue, StyleProp, TextStyle, Text } from "react-native";
-import MaterialDesignIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons";
 
 export type IconProps = {
   color?: ColorValue;
@@ -117,7 +116,7 @@ export function NotesIcon(props: IconProps) {
 }
 
 export function WordRelationIcon(props: IconProps) {
-  return <MaterialIcons name="join-left" {...props} />;
+  return <MaterialDesignIcons name="set-left-center" {...props} />;
 }
 
 export function SaveIcon(props: IconProps) {
