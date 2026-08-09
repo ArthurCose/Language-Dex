@@ -88,4 +88,4 @@ yarn run android
 - `/locales`: Localization files
 - `/scripts`: Tools and build scripts
 
-`@/` in `import` statements point to the project root. (`@/lib` points to `/lib`)
+`@/` in `import` statements point to the project root. (`@/src/lib` points to `/src/lib`)
