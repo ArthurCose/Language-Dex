@@ -20,12 +20,6 @@
       "softwareKeyboardLayoutMode": "resize",
       "blockedPermissions": ["com.google.android.gms.permission.AD_ID"]
     },
-    "androidStatusBar": {
-      "translucent": true
-    },
-    "androidNavigationBar": {
-      "enforceContrast": false
-    },
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -60,6 +54,12 @@
           "dark": {
             "backgroundColor": "#000000"
           }
+        }
+      ],
+      [
+        "expo-navigation-bar",
+        {
+          "enforceContrast": false
         }
       ]
     ],
