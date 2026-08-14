@@ -470,7 +470,7 @@ function DevelopmentSection({
 
       <View style={styles.buttonRow}>
         <Pressable
-          style={__DEV__ ? styles.rowButton : styles.row}
+          style={__DEV__ ? styles.rowButton : styles.rowButtonFull}
           android_ripple={theme.ripples.transparentButton}
           pointerEvents="box-only"
           onPress={() => router.navigate("/dev-tools/logs")}
@@ -680,6 +680,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     padding: 16,
+  },
+  rowButtonFull: {
+    flex: 1,
+    flexDirection: "row",
+    padding: 16,
+    paddingLeft: 24,
   },
   label: {
     fontSize: 20,

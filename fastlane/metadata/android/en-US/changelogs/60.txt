@@ -1,0 +1,2 @@
+- Fixed hard to press View Logs button
+- Fixed translucent navigation bar
