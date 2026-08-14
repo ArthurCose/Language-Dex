@@ -1,6 +1,25 @@
 import fs from "node:fs";
 
-const signingConfig = `
+const replacements: [string, string][] = [
+  [
+    `
+            // Caution! In production, you need to generate your own keystore file.
+            // see https://reactnative.dev/docs/signed-apk-android.
+            signingConfig signingConfigs.debug`,
+    `
+            signingConfig signingConfigs.release`,
+  ],
+  [
+    `
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }`,
+    `
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -16,50 +35,15 @@ const signingConfig = `
                 keyPassword System.getenv("UPLOAD_KEY_PASSWORD")
             }
         }
-    }
-    buildTypes {
-        debug {
-            signingConfig signingConfigs.debug
-        }
-        release {
-            signingConfig signingConfigs.release
-        }
-    }\
-`;
+    }`,
+  ],
+];
 
 const filePath = "android/app/build.gradle";
-const contents = fs.readFileSync(filePath, "utf8");
+let contents: string = fs.readFileSync(filePath, "utf8");
 
-// expecting signingConfigs, then buildTypes
-const startIndex = /\n *signingConfigs {/.exec(contents)!.index;
-const buildTypesIndex = contents.indexOf("buildTypes {");
-
-// find the end of buildTypes
-function findBlockEnd(preBlockIndex: number) {
-  let blocks = 0;
-
-  for (let i = preBlockIndex; i++; i < contents.length) {
-    switch (contents[i]) {
-      case "{":
-        blocks++;
-        break;
-      case "}":
-        blocks--;
-
-        if (blocks == 0) {
-          return i + 1;
-        }
-
-        break;
-    }
-  }
-
-  throw new Error("Failed to find closing bracket in build.gradle before EOF");
+for (const [searchValue, replaceValue] of replacements) {
+  contents = contents.replace(searchValue, replaceValue);
 }
 
-const endIndex = findBlockEnd(buildTypesIndex);
-
-fs.writeFileSync(
-  filePath,
-  contents.slice(0, startIndex) + signingConfig + contents.slice(endIndex)
-);
+fs.writeFileSync(filePath, contents);
