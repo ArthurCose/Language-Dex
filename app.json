@@ -12,7 +12,7 @@
     },
     "android": {
       "package": "dev.arthurcose.languagedex",
-      "versionCode": 62,
+      "versionCode": 63,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#aa33ff"
@@ -28,7 +28,12 @@
     "plugins": [
       "./plugins/withAdiRegistration",
       "expo-asset",
-      "expo-audio",
+      [
+        "expo-audio",
+        {
+          "enableBackgroundPlayback": false
+        }
+      ],
       "expo-font",
       "expo-localization",
       "expo-router",
