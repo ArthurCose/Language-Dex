@@ -11,8 +11,6 @@ import { PortalHost } from "@rn-primitives/portal";
 import { clearLog, log, logError } from "@/src/lib/log";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import KeyboardDismisser from "@/src/lib/components/keyboard-dismisser";
-import { initInAppPurchases } from "@/src/lib/in-app-purchases";
-import { initAds } from "@/src/lib/components/ads";
 import { Signal, useSignal, useSignalLens } from "@/src/lib/hooks/use-signal";
 
 import "@/src/lib/i18n";
@@ -63,9 +61,6 @@ export default function RootLayout() {
       .then((data) => {
         userDataSignal.set(data);
         userDataSignal.subscribe((data) => saveUserData(data!).catch(logError));
-
-        initAds(data);
-        initInAppPurchases(userDataSignal as Signal<UserData>);
       })
       .catch(logError);
   }, []);

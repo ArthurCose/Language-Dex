@@ -44,7 +44,6 @@ import {
   DockedTextInputSubmitButton,
 } from "@/src/lib/components/practice/docked-text-input";
 import { SubMenuIconButton } from "@/src/lib/components/icon-button";
-import { PracticeAd } from "@/src/lib/components/ads";
 import { toGraphemes } from "@/src/lib/practice/words";
 
 type Guess = { graphemes: Grapheme[]; pending: boolean; valid: boolean };
@@ -374,7 +373,6 @@ export default function () {
       </SubMenuTopNav>
 
       <GameTitle>{t("Guess_the_Word")}</GameTitle>
-      <PracticeAd />
 
       <ScrollView
         ref={scrollViewRef}

@@ -29,7 +29,6 @@ import Animated, {
 } from "react-native-reanimated";
 import usePracticeColors from "@/src/lib/hooks/use-practice-colors";
 import RouteRoot from "@/src/lib/components/route-root";
-import { PracticeAd } from "@/src/lib/components/ads";
 import useAnimationEffects from "@/src/lib/hooks/use-animation-effects";
 import {
   DockedTextInput,
@@ -103,9 +102,6 @@ export default function () {
     userDataSignal,
     (data) => data.activeDictionary,
   );
-
-  const [resolvedAdSize, setResolvedAdSize] = useState(false);
-  const onAdResize = useCallback(() => setResolvedAdSize(true), []);
 
   const [gameState, setGameState] = useState(() => initGameState([]));
 
@@ -231,9 +227,7 @@ export default function () {
         <CorrectScore score={gameState.correctCount} />
       </ScoreRow>
 
-      <PracticeAd onSizeChange={onAdResize} />
-
-      {resolvedAdSize && !gameState.loading && (
+      {!gameState.loading && (
         <>
           <Animated.View style={[styles.definitionAndWordBlock, opacityStyle]}>
             <View style={styles.definitionBlock}>

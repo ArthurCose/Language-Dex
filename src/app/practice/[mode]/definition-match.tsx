@@ -58,7 +58,6 @@ import {
 import RouteRoot from "@/src/lib/components/route-root";
 import { SubMenuIconButton } from "@/src/lib/components/icon-button";
 import { PracticeResultsIcon } from "@/src/lib/components/icons";
-import { PracticeAd } from "@/src/lib/components/ads";
 
 export type DefinitionMatchGameMode = "endless" | "timed" | "rush";
 export const definitionMatchModeList: DefinitionMatchGameMode[] = [
@@ -483,8 +482,6 @@ export default function () {
           <Score score={gameState.score} />
         </ScoreRow>
       )}
-
-      <PracticeAd />
 
       <Animated.View
         style={[styles.rows, opacityStyle]}

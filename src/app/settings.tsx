@@ -34,15 +34,6 @@ import * as DocumentPicker from "expo-document-picker";
 import { bumpDictionaryVersion } from "@/src/lib/hooks/use-word-definitions";
 import RouteRoot from "@/src/lib/components/route-root";
 import {
-  isIapAvailable,
-  requestAdRemoval,
-  useCanRequestAdRemoval,
-} from "@/src/lib/in-app-purchases";
-import {
-  isPrivacyOptionsFormRequired,
-  showPrivacyOptionsForm,
-} from "@/src/lib/components/ads";
-import {
   Signal,
   useSignalLens,
   useSignalValue,
@@ -296,89 +287,6 @@ function DictionariesSection({
   );
 }
 
-function AdsSection({
-  longTaskSignal,
-}: {
-  longTaskSignal: Signal<LongTaskMeta>;
-}) {
-  const theme = useTheme();
-  const [t] = useTranslation();
-  const userDataSignal = useUserDataSignal();
-  const removedAds = useSignalLens(userDataSignal, (d) => d.removeAds);
-
-  const canRequestAdRemoval = useCanRequestAdRemoval();
-
-  return (
-    <>
-      <Span style={[styles.sectionHeader, theme.styles.poppingText]}>
-        {t("Ads")}
-      </Span>
-
-      <Pressable
-        style={styles.row}
-        android_ripple={theme.ripples.transparentButton}
-        pointerEvents="box-only"
-        onPress={() => {
-          if (!canRequestAdRemoval) {
-            const taskData = longTaskSignal.get();
-            longTaskSignal.set({
-              ...taskData,
-              open: true,
-              name: t("Requires_Internet"),
-            });
-            taskData.completedSignal.set(true);
-            taskData.messageSignal.set(t("failed_to_fetch_product"));
-            return;
-          }
-
-          requestAdRemoval().catch(logError);
-        }}
-        disabled={removedAds}
-      >
-        <Span style={[styles.label, removedAds && theme.styles.disabledText]}>
-          {removedAds ? t("Removed_Ads") : t("Remove_Ads")}
-        </Span>
-
-        {removedAds && <Span style={styles.value}>✅</Span>}
-      </Pressable>
-
-      <View style={theme.styles.separator} />
-
-      {isPrivacyOptionsFormRequired() && (
-        <>
-          <View style={theme.styles.separator} />
-
-          <Pressable
-            style={styles.row}
-            android_ripple={theme.ripples.transparentButton}
-            pointerEvents="box-only"
-            onPress={showPrivacyOptionsForm}
-          >
-            <Span style={styles.label}>{t("Show_Privacy_Options")}</Span>
-          </Pressable>
-
-          <View style={theme.styles.separator} />
-        </>
-      )}
-
-      <Pressable
-        style={styles.row}
-        android_ripple={theme.ripples.transparentButton}
-        pointerEvents="box-only"
-        onPress={() => {
-          Linking.openURL(
-            "https://arthurcose.dev/legal/language-dex/privacy-policy.html",
-          ).catch(logError);
-        }}
-      >
-        <Span style={styles.label}>{t("Privacy_Policy")}</Span>
-      </Pressable>
-
-      <View style={theme.styles.separator} />
-    </>
-  );
-}
-
 function HelpSection() {
   const theme = useTheme();
   const [t] = useTranslation();
@@ -403,6 +311,21 @@ function HelpSection() {
         }}
       >
         <Span style={styles.label}>{t("Replay_Tutorial")}</Span>
+      </Pressable>
+
+      <View style={theme.styles.separator} />
+
+      <Pressable
+        style={styles.row}
+        android_ripple={theme.ripples.transparentButton}
+        pointerEvents="box-only"
+        onPress={() => {
+          Linking.openURL(
+            "https://arthurcose.dev/legal/language-dex/privacy-policy.html",
+          ).catch(logError);
+        }}
+      >
+        <Span style={styles.label}>{t("Privacy_Policy")}</Span>
       </Pressable>
 
       <View style={theme.styles.separator} />
@@ -438,22 +361,20 @@ function DevelopmentSection({
         <Span style={styles.label}>{t("GitHub")}</Span>
       </Pressable>
 
-      {!isIapAvailable() && (
-        <>
-          <View style={theme.styles.separator} />
+      <>
+        <View style={theme.styles.separator} />
 
-          <Pressable
-            style={styles.row}
-            android_ripple={theme.ripples.transparentButton}
-            pointerEvents="box-only"
-            onPress={() => {
-              Linking.openURL("https://ko-fi.com/arthurcose").catch(logError);
-            }}
-          >
-            <Span style={styles.label}>{t("Ko-fi")}</Span>
-          </Pressable>
-        </>
-      )}
+        <Pressable
+          style={styles.row}
+          android_ripple={theme.ripples.transparentButton}
+          pointerEvents="box-only"
+          onPress={() => {
+            Linking.openURL("https://ko-fi.com/arthurcose").catch(logError);
+          }}
+        >
+          <Span style={styles.label}>{t("Ko-fi")}</Span>
+        </Pressable>
+      </>
 
       <View style={theme.styles.separator} />
 
@@ -654,7 +575,6 @@ export default function () {
       <ScrollView>
         <CustomizationSection />
         <DictionariesSection longTaskSignal={longTaskSignal} />
-        {isIapAvailable() && <AdsSection longTaskSignal={longTaskSignal} />}
         <HelpSection />
         <DevelopmentSection longTaskSignal={longTaskSignal} />
         <NavigationBarSpacer />

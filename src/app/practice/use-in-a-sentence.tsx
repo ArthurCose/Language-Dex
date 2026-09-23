@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Animated, { useSharedValue } from "react-native-reanimated";
 import { StyleSheet, View } from "react-native";
-import { PracticeAd } from "@/src/lib/components/ads";
 import {
   GameTitle,
   Saved,
@@ -123,9 +122,6 @@ export default function () {
   );
   const [t] = useTranslation();
 
-  const [resolvedAdSize, setResolvedAdSize] = useState(false);
-  const onAdResize = useCallback(() => setResolvedAdSize(true), []);
-
   const [sentence, setSentence] = useState("");
 
   const [gameState, setGameState] = useState(() => initGameState([]));
@@ -195,8 +191,6 @@ export default function () {
         <Saved value={gameState.saveCount} />
         <Score score={gameState.score} />
       </ScoreRow>
-
-      <PracticeAd onSizeChange={onAdResize} />
 
       <Animated.View style={[styles.wordAndDefinitionBlock, opacityStyle]}>
         <WordBubble>{definitionData?.spelling}</WordBubble>

@@ -71,7 +71,6 @@ import {
 } from "@/src/lib/components/practice/results";
 import RouteRoot from "@/src/lib/components/route-root";
 import { SubMenuIconButton } from "@/src/lib/components/icon-button";
-import { PracticeAd } from "@/src/lib/components/ads";
 import {
   joinGraphemes,
   toGraphemes,
@@ -451,9 +450,6 @@ export default function () {
       data.dictionaries.find((d) => d.id == data.activeDictionary)!.stats,
   );
 
-  const [resolvedAdSize, setResolvedAdSize] = useState(false);
-  const onAdResize = useCallback(() => setResolvedAdSize(true), []);
-
   const [allWords, setAllWords] = useState<GameWord[] | null>(null);
   const [gameState, setGameState, getGameState] = useGettableState(() =>
     initGameState([], params.mode as UnscrambleGameMode),
@@ -630,9 +626,7 @@ export default function () {
         </ScoreRow>
       )}
 
-      <PracticeAd onSizeChange={onAdResize} />
-
-      {resolvedAdSize && !gameState.loading && (
+      {!gameState.loading && (
         <>
           <Animated.View style={[styles.definitionBlock, opacityStyle]}>
             <DefinitionBubble>

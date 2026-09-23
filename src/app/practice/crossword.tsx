@@ -55,7 +55,6 @@ import { isRTL, toGraphemeStrings } from "@/src/lib/practice/words";
 import { pickIndexWithLenUnbiased } from "@/src/lib/practice/random";
 import Dialog from "@/src/lib/components/dialog";
 import { Span } from "@/src/lib/components/text";
-import { PracticeAd } from "@/src/lib/components/ads";
 
 type GameState = {
   over: boolean;
@@ -146,8 +145,6 @@ export default function () {
     userDataSignal,
     (data) => data.activeDictionary,
   );
-  const [resolvedAdSize, setResolvedAdSize] = useState(false);
-  const onAdResize = useCallback(() => setResolvedAdSize(true), []);
 
   const [allWords, setAllWords] = useState<string[] | null>(null);
   const [gameState, setGameState, getGameState] = useGettableState(() =>
@@ -280,9 +277,8 @@ export default function () {
       </ScoreRow>
 
       {/* <GameTitle>{t("Crossword")}</GameTitle> */}
-      <PracticeAd onSizeChange={onAdResize} />
 
-      {resolvedAdSize && allWords && (
+      {allWords && (
         <>
           <ScrollView
             style={styles.outerScrollView}

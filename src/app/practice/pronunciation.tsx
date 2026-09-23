@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { StyleSheet, View, Animated, useAnimatedValue } from "react-native";
-import { PracticeAd } from "@/src/lib/components/ads";
 import RouteRoot from "@/src/lib/components/route-root";
 import SubMenuTopNav, {
   SubMenuBackButton,
@@ -103,9 +102,6 @@ export default function () {
     (data) => data.activeDictionary,
   );
   const [t] = useTranslation();
-
-  const [resolvedAdSize, setResolvedAdSize] = useState(false);
-  const onAdResize = useCallback(() => setResolvedAdSize(true), []);
 
   const [gameState, setGameState, getGameState] = useGettableState(() =>
     initGameState([]),
@@ -254,9 +250,7 @@ export default function () {
         <ThumbsUps value={gameState.score} />
       </ScoreRow>
 
-      <PracticeAd onSizeChange={onAdResize} />
-
-      {resolvedAdSize && !gameState.loading && (
+      {!gameState.loading && (
         <>
           <Animated.View
             style={[styles.definitionBlock, { opacity: definitionOpacity }]}
