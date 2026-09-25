@@ -6,6 +6,7 @@ import SubMenuTopNav, {
 import { Span } from "@/src/lib/components/text";
 import { useTheme } from "@/src/lib/contexts/theme";
 import { router } from "expo-router";
+import * as Sharing from "expo-sharing";
 import { useTranslation } from "react-i18next";
 import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import ListPopup from "@/src/lib/components/list-popup";
@@ -271,6 +272,7 @@ function DictionariesSection({
           );
 
           exportData(userData, value?.id, progressCallback)
+            .then((path) => Sharing.shareAsync("file://" + path))
             .then(() => messageSignal.set(t("Success_exclamation")))
             .catch((err) => {
               messageSignal.set(t("An_error_occurred"));

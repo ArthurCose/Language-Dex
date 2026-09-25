@@ -1,5 +1,4 @@
 import * as SQLite from "expo-sqlite";
-import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system/legacy";
 import db from "./db";
 import { log } from "../log";
@@ -44,6 +43,9 @@ async function extractCount(
   return result?.["COUNT(*)"] ?? 0;
 }
 
+/// Creates a new sqlite file, overwriting any previously exported file
+///
+/// Returns the path to the sqlite file
 export async function exportData(
   userData: UserData,
   dictionaryId: number | undefined,
@@ -52,8 +54,9 @@ export async function exportData(
     i: number,
     total: number,
   ) => void,
-) {
+): Promise<string> {
   log("Exporting Data...");
+
   const startTime = performance.now();
 
   const dictionary = userData.dictionaries.find((d) => d.id == dictionaryId);
@@ -312,7 +315,7 @@ CREATE TABLE files (
     await exportDb.closeAsync();
   }
 
-  await Sharing.shareAsync("file://" + exportDb.databasePath);
+  return exportDb.databasePath;
 }
 
 export async function importData(
