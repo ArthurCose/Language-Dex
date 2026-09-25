@@ -13,7 +13,7 @@ import {
   getWordDefinitions,
   WordDefinitionData,
 } from "@/src/lib/data";
-import db from "@/src/lib/db";
+import db from "@/src/lib/data/db";
 
 async function getDefinition(dictionaryId: number, lowercaseSpelling: string) {
   return (await getWordDefinitions(dictionaryId, lowercaseSpelling))!

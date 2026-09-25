@@ -5,6 +5,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ThemeContext } from "@/src/lib/contexts/theme";
 import { themeList, themeConstructors } from "@/src/lib/themes";
 import { loadUserData, saveUserData, UserData } from "@/src/lib/data";
+import { initDb } from "@/src/lib/data/db";
+import { launchCleanup } from "@/src/lib/data/cleanup";
 import { UserDataContext } from "@/src/lib/contexts/user-data";
 import { Stack, usePathname } from "expo-router";
 import { PortalHost } from "@rn-primitives/portal";
@@ -57,7 +59,9 @@ export default function RootLayout() {
     // reloaded app?
     clearLog();
 
-    loadUserData(t)
+    launchCleanup()
+      .then(() => initDb())
+      .then(() => loadUserData(t))
       .then((data) => {
         userDataSignal.set(data);
         userDataSignal.subscribe((data) => saveUserData(data!).catch(logError));

@@ -1,0 +1,93 @@
+import * as SQLite from "expo-sqlite";
+
+const db = SQLite.openDatabaseSync("db");
+
+export default db;
+
+export async function initDb() {
+  await db.execAsync(`
+PRAGMA journal_mode = WAL;
+PRAGMA auto_vacuum = FULL;
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS word_shared_data (
+  id                  INTEGER PRIMARY KEY NOT NULL,
+  dictionaryId        INTEGER NOT NULL,
+  spelling            TEXT NOT NULL,
+  insensitiveSpelling TEXT NOT NULL,
+  graphemeCount       INTEGER NOT NULL,
+  minConfidence       REAL NOT NULL,
+  latestAt            INTEGER NOT NULL,
+  createdAt           INTEGER NOT NULL,
+  updatedAt           INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS word_shared_data_spelling_index ON word_shared_data(
+  dictionaryId,
+  spelling
+);
+
+CREATE INDEX IF NOT EXISTS word_shared_data_latest_index ON word_shared_data(
+  dictionaryId,
+  latestAt
+);
+
+CREATE INDEX IF NOT EXISTS word_shared_data_length_index ON word_shared_data(
+  dictionaryId,
+  graphemeCount,
+  spelling
+);
+
+CREATE INDEX IF NOT EXISTS word_shared_data_confidence_index ON word_shared_data(
+  dictionaryId,
+  minConfidence ASC,
+  latestAt DESC
+);
+
+CREATE TABLE IF NOT EXISTS word_definition_data (
+  id                 INTEGER PRIMARY KEY NOT NULL,
+  dictionaryId       INTEGER NOT NULL,
+  sharedId           INTEGER NOT NULL REFERENCES word_shared_data(id),
+  orderKey           INTEGER NOT NULL,
+  spelling           TEXT NOT NULL,
+  confidence         INTEGER NOT NULL,
+  partOfSpeech       INTEGER,
+  pronunciationAudio TEXT,
+  definition         TEXT NOT NULL,
+  example            TEXT NOT NULL,
+  notes              TEXT NOT NULL,
+  synonymsId         INTEGER,
+  createdAt          INTEGER NOT NULL,
+  updatedAt          INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS word_definition_data_index ON word_definition_data(dictionaryId, sharedId);
+
+CREATE INDEX IF NOT EXISTS word_pronunciation_confidence_index ON word_definition_data(
+  dictionaryId,
+  confidence ASC,
+  createdAt DESC
+) WHERE pronunciationAudio IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS word_definition_data_confidence_index ON word_definition_data(
+  dictionaryId,
+  confidence ASC,
+  createdAt DESC
+);
+
+CREATE INDEX IF NOT EXISTS word_definition_data_synonyms_index ON word_definition_data(
+  synonymsId
+);
+
+CREATE TABLE IF NOT EXISTS synonym_clusters (
+  id         INTEGER PRIMARY KEY NOT NULL,
+  antonymsId INTEGER REFERENCES synonym_clusters(id) ON DELETE SET NULL
+);
+`);
+
+  // CREATE TABLE IF NOT EXISTS scan_history (
+  //   id            INTEGER PRIMARY KEY NOT NULL,
+  //   dictionaryId  INTEGER NOT NULL,
+  //   text          TEXT NOT NULL,
+  //   createdAt     INTEGER NOT NULL
+  // );
+}
