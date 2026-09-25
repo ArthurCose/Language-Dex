@@ -1,6 +1,6 @@
 import * as SQLite from "expo-sqlite";
 import * as FileSystem from "expo-file-system/legacy";
-import db from "./db";
+import db, { extractCount } from "./db";
 import { log } from "../log";
 import { UserData } from "./user";
 import { DictionaryData } from "./dictionary-meta";
@@ -30,18 +30,6 @@ export type ExportImportStage =
   | "words"
   | "definitions"
   | "relations";
-
-async function extractCount(
-  db: SQLite.SQLiteDatabase,
-  query: string,
-  params?: SQLite.SQLiteBindParams,
-) {
-  const result = params
-    ? await db.getFirstAsync<{ "COUNT(*)": number }>(query, params)
-    : await db.getFirstAsync<{ "COUNT(*)": number }>(query);
-
-  return result?.["COUNT(*)"] ?? 0;
-}
 
 /// Creates a new sqlite file, overwriting any previously exported file
 ///

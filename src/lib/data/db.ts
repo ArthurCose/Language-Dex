@@ -91,3 +91,15 @@ CREATE TABLE IF NOT EXISTS synonym_clusters (
   //   createdAt     INTEGER NOT NULL
   // );
 }
+
+export async function extractCount(
+  db: SQLite.SQLiteDatabase,
+  query: string,
+  params?: SQLite.SQLiteBindParams,
+) {
+  const result = params
+    ? await db.getFirstAsync<{ "COUNT(*)": number }>(query, params)
+    : await db.getFirstAsync<{ "COUNT(*)": number }>(query);
+
+  return result?.["COUNT(*)"] ?? 0;
+}
