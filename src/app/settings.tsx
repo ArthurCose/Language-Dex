@@ -272,7 +272,7 @@ function DictionariesSection({
           );
 
           exportData(userData, value?.id, progressCallback)
-            .then((path) => Sharing.shareAsync("file://" + path))
+            .then((uri) => Sharing.shareAsync(uri))
             .then(() => messageSignal.set(t("Success_exclamation")))
             .catch((err) => {
               messageSignal.set(t("An_error_occurred"));

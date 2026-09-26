@@ -31,9 +31,11 @@ export type ExportImportStage =
   | "definitions"
   | "relations";
 
-/// Creates a new sqlite file, overwriting any previously exported file
-///
-/// Returns the path to the sqlite file
+/**
+ * Creates a new sqlite file, overwriting any previously exported file.
+ *
+ * Returns the URI to the sqlite file.
+ */
 export async function exportData(
   userData: UserData,
   dictionaryId: number | undefined,
@@ -303,7 +305,7 @@ CREATE TABLE files (
     await exportDb.closeAsync();
   }
 
-  return exportDb.databasePath;
+  return "file://" + exportDb.databasePath;
 }
 
 export async function importData(
