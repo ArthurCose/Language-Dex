@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import Animated, {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 
 type PercentString = `${number}%`;
 
@@ -65,9 +65,9 @@ export default function Carousel({
       { duration: 100 },
       (completed) => {
         if (completed) {
-          runOnJS(onComplete)();
+          scheduleOnRN(onComplete);
         }
-      }
+      },
     );
   }, [pageIndex]);
 

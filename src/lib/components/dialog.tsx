@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Portal } from "@rn-primitives/portal";
 import Animated, {
   AnimatedStyle,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 import { useTheme } from "../contexts/theme";
 import {
   Pressable,
@@ -121,7 +121,7 @@ export default function Dialog({
 
     closing.value = !open;
     progress.value = withTiming(open ? 1 : 0, { duration: 100 }, () => {
-      runOnJS(complete)();
+      scheduleOnRN(complete);
     });
   }, [open]);
 

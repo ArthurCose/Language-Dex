@@ -1,18 +1,12 @@
 import React, { useEffect, useState } from "react";
-import {
-  Pressable,
-  StyleProp,
-  StyleSheet,
-  Text,
-  ViewStyle,
-} from "react-native";
+import { Pressable, StyleProp, Text, ViewStyle } from "react-native";
 import Animated, {
   Easing,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 import { useUserDataSignal } from "../contexts/user-data";
 
 let idCounter: number = 0;
@@ -57,8 +51,8 @@ const Heart = React.memo(function ({ startX, startY, onComplete }: HeartData) {
       0,
       { easing: Easing.linear, duration: despawnMs },
       () => {
-        runOnJS(onComplete)();
-      }
+        scheduleOnRN(onComplete);
+      },
     );
   }, []);
 

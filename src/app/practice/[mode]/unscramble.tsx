@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/src/lib/contexts/theme";
@@ -48,10 +42,10 @@ import {
 } from "@/src/lib/components/icons";
 import Animated, {
   useSharedValue,
-  runOnJS,
   withSpring,
   useAnimatedStyle,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 import {
   Gesture,
   GestureDetector,
@@ -386,10 +380,10 @@ const ChipSlot = React.memo(function ({
     };
 
     return Gesture.Pan()
-      .onBegin(() => runOnJS(begin)())
-      .onStart(() => runOnJS(start)())
+      .onBegin(() => scheduleOnRN(begin))
+      .onStart(() => scheduleOnRN(start))
       .onUpdate((e) => update(e.translationX, e.translationY))
-      .onFinalize((e, success) => runOnJS(finalize)(e, success));
+      .onFinalize((e, success) => scheduleOnRN(finalize, e, success));
   }, [index]);
 
   return (

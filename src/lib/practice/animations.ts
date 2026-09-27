@@ -1,12 +1,12 @@
-import Reanimated, {
+import { Animated } from "react-native";
+import {
   AnimatableValue,
   Easing,
-  runOnJS,
   SharedValue,
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import { Animated } from "react-native";
+import { scheduleOnRN } from "react-native-worklets";
 
 export const fadeTimingConfig = {
   duration: 500,
@@ -16,19 +16,19 @@ export const fadeTimingConfig = {
 export function flash<T extends AnimatableValue>(
   sharedValue: SharedValue<T>,
   to: T,
-  final: T
+  final: T,
 ): void;
 
 export function flash(
   sharedValue: Animated.Value,
   to: number,
-  final: number
+  final: number,
 ): void;
 
 export function flash<T extends AnimatableValue>(
   sharedValue: SharedValue<T> | Animated.Value,
   to: T,
-  final: T
+  final: T,
 ) {
   if (sharedValue instanceof Animated.Value) {
     // react native's animated
@@ -48,7 +48,7 @@ export function flash<T extends AnimatableValue>(
     // reanimated
     sharedValue.value = withSequence(
       withTiming(to, fadeTimingConfig),
-      withTiming(final, fadeTimingConfig)
+      withTiming(final, fadeTimingConfig),
     );
   }
 }
@@ -56,19 +56,19 @@ export function flash<T extends AnimatableValue>(
 export function fadeTo<T extends AnimatableValue>(
   sharedValue: SharedValue<T>,
   final: T,
-  callback?: (finished: boolean | undefined) => void
+  callback?: (finished: boolean | undefined) => void,
 ): void;
 
 export function fadeTo(
   sharedValue: Animated.Value,
   final: number,
-  callback?: (finished: boolean | undefined) => void
+  callback?: (finished: boolean | undefined) => void,
 ): void;
 
 export function fadeTo<T extends AnimatableValue>(
   sharedValue: SharedValue<T> | Animated.Value,
   final: T,
-  callback?: (finished: boolean | undefined) => void
+  callback?: (finished: boolean | undefined) => void,
 ) {
   if (sharedValue instanceof Animated.Value) {
     // react native's animated
@@ -81,7 +81,7 @@ export function fadeTo<T extends AnimatableValue>(
     // reanimated
     sharedValue.value = withTiming(final, fadeTimingConfig, (finished) => {
       if (callback) {
-        runOnJS(callback)(finished);
+        scheduleOnRN(callback, finished);
       }
     });
   }
