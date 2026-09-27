@@ -18,7 +18,7 @@
         "backgroundColor": "#aa33ff"
       },
       "softwareKeyboardLayoutMode": "resize",
-      "blockedPermissions": ["com.google.android.gms.permission.AD_ID"]
+      "blockedPermissions": ["android.permission.INTERNET"]
     },
     "web": {
       "bundler": "metro",
