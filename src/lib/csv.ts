@@ -2,6 +2,11 @@ const quoteCharCode = '"'.charCodeAt(0);
 const carriageReturnCharCode = "\r".charCodeAt(0);
 const lineFeedCharCode = "\n".charCodeAt(0);
 const commaCharCode = ",".charCodeAt(0);
+const separatorCharCodes = [
+  commaCharCode,
+  "\t".charCodeAt(0),
+  ";".charCodeAt(0),
+];
 
 export function countCsvRows(csv: string) {
   let inQuote = false;
@@ -58,9 +63,14 @@ export function encodeCsvField(s: string): string {
 
   if (
     newString.length != s.length ||
-    s.includes(",") ||
+    // new line
     s.includes("\r") ||
-    s.includes("\n")
+    s.includes("\n") ||
+    // separator
+    s.includes(",") ||
+    // extra separators picked up by excel and librecalc
+    s.includes("\t") ||
+    s.includes(";")
   ) {
     return '"' + newString + '"';
   }
@@ -77,13 +87,42 @@ export class CsvParser {
   csv: string;
   lastIndex = 0;
   fieldQuoted = false;
+  separatorCharCode?: number;
   public lastRow: string[] = [];
 
   constructor(csv: string) {
     this.csv = csv;
   }
 
+  // resolve separator based on the first supported separator found outside of quotes
+  private resolveSeparatorCharCode(): number {
+    const csv = this.csv;
+
+    for (let i = 0; i < csv.length; i++) {
+      const code = csv.charCodeAt(i);
+
+      if (code == quoteCharCode) {
+        const quoteEnd = csv.indexOf('"', i + 1);
+
+        if (quoteEnd == -1) {
+          // failed to find the end of the quote
+          break;
+        }
+
+        i = quoteEnd;
+      } else if (separatorCharCodes.includes(code)) {
+        return code;
+      }
+    }
+
+    return commaCharCode;
+  }
+
   readRow() {
+    if (this.separatorCharCode == null) {
+      this.separatorCharCode = this.resolveSeparatorCharCode();
+    }
+
     // clear previous data
     this.lastRow.length = 0;
 
@@ -139,7 +178,7 @@ export class CsvParser {
       }
 
       // check for the end of the field
-      if (code != commaCharCode) {
+      if (code != this.separatorCharCode) {
         continue;
       }
 

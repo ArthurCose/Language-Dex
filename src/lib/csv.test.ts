@@ -9,6 +9,8 @@ import { describe, expect, test } from "@jest/globals";
 describe("encodeCsvField", () => {
   test("quotes fields with special chars", () => {
     expect(encodeCsvField("a,b")).toEqual('"a,b"');
+    expect(encodeCsvField("a\tb")).toEqual('"a\tb"');
+    expect(encodeCsvField("a;b")).toEqual('"a;b"');
     expect(encodeCsvField("a\nb")).toEqual('"a\nb"');
   });
 
@@ -59,6 +61,13 @@ describe("readRemainingRows", () => {
     ]);
   });
 
+  test("resolves separator format", () => {
+    expect(readAllCsvRows("a")).toEqual([["a"]]);
+    expect(readAllCsvRows("a,b\tc,d")).toEqual([["a", "b\tc", "d"]]);
+    expect(readAllCsvRows("a\tb,c\td")).toEqual([["a", "b,c", "d"]]);
+    expect(readAllCsvRows("a;b,c;d")).toEqual([["a", "b,c", "d"]]);
+  });
+
   test("handles trailing newline", () => {
     expect(readAllCsvRows("a,b,c")).toEqual([["a", "b", "c"]]);
     expect(readAllCsvRows("a,b,c\n")).toEqual([["a", "b", "c"]]);
@@ -66,6 +75,10 @@ describe("readRemainingRows", () => {
 
   test("handles quoted newline", () => {
     expect(readAllCsvRows('a,"\n\n",c')).toEqual([["a", "\n\n", "c"]]);
+  });
+
+  test("handles quoted separator", () => {
+    expect(readAllCsvRows('",","\t",";"')).toEqual([[",", "\t", ";"]]);
   });
 
   test("handles quotes", () => {
