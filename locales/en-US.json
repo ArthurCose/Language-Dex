@@ -158,23 +158,33 @@
     "All": "All",
     "Import_Dictionaries": "Import Dictionaries",
     "Dictionary_Import": "Dictionary Import",
-    "importing_metadata_stage": "Initializing...",
-    "importing_words_stage": "Importing Words...",
-    "importing_definitions_stage": "Importing Definitions...",
-    "importing_relations_stage": "Importing Relations...",
     "Export_Dictionaries": "Export Dictionaries",
     "Dictionary_Export": "Dictionary Export",
-    "exporting_metadata_stage": "Initializing...",
-    "exporting_words_stage": "Exporting Words...",
-    "exporting_definitions_stage": "Exporting Definitions...",
-    "exporting_relations_stage": "Exporting Relations...",
     "Privacy_Policy": "Privacy Policy",
     "Replay_Tutorial": "Replay Tutorial",
-
     "Dictionaries": "Dictionaries",
     "Ads": "Ads",
     "Help": "Help",
     "Development": "Development"
+  },
+  "export": {
+    "DB": "DB",
+    "CSV": "CSV",
+
+    "ID": "ID",
+    "Spelling": "Spelling",
+    "Example": "Example",
+    "Notes": "Notes",
+
+    "importing_metadata_stage": "Initializing...",
+    "importing_words_stage": "Importing Words...",
+    "importing_definitions_stage": "Importing Definitions...",
+    "importing_relations_stage": "Importing Relations...",
+
+    "exporting_metadata_stage": "Initializing...",
+    "exporting_words_stage": "Exporting Words...",
+    "exporting_definitions_stage": "Exporting Definitions...",
+    "exporting_relations_stage": "Exporting Relations..."
   },
   "development links": {
     "GitHub": "GitHub",

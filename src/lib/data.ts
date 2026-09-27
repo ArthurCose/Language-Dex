@@ -3,6 +3,7 @@ export * from "./data/dictionary-meta";
 export * from "./data/dictionary-words";
 export * from "./data/game-words";
 export * from "./data/export-import";
+export * from "./data/export-import-csv";
 export * from "./data/files";
 export * from "./data/stats";
 export * from "./data/user";

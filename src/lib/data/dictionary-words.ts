@@ -31,7 +31,7 @@ export type WordDefinitionData = {
   updatedAt: number;
 };
 
-type WordDefinitionUpsertData =
+export type WordDefinitionUpsertData =
   | (Partial<
       Omit<
         WordDefinitionData,

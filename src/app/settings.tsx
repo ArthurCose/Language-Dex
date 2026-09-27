@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import SubMenuTopNav, {
   SubMenuBackButton,
   SubMenuTitle,
@@ -6,19 +6,11 @@ import SubMenuTopNav, {
 import { Span } from "@/src/lib/components/text";
 import { useTheme } from "@/src/lib/contexts/theme";
 import { router } from "expo-router";
-import * as Sharing from "expo-sharing";
 import { useTranslation } from "react-i18next";
 import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import ListPopup from "@/src/lib/components/list-popup";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data";
-import {
-  DictionaryData,
-  exportData,
-  importData,
-  upsertDefinition,
-  UserData,
-  wordOrderOptions,
-} from "@/src/lib/data";
+import { upsertDefinition, UserData, wordOrderOptions } from "@/src/lib/data";
 import { TFunction } from "i18next";
 import { pages } from "./index";
 import { logError } from "@/src/lib/log";
@@ -31,19 +23,15 @@ import {
   ConfirmationDialogAction,
   ConfirmationDialogActions,
 } from "@/src/lib/components/confirmation-dialog";
-import * as DocumentPicker from "expo-document-picker";
-import { bumpDictionaryVersion } from "@/src/lib/hooks/use-word-definitions";
 import RouteRoot from "@/src/lib/components/route-root";
-import {
-  Signal,
-  useSignalLens,
-  useSignalValue,
-} from "@/src/lib/hooks/use-signal";
+import { Signal, useSignalValue } from "@/src/lib/hooks/use-signal";
 import {
   NavigationBarSpacer,
   NavigationBarUnderlay,
 } from "@/src/lib/components/system-bar-spacers";
 import IntegrationTestsDialog from "@/src/lib/components/dev-tools/integration-tests-dialog";
+import ExportPopup from "../lib/components/settings/export";
+import ImportPopup from "../lib/components/settings/import";
 
 type LongTaskMeta = {
   open: boolean;
@@ -152,6 +140,27 @@ function DictionariesSection({
   const userDataSignal = useUserDataSignal();
   const userData = useSignalValue(userDataSignal);
 
+  const onBegin = (title: string) => {
+    longTaskSignal.set({
+      ...longTaskSignal.get(),
+      open: true,
+      name: title,
+    });
+
+    const { completedSignal } = longTaskSignal.get();
+    completedSignal.set(false);
+  };
+  const onProgress = throttle(progressThrottleMs, (message, progress) => {
+    const { messageSignal, progressSignal } = longTaskSignal.get();
+    messageSignal.set(message);
+    progressSignal.set(progress);
+  });
+  const onComplete = (message: string) => {
+    const { completedSignal, messageSignal } = longTaskSignal.get();
+    messageSignal.set(message);
+    completedSignal.set(true);
+  };
+
   return (
     <>
       <Span style={[styles.sectionHeader, theme.styles.poppingText]}>
@@ -182,107 +191,25 @@ function DictionariesSection({
 
       <View style={theme.styles.separator} />
 
-      <Pressable
+      <ImportPopup
         style={styles.row}
-        android_ripple={theme.ripples.transparentButton}
-        pointerEvents="box-only"
-        onPress={() => {
-          DocumentPicker.getDocumentAsync({ copyToCacheDirectory: false })
-            .then((result) => {
-              if (result.canceled) {
-                return;
-              }
-
-              const asset = result.assets[0];
-
-              longTaskSignal.set({
-                ...longTaskSignal.get(),
-                open: true,
-                name: t("Dictionary_Import"),
-              });
-              const { completedSignal, messageSignal, progressSignal } =
-                longTaskSignal.get();
-              completedSignal.set(false);
-              messageSignal.set(t("importing_metadata_stage"));
-              progressSignal.set(undefined);
-
-              const progressCallback = throttle(
-                progressThrottleMs,
-                (stage, i, total) => {
-                  if (i == 0) {
-                    messageSignal.set(t("importing_" + stage + "_stage"));
-                  }
-                  progressSignal.set(i / total);
-                },
-              );
-
-              importData(
-                userData,
-                (userData) => {
-                  userDataSignal.set(userData);
-                },
-                asset.uri,
-                progressCallback,
-              )
-                .then(() => messageSignal.set(t("Success_exclamation")))
-                .catch((err) => {
-                  messageSignal.set(t("An_error_occurred"));
-                  logError(err);
-                })
-                .finally(() => {
-                  completedSignal.set(true);
-                  bumpDictionaryVersion();
-                });
-            })
-            .catch(logError);
-        }}
+        onBegin={() => onBegin(t("Dictionary_Import"))}
+        onProgress={onProgress}
+        onComplete={onComplete}
       >
         <Span style={styles.label}>{t("Import_Dictionaries")}</Span>
-      </Pressable>
+      </ImportPopup>
 
       <View style={theme.styles.separator} />
 
-      <ListPopup
+      <ExportPopup
         style={styles.row}
-        list={userData.dictionaries.map((d) => d)}
-        getItemText={(value) => value.name}
-        keyExtractor={(value) => String(value.id)}
-        defaultItemText={t("All")}
-        onSelect={(value?: DictionaryData) => {
-          longTaskSignal.set({
-            ...longTaskSignal.get(),
-            open: true,
-            name: t("Dictionary_Export"),
-          });
-
-          const { completedSignal, messageSignal, progressSignal } =
-            longTaskSignal.get();
-          completedSignal.set(false);
-          messageSignal.set(t("exporting_metadata_stage"));
-          progressSignal.set(undefined);
-
-          const progressCallback = throttle(
-            progressThrottleMs,
-            (stage, i, total) => {
-              if (i == 0) {
-                messageSignal.set(t("exporting_" + stage + "_stage"));
-              }
-              progressSignal.set(i / total);
-            },
-          );
-
-          exportData(userData, value?.id, progressCallback)
-            .then((uri) => Sharing.shareAsync(uri))
-            .then(() => messageSignal.set(t("Success_exclamation")))
-            .catch((err) => {
-              messageSignal.set(t("An_error_occurred"));
-              logError(err);
-            })
-            .finally(() => completedSignal.set(true));
-        }}
+        onBegin={() => onBegin(t("Dictionary_Export"))}
+        onProgress={onProgress}
+        onComplete={onComplete}
       >
         <Span style={styles.label}>{t("Export_Dictionaries")}</Span>
-      </ListPopup>
+      </ExportPopup>
 
       <View style={theme.styles.separator} />
     </>
