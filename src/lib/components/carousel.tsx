@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import Animated, {
+  AnimatedStyle,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -22,11 +23,26 @@ export default function Carousel({
   const [currentPage, setCurrentPage] = useState<number>(pageIndex);
   const [prevPage, setPrevPage] = useState<number>(pageIndex);
 
-  const switcherTranslateX = useSharedValue<PercentString>("0%");
+  const progress = useSharedValue(0);
+  const toOffset = useSharedValue(0);
+  const direction = useSharedValue(0);
   // useAnimatedStyle fixes: "WARN  [Reanimated] Reading from `value` during component render."
   // appears when we directly use switcherTranslateX in a plain object, even without reading `.value`
-  const switcherSlideStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: switcherTranslateX.value }],
+  const fromStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateX: `${50 * progress.value * direction.value}%`,
+      },
+    ],
+    opacity: 1 - progress.value,
+  }));
+  const toStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateX: `${50 + 50 * (1 - (progress.value + toOffset.value)) * -direction.value}%`,
+      },
+    ],
+    opacity: progress.value,
   }));
 
   useEffect(() => {
@@ -39,63 +55,64 @@ export default function Carousel({
 
     setAnimating(true);
 
-    let start: PercentString;
-    let end: PercentString;
-
     if (pageIndex > currentPage) {
       // moving right
-      start = "100%";
-      end = "0%";
+      direction.set(-1);
+      toOffset.set(1);
     } else {
       // moving left
-      start = "-100%";
-      end = "0%";
+      direction.set(1);
+      toOffset.set(-1);
     }
 
     if (!animating) {
-      switcherTranslateX.value = start;
+      progress.value = 0;
     }
 
     const onComplete = () => {
       setAnimating(false);
     };
 
-    switcherTranslateX.value = withTiming(
-      end,
-      { duration: 100 },
-      (completed) => {
-        if (completed) {
-          scheduleOnRN(onComplete);
-        }
-      },
-    );
+    progress.value = withTiming(1, { duration: 120 }, (completed) => {
+      if (completed) {
+        scheduleOnRN(onComplete);
+      }
+    });
   }, [pageIndex]);
 
   return (
-    <Animated.View style={[styles.switcher, switcherSlideStyle, style]}>
+    <View style={[styles.switcher, style]}>
       {pageElements.map((element, i) => {
-        let pageStyle: ViewStyle | undefined;
+        const pageStyles: AnimatedStyle<StyleProp<ViewStyle>>[] = [
+          styles.content,
+        ];
         const visible = i == currentPage || (animating && i == prevPage);
 
         if (!visible) {
-          pageStyle = styles.hidden;
-        } else if (animating && prevPage < currentPage) {
-          pageStyle = { transform: [{ translateX: "-100%" }] };
+          pageStyles.push(styles.hidden);
+        } else if (animating) {
+          if (i == prevPage) {
+            pageStyles.push(fromStyle);
+          } else {
+            pageStyles.push(toStyle);
+          }
         }
 
         return (
-          <View key={i} style={[styles.content, pageStyle]}>
+          <Animated.View key={i} style={pageStyles}>
             {element}
-          </View>
+          </Animated.View>
         );
       })}
-    </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   content: {
+    position: "absolute",
     width: "100%",
+    height: "100%",
   },
   switcher: {
     display: "flex",
