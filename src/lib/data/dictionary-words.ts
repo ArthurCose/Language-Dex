@@ -279,6 +279,7 @@ async function updateSharedData(sharedId: number) {
     { $sharedId: sharedId },
   );
 
+  // use the first definition's capitalization
   const spellingResult = await db.getFirstAsync<{
     spelling: string;
   }>(
@@ -393,12 +394,17 @@ export async function upsertDefinition(
     log("Upsert is Updating.");
 
     // fetch old sharedId to see if we switched words
-    const oldDataResult = await db.getFirstAsync<{
+    let oldDataResult = await db.getFirstAsync<{
       sharedId: number;
       orderKey: number;
     }>("SELECT sharedId, orderKey FROM word_definition_data WHERE id = $id", {
       $id: definition.id,
     });
+
+    if (oldDataResult && oldDataResult.sharedId == sharedId) {
+      // the data isn't old
+      oldDataResult = null;
+    }
 
     // update
     params.$id = definition.id;
