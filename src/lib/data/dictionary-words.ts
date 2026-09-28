@@ -425,22 +425,10 @@ export async function upsertDefinition(
 
     // update old shared data to complete switching words
     if (oldDataResult) {
-      // delete if empty
-      const deleteResult = await db.runAsync(
-        [
-          "DELETE FROM word_shared_data WHERE id = $sharedId",
-          "AND NOT EXISTS (SELECT 1 FROM word_definition_data WHERE sharedId = $sharedId)",
-        ].join(" "),
-        {
-          $sharedId: oldDataResult.sharedId,
-        },
+      await removedDefinitionCleanup(
+        oldDataResult.sharedId,
+        oldDataResult.orderKey,
       );
-
-      if (deleteResult.changes == 0) {
-        // update if it still exists
-        await shiftOrderKeys(oldDataResult.sharedId, oldDataResult.orderKey);
-        await updateSharedData(oldDataResult.sharedId);
-      }
     }
 
     // update current shared data
@@ -506,6 +494,30 @@ async function shiftOrderKeys(sharedId: number, greaterThanOrderKey: number) {
   );
 }
 
+// Used to update or remove shared data after deleting a definition or migrating it to a new shared word
+async function removedDefinitionCleanup(
+  oldSharedId: number,
+  oldOrderKey: number,
+) {
+  // delete if empty
+  const deleteResult = await db.runAsync(
+    [
+      "DELETE FROM word_shared_data WHERE id = $sharedId",
+      "AND NOT EXISTS (SELECT 1 FROM word_definition_data WHERE sharedId = $sharedId)",
+    ].join(" "),
+    {
+      $sharedId: oldSharedId,
+    },
+  );
+
+  console.log(deleteResult.changes);
+  if (deleteResult.changes == 0) {
+    // update if it still exists
+    await shiftOrderKeys(oldSharedId, oldOrderKey);
+    await updateSharedData(oldSharedId);
+  }
+}
+
 export async function deleteDefinition(id: number) {
   log("Deleting Definition...");
 
@@ -541,10 +553,7 @@ export async function deleteDefinition(id: number) {
     await deleteEmptySynonymCluster(result.synonymsId);
   }
 
-  // update ordering
-  await shiftOrderKeys(result.sharedId, result.orderKey);
-
-  await updateSharedData(result.sharedId);
+  await removedDefinitionCleanup(result.sharedId, result.orderKey);
 
   log("Delete Complete!");
 }
