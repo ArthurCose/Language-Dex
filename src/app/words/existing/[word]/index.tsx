@@ -16,7 +16,7 @@ import SubMenuTopNav, {
 } from "@/src/lib/components/sub-menu-top-nav";
 import { Span } from "@/src/lib/components/text";
 import { useTheme } from "@/src/lib/contexts/theme";
-import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import useWordDefinitions, {
   invalidateWordDefinitions,
 } from "@/src/lib/hooks/use-word-definitions";
@@ -122,7 +122,6 @@ function Definition({
 
 export default function Word() {
   const { word } = useLocalSearchParams<{ word: string }>();
-  const navigation = useNavigation();
   const [t] = useTranslation();
   const userDataSignal = useUserDataSignal();
   const userData = useSignalValue(userDataSignal);
@@ -139,16 +138,6 @@ export default function Word() {
   const dictionary = userData.dictionaries.find(
     (d) => d.id == userData.activeDictionary,
   )!;
-
-  useEffect(() => {
-    if (!definitionData || !definitionData.loaded || !navigation.isFocused()) {
-      return;
-    }
-
-    if (!definitionData.definitionsResult) {
-      navigation.goBack();
-    }
-  }, [definitionData?.loaded]);
 
   useEffect(() => {
     setDefinitions(definitionData?.definitionsResult?.definitions ?? []);
