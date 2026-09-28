@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useWordDefinition } from "@/src/lib/hooks/use-word-definitions";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data";

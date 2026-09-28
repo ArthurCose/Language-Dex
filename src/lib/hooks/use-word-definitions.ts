@@ -23,7 +23,7 @@ let definitionVersionCounter = 0;
 function fetchDefinition(
   dictionaryId: number,
   lowerCaseWord: string,
-  cachedWord: WordDefinitionState
+  cachedWord: WordDefinitionState,
 ) {
   // fetch definitions
   return getWordDefinitions(dictionaryId, lowerCaseWord).then((result) => {
@@ -37,7 +37,7 @@ function fetchDefinition(
 
 export default function useWordDefinitions(
   dictionaryId: number,
-  lowerCaseWords: string[]
+  lowerCaseWords: string[],
 ): DefinitionMap {
   // only using this state to drive updates
   const [_, setVersion] = useState(definitionVersionCounter);
@@ -103,11 +103,11 @@ export default function useWordDefinitions(
 export function useWordDefinition(
   dicitonaryId: number,
   lowerCaseWord?: string,
-  definitionId?: number
+  definitionId?: number,
 ): [boolean, WordDefinitionData?] {
   const words = useMemo(
     () => (lowerCaseWord != undefined ? [lowerCaseWord] : []),
-    [lowerCaseWord]
+    [lowerCaseWord],
   );
   const definitionMap = useWordDefinitions(dicitonaryId, words);
 
@@ -135,7 +135,7 @@ export function bumpDictionaryVersion() {
 
 export function invalidateWordDefinitions(
   dictionaryId: number,
-  lowercaseWord: string
+  lowerCaseWord: string,
 ) {
   const definitionMap = cache[dictionaryId];
 
@@ -143,7 +143,7 @@ export function invalidateWordDefinitions(
     return;
   }
 
-  let cachedWord = definitionMap[lowercaseWord];
+  let cachedWord = definitionMap[lowerCaseWord];
 
   if (cachedWord) {
     cachedWord.loaded = false;
@@ -153,10 +153,10 @@ export function invalidateWordDefinitions(
       loaded: false,
       versionSignal: new Signal(definitionVersionCounter),
     };
-    definitionMap[lowercaseWord] = cachedWord;
+    definitionMap[lowerCaseWord] = cachedWord;
   }
 
-  fetchDefinition(dictionaryId, lowercaseWord, cachedWord)
+  fetchDefinition(dictionaryId, lowerCaseWord, cachedWord)
     .then(bumpDictionaryVersion)
     .catch(logError);
 }
