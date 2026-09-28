@@ -151,11 +151,7 @@ export default function Word() {
   }, [definitionData?.loaded]);
 
   useEffect(() => {
-    if (!definitionData?.definitionsResult) {
-      return;
-    }
-
-    setDefinitions(definitionData.definitionsResult.definitions);
+    setDefinitions(definitionData?.definitionsResult?.definitions ?? []);
   }, [definitionData?.definitionsResult]);
 
   // handle pronunciation

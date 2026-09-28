@@ -425,8 +425,22 @@ export async function upsertDefinition(
 
     // update old shared data to complete switching words
     if (oldDataResult) {
-      await shiftOrderKeys(oldDataResult.sharedId, oldDataResult.orderKey);
-      await updateSharedData(oldDataResult.sharedId);
+      // delete if empty
+      const deleteResult = await db.runAsync(
+        [
+          "DELETE FROM word_shared_data WHERE id = $sharedId",
+          "AND NOT EXISTS (SELECT 1 FROM word_definition_data WHERE sharedId = $sharedId)",
+        ].join(" "),
+        {
+          $sharedId: oldDataResult.sharedId,
+        },
+      );
+
+      if (deleteResult.changes == 0) {
+        // update if it still exists
+        await shiftOrderKeys(oldDataResult.sharedId, oldDataResult.orderKey);
+        await updateSharedData(oldDataResult.sharedId);
+      }
     }
 
     // update current shared data
