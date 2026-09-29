@@ -385,6 +385,29 @@ export async function upsertDefinition(
     setList.push(key);
   }
 
+  // grab old data for updating
+  // needs to happen before resolving the shared word to avoid creating garbage
+  let oldDataResult: {
+    sharedId: number;
+    orderKey: number;
+  } | null = null;
+
+  if (definition.id != undefined) {
+    // fetch old sharedId to see if we switched words
+    const query =
+      "SELECT sharedId, orderKey FROM word_definition_data WHERE id = $id";
+    oldDataResult = await db.getFirstAsync(query, {
+      $id: definition.id,
+    });
+
+    if (!oldDataResult) {
+      // exit early to avoid creating a shared word
+      log("Failed to match definition by ID...");
+      return;
+    }
+  }
+
+  // grab the shared word
   const sharedId = await getOrCreateWordId(dictionaryId, definition.spelling, {
     confidence: definition.confidence ?? 0,
     time,
@@ -392,28 +415,18 @@ export async function upsertDefinition(
   setParams.$sharedId = sharedId;
 
   if (definition.id != undefined) {
+    // update
     log("Upsert is Updating.");
 
-    // fetch old sharedId to see if we switched words
-    let oldDataResult = await db.getFirstAsync<{
-      sharedId: number;
-      orderKey: number;
-    }>("SELECT sharedId, orderKey FROM word_definition_data WHERE id = $id", {
-      $id: definition.id,
-    });
-
-    if (oldDataResult && oldDataResult.sharedId == sharedId) {
-      // the data isn't old
-      oldDataResult = null;
+    if (!oldDataResult) {
+      // unnecessary due to the check above, but makes TS happy
+      return;
     }
 
-    // update
     setParams.$id = definition.id;
 
-    if (oldDataResult) {
-      setList.push("orderKey");
-      setParams.$orderKey = await resolveNewOrderKey(sharedId);
-    }
+    setList.push("orderKey");
+    setParams.$orderKey = await resolveNewOrderKey(sharedId);
 
     await db.runAsync(
       [
@@ -425,12 +438,10 @@ export async function upsertDefinition(
     );
 
     // update old shared data to complete switching words
-    if (oldDataResult) {
-      await removedDefinitionCleanup(
-        oldDataResult.sharedId,
-        oldDataResult.orderKey,
-      );
-    }
+    await removedDefinitionCleanup(
+      oldDataResult.sharedId,
+      oldDataResult.orderKey,
+    );
 
     // update current shared data
     await updateSharedData(sharedId);

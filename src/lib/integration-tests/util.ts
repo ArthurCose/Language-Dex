@@ -11,7 +11,7 @@ export function createWord(dictionaryId: number, spelling: string) {
     definition: "",
     example: "",
     notes: "",
-  });
+  }) as Promise<number>;
 }
 
 export async function createWords(dictionaryId: number, spellings: string[]) {
@@ -20,15 +20,7 @@ export async function createWords(dictionaryId: number, spellings: string[]) {
   // Promise.all creates race conditions for shared word data
   // Users can't enter multiple words in parallel normally so we don't handle this issue
   for (const spelling of spellings) {
-    ids.push(
-      await upsertDefinition(dictionaryId, {
-        spelling,
-        confidence: 0,
-        definition: "",
-        example: "",
-        notes: "",
-      }),
-    );
+    ids.push(await createWord(dictionaryId, spelling));
   }
 
   return ids;
