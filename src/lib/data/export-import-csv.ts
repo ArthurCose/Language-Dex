@@ -149,11 +149,43 @@ export async function exportCsv(
   return file.uri;
 }
 
-export async function importCsv(
-  uri: string,
-  dictionary: DictionaryData,
-  progressCallback: (i: number, total: number) => void,
-) {
+function resolveColFromHeader(value: string, skipFields: string[]) {
+  const start = value.lastIndexOf("(");
+
+  if (start == -1) {
+    return;
+  }
+
+  const end = value.indexOf(")", start + 1);
+
+  if (end == -1) {
+    return;
+  }
+
+  const importKey = value.slice(start + 1, end);
+
+  const col = importMap[importKey];
+
+  if (skipFields.includes(col)) {
+    return;
+  }
+
+  return col;
+}
+
+export async function importCsv({
+  uri,
+  dictionary,
+  skipFields,
+  progressCallback,
+}: {
+  uri: string;
+  dictionary: DictionaryData;
+  skipFields?: string[];
+  progressCallback: (i: number, total: number) => void;
+}) {
+  skipFields ??= [];
+
   const file = new File(uri);
   const totalBytes = Math.max(file.size, 1);
   let bytesRead = 0;
@@ -184,20 +216,7 @@ export async function importCsv(
   const cols: string[] = [];
 
   for (const value of header) {
-    const start = value.lastIndexOf("(");
-
-    if (start == -1) {
-      continue;
-    }
-
-    const end = value.indexOf(")", start + 1);
-
-    if (end == -1) {
-      continue;
-    }
-
-    const importKey = value.slice(start + 1, end);
-    cols.push(importMap[importKey] ?? "");
+    cols.push(resolveColFromHeader(value, skipFields) ?? "");
   }
 
   // create a field upsert pass for each relevant field
