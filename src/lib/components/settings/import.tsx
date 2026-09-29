@@ -76,6 +76,7 @@ function csvImport({
   uri,
   dictionary,
   skipFields,
+  userDataSignal,
   onProgress,
   onComplete,
 }: {
@@ -83,9 +84,13 @@ function csvImport({
   uri: string;
   dictionary: DictionaryData;
   skipFields?: string[];
+  userDataSignal: Signal<UserData>;
   onProgress: ProgressCallback;
   onComplete: CompleteCallback;
 }) {
+  const userData = userDataSignal.get();
+  const saveUserData = (data: UserData) => userDataSignal.set(data);
+
   wrapImportPromise(
     t,
     onComplete,
@@ -93,6 +98,8 @@ function csvImport({
       uri,
       dictionary,
       skipFields,
+      userData,
+      saveUserData,
       progressCallback: (i, total) =>
         onProgress(t("importing_words_stage"), i / total),
     }),
@@ -260,6 +267,7 @@ export default function ImportPopup({
                     uri: asset.uri,
                     dictionary,
                     skipFields,
+                    userDataSignal,
                     onProgress,
                     onComplete,
                   });

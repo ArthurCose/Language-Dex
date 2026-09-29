@@ -3,7 +3,8 @@ import { File, Paths } from "expo-file-system";
 import db, { extractCount } from "./db";
 import { CsvTransformStream, encodeCsvField } from "../csv";
 import { upsertDefinition, WordDefinitionUpsertData } from "./dictionary-words";
-import { DictionaryData } from "./dictionary-meta";
+import { DictionaryData, PartOfSpeechData } from "./dictionary-meta";
+import { UserData } from "./user";
 
 export const csvColumns = [
   "id",
@@ -55,10 +56,25 @@ const fieldUpsertMap: { [key: string]: FieldUpsertPass } = {
       return;
     }
 
-    const lowerCased = value.toLowerCase();
-    data.partOfSpeech = dictionary.partsOfSpeech.find(
-      (partOfSpeech) => partOfSpeech.name.toLowerCase() == lowerCased,
-    )?.id;
+    let partOfSpeech: PartOfSpeechData | undefined;
+
+    if (value != "") {
+      const lowerCased = value.toLowerCase();
+      partOfSpeech = dictionary.partsOfSpeech.find(
+        (partOfSpeech) => partOfSpeech.name.toLowerCase() == lowerCased,
+      );
+
+      if (!partOfSpeech) {
+        // create a new part of speech
+        partOfSpeech = {
+          id: dictionary.nextPartOfSpeechId++,
+          name: value,
+        };
+        dictionary.partsOfSpeech.push(partOfSpeech);
+      }
+    }
+
+    data.partOfSpeech = partOfSpeech?.id;
   },
   definition(_, data, value) {
     data.definition = value ?? "";
@@ -177,11 +193,15 @@ export async function importCsv({
   uri,
   dictionary,
   skipFields,
+  userData,
+  saveUserData,
   progressCallback,
 }: {
   uri: string;
   dictionary: DictionaryData;
   skipFields?: string[];
+  userData: UserData;
+  saveUserData: (userData: UserData) => void;
   progressCallback: (i: number, total: number) => void;
 }) {
   skipFields ??= [];
@@ -246,9 +266,32 @@ export async function importCsv({
     confidence: 0,
   };
 
+  let nextPartOfSpeechId = dictionary.nextPartOfSpeechId;
+
   for await (const row of iterator) {
     for (const [i, pass] of passes) {
       pass(dictionary, partialData, row[i]);
+    }
+
+    if (nextPartOfSpeechId != dictionary.nextPartOfSpeechId) {
+      nextPartOfSpeechId = dictionary.nextPartOfSpeechId;
+
+      // save user data before upserting the word
+      const newUserData = {
+        ...userData,
+        dictionaries: userData.dictionaries.map((d) => {
+          if (d.id == dictionary.id) {
+            return {
+              ...d,
+              partsOfSpeech: [...d.partsOfSpeech],
+            };
+          }
+
+          return d;
+        }),
+      };
+
+      saveUserData(newUserData);
     }
 
     if (partialData.spelling == null || partialData.spelling == "") {
