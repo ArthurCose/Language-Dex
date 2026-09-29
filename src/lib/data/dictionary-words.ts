@@ -367,8 +367,9 @@ export async function upsertDefinition(
     "notes",
   ];
 
-  const setList = ["sharedId", "updatedAt"];
-  const params: SQLite.SQLiteBindParams = {
+  const setList = ["dictionaryId", "sharedId", "updatedAt"];
+  const setParams: SQLite.SQLiteBindParams = {
+    $dictionaryId: dictionaryId,
     $updatedAt: time,
   };
 
@@ -380,7 +381,7 @@ export async function upsertDefinition(
       continue;
     }
 
-    params["$" + key] = value;
+    setParams["$" + key] = value;
     setList.push(key);
   }
 
@@ -388,7 +389,7 @@ export async function upsertDefinition(
     confidence: definition.confidence ?? 0,
     time,
   });
-  params.$sharedId = sharedId;
+  setParams.$sharedId = sharedId;
 
   if (definition.id != undefined) {
     log("Upsert is Updating.");
@@ -407,11 +408,11 @@ export async function upsertDefinition(
     }
 
     // update
-    params.$id = definition.id;
+    setParams.$id = definition.id;
 
     if (oldDataResult) {
       setList.push("orderKey");
-      params.$orderKey = await resolveNewOrderKey(sharedId);
+      setParams.$orderKey = await resolveNewOrderKey(sharedId);
     }
 
     await db.runAsync(
@@ -420,7 +421,7 @@ export async function upsertDefinition(
         setList.map((k) => k + " = $" + k).join(", "),
         "WHERE id = $id",
       ].join(" "),
-      params,
+      setParams,
     );
 
     // update old shared data to complete switching words
@@ -440,10 +441,9 @@ export async function upsertDefinition(
     log("Upsert is Inserting.");
 
     // copy properties only required by inserting
-    setList.push("dictionaryId", "sharedId", "createdAt", "orderKey");
-    params.$dictionaryId = dictionaryId;
-    params.$createdAt = time;
-    params.$orderKey = await resolveNewOrderKey(sharedId);
+    setList.push("sharedId", "createdAt", "orderKey");
+    setParams.$createdAt = time;
+    setParams.$orderKey = await resolveNewOrderKey(sharedId);
 
     const result = await db.runAsync(
       [
@@ -453,7 +453,7 @@ export async function upsertDefinition(
         setList.map((k) => "$" + k).join(", "),
         ")",
       ].join(" "),
-      params,
+      setParams,
     );
 
     log("Upsert Complete!");
