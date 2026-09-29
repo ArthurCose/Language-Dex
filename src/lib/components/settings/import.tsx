@@ -146,7 +146,7 @@ function ImportDestinationDialog({
       resolveDictionary(dictionary);
     } else {
       // create a new dictionary
-      const userData = userDataSignal.get();
+      const userData = { ...userDataSignal.get() };
 
       const newDictionaryName = newDictionaryNameSignal.get();
       const name =
@@ -160,17 +160,13 @@ function ImportDestinationDialog({
         stats: {},
       };
 
-      userData.dictionaries.push(newDictionary);
+      userData.dictionaries = [...userData.dictionaries, newDictionary];
       userDataSignal.set(userData);
 
       resolveDictionary(newDictionary);
     }
 
     resolveDictionarySignal.set(null);
-  };
-
-  const blurInput = () => {
-    nameInputRef.current?.blur();
   };
 
   return (
