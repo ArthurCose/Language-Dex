@@ -17,8 +17,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#aa33ff"
       },
-      "softwareKeyboardLayoutMode": "resize",
-      "blockedPermissions": ["android.permission.INTERNET"]
+      "softwareKeyboardLayoutMode": "resize"
     },
     "web": {
       "bundler": "metro",

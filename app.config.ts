@@ -4,18 +4,21 @@ import { ExpoConfig } from "expo/config";
 module.exports = ({ config }: { config: ExpoConfig }) => {
   const isDevBuild = process.env.APP_VARIANT == "development";
 
+  const ios = config.ios!;
+  const android = config.android!;
+
   if (isDevBuild) {
     // allow dev builds to be installed with release builds
-    config.ios!.bundleIdentifier += ".dev";
-    config.android!.package += ".dev";
+    ios.bundleIdentifier += ".dev";
+    android.package += ".dev";
   } else {
     // remove permissions that aren't necessary in release
-    if (!config.android!.blockedPermissions) {
-      config.android!.blockedPermissions = [];
+    if (!android.blockedPermissions) {
+      android.blockedPermissions = [];
     }
-    config.android!.blockedPermissions.push(
-      "android.permission.SYSTEM_ALERT_WINDOW",
-    );
+    android.blockedPermissions.push("android.permission.SYSTEM_ALERT_WINDOW");
+    // expo-file-system uses this permission for downloading files, but we don't use this feature
+    android.blockedPermissions.push("android.permission.INTERNET");
   }
 
   return config;
