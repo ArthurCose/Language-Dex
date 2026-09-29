@@ -1,15 +1,19 @@
-import { View, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable, ViewProps } from "react-native";
 import { useTheme } from "@/src/lib/contexts/theme";
 
 export function RadioItem<T>({
   groupValue,
   value,
+  pointerEvents,
   onChange,
+  onPress,
   children,
 }: {
   groupValue: T;
   value: T;
+  pointerEvents?: ViewProps["pointerEvents"];
   onChange: (value: T) => void;
+  onPress?: () => void;
 } & React.PropsWithChildren) {
   const theme = useTheme();
 
@@ -17,8 +21,11 @@ export function RadioItem<T>({
     <Pressable
       style={styles.radioItem}
       android_ripple={theme.ripples.transparentButton}
-      pointerEvents="box-only"
-      onPress={() => onChange(value)}
+      pointerEvents={pointerEvents ?? "box-only"}
+      onPress={() => {
+        onChange(value);
+        onPress?.();
+      }}
     >
       <RadioButton selected={value == groupValue} />
       {children}

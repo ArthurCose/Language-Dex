@@ -176,6 +176,7 @@
     "Example": "Example",
     "Notes": "Notes",
 
+    "Import_Destination_Title": "Import To?",
     "importing_metadata_stage": "Initializing...",
     "importing_words_stage": "Importing Words...",
     "importing_definitions_stage": "Importing Definitions...",
