@@ -8,8 +8,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
-type PercentString = `${number}%`;
-
 export default function Carousel({
   style,
   pageIndex,
@@ -67,6 +65,8 @@ export default function Carousel({
 
     if (!animating) {
       progress.value = 0;
+    } else {
+      progress.value = 1 - progress.value;
     }
 
     const onComplete = () => {
@@ -90,12 +90,10 @@ export default function Carousel({
 
         if (!visible) {
           pageStyles.push(styles.hidden);
-        } else if (animating) {
-          if (i == prevPage) {
-            pageStyles.push(fromStyle);
-          } else {
-            pageStyles.push(toStyle);
-          }
+        } else if (i == prevPage) {
+          pageStyles.push(fromStyle);
+        } else {
+          pageStyles.push(toStyle);
         }
 
         return (
