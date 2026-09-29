@@ -1,7 +1,32 @@
-import { View } from "react-native";
-import { useTheme } from "../contexts/theme";
+import { View, StyleSheet, Pressable } from "react-native";
+import { useTheme } from "@/src/lib/contexts/theme";
 
-export default function ({ selected }: { selected: boolean }) {
+export function RadioItem<T>({
+  groupValue,
+  value,
+  onChange,
+  children,
+}: {
+  groupValue: T;
+  value: T;
+  onChange: (value: T) => void;
+} & React.PropsWithChildren) {
+  const theme = useTheme();
+
+  return (
+    <Pressable
+      style={styles.radioItem}
+      android_ripple={theme.ripples.transparentButton}
+      pointerEvents="box-only"
+      onPress={() => onChange(value)}
+    >
+      <RadioButton selected={value == groupValue} />
+      {children}
+    </Pressable>
+  );
+}
+
+export function RadioButton({ selected }: { selected: boolean }) {
   const theme = useTheme();
 
   return (
@@ -32,3 +57,11 @@ export default function ({ selected }: { selected: boolean }) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  radioItem: {
+    flexDirection: "row",
+    height: 48,
+    alignItems: "center",
+  },
+});

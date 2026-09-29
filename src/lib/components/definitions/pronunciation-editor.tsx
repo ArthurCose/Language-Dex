@@ -1,15 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, View, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
 import Dialog, { DialogTitle } from "../dialog";
 import { AudioPlayer, createAudioPlayer } from "expo-audio";
 import { useTheme } from "@/src/lib/contexts/theme";
 import { logError } from "@/src/lib/log";
-import { Theme } from "@/src/lib/themes";
 import { MicrophoneIcon, PlayAudioIcon } from "../icons";
 import { Span } from "../text";
 import IconButton from "../icon-button";
-import RadioButton from "../radio-button";
+import { RadioItem } from "../radio-button";
 import * as FileSystem from "expo-file-system/legacy";
 import RecordAudioButton from "../record-audio-button";
 import { stripProtocol } from "@/src/lib/path";
@@ -37,33 +36,26 @@ export default function PronunciationEditor(props: PronunciationEditorProps) {
 }
 
 function Option({
-  theme,
-  selected,
+  groupValue,
+  value,
   label,
-  playing,
-  onPress,
+  playingIndex,
+  onChange,
 }: {
-  theme: Theme;
-  selected: boolean;
+  groupValue: number;
+  value: number;
+  playingIndex?: number | null;
   label: string;
-  playing?: boolean;
-  onPress?: () => void;
+  onChange: (value: number) => void;
 }) {
   return (
-    <Pressable
-      style={styles.optionRow}
-      android_ripple={theme.ripples.transparentButton}
-      pointerEvents="box-only"
-      onPress={onPress}
-    >
-      <RadioButton selected={selected} />
-
+    <RadioItem groupValue={groupValue} value={value} onChange={onChange}>
       <Span style={styles.optionLabel}>{label}</Span>
 
       <View style={styles.optionActions}>
-        {playing && <IconButton icon={PlayAudioIcon} />}
+        {playingIndex == value && <IconButton icon={PlayAudioIcon} />}
       </View>
-    </Pressable>
+    </RadioItem>
   );
 }
 
@@ -160,19 +152,19 @@ function PronunciationEditorDialog({
 
       <ScrollView>
         <Option
-          selected={selectedIndex == 0}
-          theme={theme}
+          groupValue={selectedIndex}
+          value={0}
           label={t("None")}
-          onPress={() => setSelectedIndex(0)}
+          onChange={() => setSelectedIndex(0)}
         />
 
         {pronunciationUri != undefined && (
           <Option
-            selected={selectedIndex == 1}
-            theme={theme}
+            groupValue={selectedIndex}
+            value={1}
             label={t("Saved_Pronunciation")}
-            playing={playingIndex == 1}
-            onPress={() => {
+            playingIndex={playingIndex}
+            onChange={() => {
               setSelectedIndex(1);
               playIndex(1, pronunciationUri);
             }}
@@ -182,13 +174,13 @@ function PronunciationEditorDialog({
         {recordings.slice(0).map((uri, i) => (
           <Option
             key={i}
-            selected={selectedIndex == i + 2}
-            theme={theme}
+            groupValue={selectedIndex}
+            value={i + 2}
+            playingIndex={playingIndex}
             label={t("Recording_number", { count: i + 1 })}
-            playing={playingIndex == i + 2}
-            onPress={() => {
-              setSelectedIndex(i + 2);
-              playIndex(i + 2, uri);
+            onChange={(v) => {
+              setSelectedIndex(v);
+              playIndex(v, uri);
             }}
           />
         ))}
