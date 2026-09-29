@@ -4,6 +4,7 @@ import { dataRevisions, migrateUp } from "./migrations";
 import { DictionaryData } from "./dictionary-meta";
 import { WordOrder } from "./dictionary-words";
 import { OverallStats, recalculateWordStatistics } from "./stats";
+import { log } from "../log";
 
 export type UserData = {
   version: number;
@@ -70,5 +71,7 @@ export async function loadUserData(
 }
 
 export function saveUserData(data: UserData) {
-  return saveFileObject("user", data);
+  return saveFileObject("user", data).then(() => {
+    log("Saved User Data.");
+  });
 }
