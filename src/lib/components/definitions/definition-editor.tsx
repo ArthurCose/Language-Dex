@@ -196,6 +196,10 @@ export default function DefinitionEditor(props: Props) {
         confidence,
       });
 
+      if (definitionId == null) {
+        throw new Error("Failed to save definition");
+      }
+
       // finalize pronunciation
       preparedPronunciation.finalize();
 
