@@ -6,6 +6,8 @@ import usePracticeColors from "@/src/lib/hooks/use-practice-colors";
 import { SentencePracticeIcon, MicrophoneIcon } from "../icons";
 import { useTranslation } from "react-i18next";
 
+const READABLE_FONT_SIZE = 3;
+
 export const ShortAnswerIcon = React.memo(function () {
   const theme = useTheme();
   const [t] = useTranslation();
@@ -17,7 +19,13 @@ export const ShortAnswerIcon = React.memo(function () {
       style={styles.container}
       onLayout={(e) => {
         e.target.measure((_x, _y, _w, h, _pageX, _pageY) => {
-          setFontStyle({ fontSize: h / 6 });
+          const fontSize = h / 4;
+
+          if (fontSize < READABLE_FONT_SIZE) {
+            setFontStyle(undefined);
+          } else {
+            setFontStyle({ fontSize });
+          }
         });
       }}
     >
@@ -29,9 +37,11 @@ export const ShortAnswerIcon = React.memo(function () {
         ]}
       />
 
-      <Text style={[fontStyle, theme.styles.disabledText]}>
-        {t("short_answer_mystery")}
-      </Text>
+      {fontStyle != undefined && (
+        <Text style={[fontStyle, theme.styles.disabledText]}>
+          {t("short_answer_mystery")}
+        </Text>
+      )}
     </View>
   );
 });
@@ -45,8 +55,8 @@ const shortAnswerStyles = StyleSheet.create({
     alignItems: "center",
   },
   definition: {
-    height: "30%",
-    width: "50%",
+    height: "35%",
+    width: "100%",
     borderRadius: 5,
     borderWidth: 1,
   },
@@ -72,7 +82,13 @@ export const UseInASentenceIcon = React.memo(function () {
       style={styles.container}
       onLayout={(e) => {
         e.target.measure((_x, _y, _w, h, _pageX, _pageY) => {
-          setIconSize(h * (4 / 5));
+          const iconSize = h * (4 / 5);
+
+          if (iconSize < READABLE_FONT_SIZE) {
+            setIconSize(undefined);
+          } else {
+            setIconSize(iconSize);
+          }
         });
       }}
     >
@@ -234,7 +250,7 @@ const guessTheWordStyles = StyleSheet.create({
   },
   chip: {
     aspectRatio: 3 / 4,
-    borderWidth: 2,
+    borderWidth: 1,
   },
   incorrect: {
     backgroundColor: guessTheWordColors.incorrectBackground,
@@ -306,7 +322,13 @@ export const PronunciationIcon = React.memo(function () {
       style={styles.container}
       onLayout={(e) => {
         e.target.measure((_x, _y, _w, h, _pageX, _pageY) => {
-          setIconSize(h * (4 / 5));
+          const iconSize = h * (4 / 5);
+
+          if (iconSize < READABLE_FONT_SIZE) {
+            setIconSize(undefined);
+          } else {
+            setIconSize(iconSize);
+          }
         });
       }}
     >

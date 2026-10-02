@@ -234,6 +234,7 @@ function createSimpleTheme(colors: Palette): Theme {
         borderColor: colors.borders,
         borderWidth: 1,
         backgroundColor: colors.gameListing,
+        borderRadius: 8,
       },
       topNav: {
         paddingBottom: -4,

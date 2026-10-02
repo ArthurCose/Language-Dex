@@ -74,70 +74,71 @@ function GameListing({
 }: GameListingProps) {
   const [t] = useTranslation();
 
-  const x = (
+  const content = (
     <>
       <View style={styles.iconContainer}>{Icon && <Icon />}</View>
 
       <Span style={styles.label}>{t(label)}</Span>
+
+      {lockStatus.locked && (
+        <View style={styles.lock}>
+          <Span style={theme.styles.poppingText}>
+            {lockStatus.obtained ?? "?"}/{lockStatus.required ?? "?"}
+          </Span>
+          <LockIcon size={24} color={theme.colors.iconButton} />
+        </View>
+      )}
     </>
   );
 
-  if (lockStatus.locked) {
-    return (
-      <View style={styles.listingContainer}>
-        <View style={style}>
-          <Pressable
-            style={styles.pressable}
-            android_ripple={theme.ripples.transparentButton}
-            onPress={() => setLockDescription(t(label + "_Requirements"))}
-            pointerEvents="box-only"
-          >
-            {x}
+  let button;
 
-            <View style={styles.lock}>
-              <Span style={theme.styles.poppingText}>
-                {lockStatus.obtained ?? "?"}/{lockStatus.required ?? "?"}
-              </Span>
-              <LockIcon size={24} color={theme.colors.iconButton} />
-            </View>
-          </Pressable>
-        </View>
-      </View>
+  if (lockStatus.locked) {
+    // display unlocking requirements
+    button = (
+      <Pressable
+        style={styles.pressable}
+        android_ripple={theme.ripples.transparentButton}
+        onPress={() => setLockDescription(t(label + "_Requirements"))}
+        pointerEvents="box-only"
+      >
+        {content}
+      </Pressable>
+    );
+  } else if (modes) {
+    // popup for the list of game modes
+    button = (
+      <ListPopup
+        style={styles.pressable}
+        android_ripple={theme.ripples.transparentButton}
+        list={modes}
+        getItemText={(mode) => t("mode_" + mode)}
+        keyExtractor={(value) => value}
+        centerItems
+        onSelect={onSelect}
+      >
+        {content}
+      </ListPopup>
+    );
+  } else {
+    // there's no extra modes, so we can just start the game
+    button = (
+      <Pressable
+        style={styles.pressable}
+        android_ripple={theme.ripples.transparentButton}
+        pointerEvents="box-only"
+        onPress={() => {
+          if (href != undefined) {
+            router.navigate(href);
+          }
+        }}
+      >
+        {content}
+      </Pressable>
     );
   }
 
-  return (
-    <View style={styles.listingContainer}>
-      <View style={style}>
-        {modes ? (
-          <ListPopup
-            style={styles.pressable}
-            android_ripple={theme.ripples.transparentButton}
-            list={modes}
-            getItemText={(mode) => t("mode_" + mode)}
-            keyExtractor={(value) => value}
-            centerItems
-            onSelect={onSelect}
-          >
-            {x}
-          </ListPopup>
-        ) : (
-          <Pressable
-            style={styles.pressable}
-            android_ripple={theme.ripples.transparentButton}
-            pointerEvents="box-only"
-            onPress={() => {
-              if (href != undefined) {
-                router.navigate(href);
-              }
-            }}
-          >
-            {x}
-          </Pressable>
-        )}
-      </View>
-    </View>
-  );
+  return <View style={[styles.listingContainer, style]}>{button}</View>;
 }
 
 type LockStatus = {
@@ -194,7 +195,7 @@ export default function () {
   const [lockedDialogOpen, setLockedDialogOpen] = useState(false);
   const [lockDescription, setLockDescription] = useState("");
 
-  const listingStyles = [theme.styles.gameListing, styles.listing];
+  const listingStyles = theme.styles.gameListing;
 
   useEffect(() => {
     testLock(setMatchStatus, listGameWords, activeDictionary, {
@@ -260,87 +261,79 @@ export default function () {
       </View>
 
       <ScrollView contentContainerStyle={styles.list}>
-        <View style={styles.row}>
-          <GameListing
-            label="Definition_Match"
-            icon={DefinitionMatchIcon}
-            style={listingStyles}
-            theme={theme}
-            modes={definitionMatchModeList}
-            lockStatus={matchStatus}
-            setLockDescription={lockCallback}
-            onSelect={(mode) =>
-              router.navigate(`/practice/${mode}/definition-match`)
-            }
-          />
+        <GameListing
+          label="Definition_Match"
+          icon={DefinitionMatchIcon}
+          style={listingStyles}
+          theme={theme}
+          modes={definitionMatchModeList}
+          lockStatus={matchStatus}
+          setLockDescription={lockCallback}
+          onSelect={(mode) =>
+            router.navigate(`/practice/${mode}/definition-match`)
+          }
+        />
 
-          <GameListing
-            label="Unscramble"
-            icon={UnscrambleIcon}
-            style={listingStyles}
-            theme={theme}
-            lockStatus={unscrambleStatus}
-            setLockDescription={lockCallback}
-            modes={unscrambleModeList}
-            onSelect={(mode) => router.navigate(`/practice/${mode}/unscramble`)}
-          />
-        </View>
+        <GameListing
+          label="Unscramble"
+          icon={UnscrambleIcon}
+          style={listingStyles}
+          theme={theme}
+          lockStatus={unscrambleStatus}
+          setLockDescription={lockCallback}
+          modes={unscrambleModeList}
+          onSelect={(mode) => router.navigate(`/practice/${mode}/unscramble`)}
+        />
 
-        <View style={styles.row}>
-          <GameListing
-            label="Guess_the_Word"
-            icon={GuessTheWordIcon}
-            style={listingStyles}
-            theme={theme}
-            lockStatus={guessStatus}
-            setLockDescription={lockCallback}
-            href="/practice/guess-the-word"
-          />
+        <GameListing
+          label="Guess_the_Word"
+          icon={GuessTheWordIcon}
+          style={listingStyles}
+          theme={theme}
+          lockStatus={guessStatus}
+          setLockDescription={lockCallback}
+          href="/practice/guess-the-word"
+        />
 
-          <GameListing
-            label="Crossword"
-            icon={CrosswordIcon}
-            style={listingStyles}
-            theme={theme}
-            lockStatus={crosswordStatus}
-            setLockDescription={lockCallback}
-            href="/practice/crossword"
-          />
-        </View>
+        <GameListing
+          label="Crossword"
+          icon={CrosswordIcon}
+          style={listingStyles}
+          theme={theme}
+          lockStatus={crosswordStatus}
+          setLockDescription={lockCallback}
+          href="/practice/crossword"
+        />
 
-        <View style={styles.row}>
-          <GameListing
-            label="Short_Answer"
-            icon={ShortAnswerIcon}
-            style={listingStyles}
-            theme={theme}
-            lockStatus={shortAnswerStatus}
-            setLockDescription={lockCallback}
-            href="/practice/short-answer"
-          />
+        <GameListing
+          label="Short_Answer"
+          icon={ShortAnswerIcon}
+          style={listingStyles}
+          theme={theme}
+          lockStatus={shortAnswerStatus}
+          setLockDescription={lockCallback}
+          href="/practice/short-answer"
+        />
 
-          <GameListing
-            label="Use_in_a_Sentence"
-            icon={UseInASentenceIcon}
-            style={listingStyles}
-            theme={theme}
-            lockStatus={useInASentenceStatus}
-            setLockDescription={lockCallback}
-            href="/practice/use-in-a-sentence"
-          />
-        </View>
+        <GameListing
+          label="Use_in_a_Sentence"
+          icon={UseInASentenceIcon}
+          style={listingStyles}
+          theme={theme}
+          lockStatus={useInASentenceStatus}
+          setLockDescription={lockCallback}
+          href="/practice/use-in-a-sentence"
+        />
 
-        <View style={styles.row}>
-          <GameListing
-            label="Pronunciation"
-            icon={PronunciationIcon}
-            style={listingStyles}
-            theme={theme}
-            lockStatus={pronunciationStatus}
-            setLockDescription={lockCallback}
-            href="/practice/pronunciation"
-          />
-        </View>
+        <GameListing
+          label="Pronunciation"
+          icon={PronunciationIcon}
+          style={listingStyles}
+          theme={theme}
+          lockStatus={pronunciationStatus}
+          setLockDescription={lockCallback}
+          href="/practice/pronunciation"
+        />
       </ScrollView>
 
       <Dialog open={lockedDialogOpen} onClose={closeLockDialog}>
@@ -385,32 +378,27 @@ const styles = StyleSheet.create({
   list: {
     padding: 4,
     paddingVertical: 0,
-    marginTop: -4,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "center",
   },
   listingContainer: {
-    width: "50%",
+    margin: 4,
+    overflow: "hidden",
+  },
+  pressable: {
+    flexDirection: "row",
+    flexGrow: 1,
+    alignItems: "center",
     padding: 4,
   },
-  listing: {
-    flexDirection: "column",
-    aspectRatio: 1,
-    flexGrow: 1,
-    flexShrink: 1,
-    alignItems: "stretch",
-  },
   iconContainer: {
-    flex: 1,
-    padding: 16,
-    paddingTop: 32,
-    width: "100%",
+    aspectRatio: 1,
+    width: 64,
+    margin: 8,
     alignItems: "center",
   },
   label: {
-    paddingBottom: 8,
+    fontSize: 20,
+    fontWeight: "bold",
+    marginLeft: 24,
   },
   lock: {
     position: "absolute",
@@ -418,11 +406,6 @@ const styles = StyleSheet.create({
     top: 3,
     flexDirection: "row",
     alignItems: "flex-end",
-  },
-  pressable: {
-    justifyContent: "center",
-    alignItems: "center",
-    flexGrow: 1,
   },
   spacer: {
     flexGrow: 1,

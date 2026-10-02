@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTheme } from "@/src/lib/contexts/theme";
 import TopNav from "@/src/lib/components/top-nav";
 import TopNavDictionaryStack from "@/src/lib/components/top-nav-dictionary-stack";
