@@ -53,33 +53,55 @@ export function flash<T extends AnimatableValue>(
   }
 }
 
+type AnimationEndCallback = (finished: boolean | undefined) => void;
+type FadeToOptions =
+  | AnimationEndCallback
+  | {
+      // in ms
+      duration?: number;
+      callback?: AnimationEndCallback;
+    };
+
 export function fadeTo<T extends AnimatableValue>(
   sharedValue: SharedValue<T>,
   final: T,
-  callback?: (finished: boolean | undefined) => void,
+  options?: FadeToOptions,
 ): void;
 
 export function fadeTo(
   sharedValue: Animated.Value,
   final: number,
-  callback?: (finished: boolean | undefined) => void,
+  options?: FadeToOptions,
 ): void;
 
 export function fadeTo<T extends AnimatableValue>(
   sharedValue: SharedValue<T> | Animated.Value,
   final: T,
-  callback?: (finished: boolean | undefined) => void,
+  options?: FadeToOptions,
 ) {
+  let callback;
+
+  if (typeof options == "function") {
+    callback = options;
+    options = undefined;
+  } else {
+    callback = options?.callback;
+  }
+
+  const duration = options?.duration ?? fadeTimingConfig.duration;
+
   if (sharedValue instanceof Animated.Value) {
     // react native's animated
     Animated.timing(sharedValue, {
       toValue: final as number,
-      duration: fadeTimingConfig.duration,
+      duration,
       useNativeDriver: true,
     }).start(callback ? ({ finished }) => callback(finished) : undefined);
   } else {
     // reanimated
-    sharedValue.value = withTiming(final, fadeTimingConfig, (finished) => {
+    const timingConfig = { ...fadeTimingConfig, duration };
+
+    sharedValue.value = withTiming(final, timingConfig, (finished) => {
       if (callback) {
         scheduleOnRN(callback, finished);
       }

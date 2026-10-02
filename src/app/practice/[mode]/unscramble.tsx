@@ -73,6 +73,8 @@ import {
 import useAnimationEffects from "@/src/lib/hooks/use-animation-effects";
 import { DefinitionBubble } from "@/src/lib/components/practice/definition-bubbles";
 
+const FADE_DURATION = 400;
+
 export type UnscrambleGameMode = "endless" | "timed" | "rush";
 export const unscrambleModeList: UnscrambleGameMode[] = [
   "endless",
@@ -496,7 +498,9 @@ export default function () {
         }
       };
 
-      pushAnimation(() => fadeTo(opacity, 1, endCallback));
+      pushAnimation(() =>
+        fadeTo(opacity, 1, { duration: FADE_DURATION, callback: endCallback }),
+      );
     }
   }, [gameState.roundStarted]);
 
@@ -523,8 +527,10 @@ export default function () {
       });
     };
 
-    // start transition
-    fadeTo(opacity, 0, middleCallback);
+    setTimeout(() => {
+      // start transition
+      fadeTo(opacity, 0, { duration: FADE_DURATION, callback: middleCallback });
+    }, 500);
   }, [gameState.allCorrect]);
 
   const gameOver =

@@ -54,6 +54,7 @@ import {
 } from "@/src/lib/components/confirmation-dialog";
 import SkipButton from "@/src/lib/components/practice/skip-button";
 
+const FADE_DURATION = 500;
 const MAX_LEN = 100;
 
 type GameState = {
@@ -150,7 +151,7 @@ export default function () {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fadeTo(opacity, 1);
+    fadeTo(opacity, 1, { duration: FADE_DURATION });
     setTransitioning(false);
     setGameState((gameState) => ({ ...gameState, roundStarted: false }));
   }, [gameState.roundStarted]);
@@ -159,16 +160,19 @@ export default function () {
     setTransitioning(true);
     setSentence("");
 
-    fadeTo(opacity, 0, () => {
-      setGameState((gameState) => {
-        gameState = { ...gameState };
-        setUpNextRound(gameState);
-        return gameState;
-      });
+    fadeTo(opacity, 0, {
+      duration: FADE_DURATION,
+      callback: () => {
+        setGameState((gameState) => {
+          gameState = { ...gameState };
+          setUpNextRound(gameState);
+          return gameState;
+        });
 
-      if (typeof callback == "function") {
-        callback();
-      }
+        if (typeof callback == "function") {
+          callback();
+        }
+      },
     });
   };
 

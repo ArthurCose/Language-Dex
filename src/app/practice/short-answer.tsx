@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, View, TextStyle } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data";
@@ -37,6 +37,9 @@ import {
 } from "@/src/lib/components/practice/docked-text-input";
 import useKeyboardVisible from "@/src/lib/hooks/use-keyboard-visible";
 import { DefinitionBubble } from "@/src/lib/components/practice/definition-bubbles";
+
+const QUICK_FADE_DURATION = 0;
+const LONG_FADE_DURATION = 350;
 
 type GameState = {
   loading: boolean;
@@ -138,7 +141,7 @@ export default function () {
   useEffect(() => {
     if (gameState.roundStarted) {
       setGameState((gameState) => ({ ...gameState, roundStarted: false }));
-      pushAnimation(() => fadeTo(opacity, 1));
+      pushAnimation(() => fadeTo(opacity, 1, { duration: LONG_FADE_DURATION }));
       setSubmitted(false);
     }
   }, [gameState.roundStarted]);
@@ -200,7 +203,7 @@ export default function () {
           setPendingGuess("");
           setSubmissionColor(undefined);
           pushAnimation(() => {
-            fadeTo(opacity, 1);
+            fadeTo(opacity, 1, { duration: LONG_FADE_DURATION });
             truthOpacity.value = 0;
           });
           return gameState;
@@ -208,10 +211,20 @@ export default function () {
       };
 
       // start transition
-      setTimeout(() => fadeTo(opacity, 0, middleCallback), 1000);
+      setTimeout(
+        () =>
+          fadeTo(opacity, 0, {
+            duration: LONG_FADE_DURATION,
+            callback: middleCallback,
+          }),
+        1000,
+      );
     };
 
-    fadeTo(truthOpacity, 1, fadeToNextRound);
+    fadeTo(truthOpacity, 1, {
+      duration: QUICK_FADE_DURATION,
+      callback: fadeToNextRound,
+    });
   };
 
   return (

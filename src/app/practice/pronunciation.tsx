@@ -43,6 +43,9 @@ import {
 import { stripProtocol } from "@/src/lib/path";
 import SkipButton from "@/src/lib/components/practice/skip-button";
 
+const INPUT_FADE_DURATION = 500;
+const ROUND_FADE_DURATION = 450;
+
 type GameState = {
   loading: boolean;
   over: boolean;
@@ -169,9 +172,12 @@ export default function () {
 
     // delay with setTimeout to add some time for users to process their action
     setTimeout(() => {
+      let duration = INPUT_FADE_DURATION;
+
       // fade out
       if (transitionRound) {
-        fadeTo(definitionOpacity, 0);
+        duration = ROUND_FADE_DURATION;
+        fadeTo(definitionOpacity, 0, { duration });
       }
 
       // little hack to simplify code
@@ -180,31 +186,37 @@ export default function () {
       const skipping = transitionRound && !gameState.selfReporting;
       const inputOpacityTarget = skipping ? 1 : 0;
 
-      fadeTo(inputOpacity, inputOpacityTarget, () => {
-        // swap view by toggling selfReporting
-        setGameState((gameState) => {
-          gameState = {
-            ...gameState,
-            selfReporting: !transitionRound && !gameState.selfReporting,
-            currentReport: undefined,
-            savedRecording: false,
-          };
+      fadeTo(inputOpacity, inputOpacityTarget, {
+        duration,
+        callback: () => {
+          // swap view by toggling selfReporting
+          setGameState((gameState) => {
+            gameState = {
+              ...gameState,
+              selfReporting: !transitionRound && !gameState.selfReporting,
+              currentReport: undefined,
+              savedRecording: false,
+            };
 
-          if (transitionRound) {
-            setUpNextRound(gameState);
-          }
+            if (transitionRound) {
+              setUpNextRound(gameState);
+            }
 
-          return gameState;
-        });
+            return gameState;
+          });
 
-        pushAnimation(() => {
-          // fade back in
-          fadeTo(inputOpacity, 1, () => setTransitioning(false));
+          pushAnimation(() => {
+            // fade back in
+            fadeTo(inputOpacity, 1, {
+              duration,
+              callback: () => setTransitioning(false),
+            });
 
-          if (transitionRound) {
-            fadeTo(definitionOpacity, 1);
-          }
-        });
+            if (transitionRound) {
+              fadeTo(definitionOpacity, 1, { duration: ROUND_FADE_DURATION });
+            }
+          });
+        },
       });
     }, 200);
   };
