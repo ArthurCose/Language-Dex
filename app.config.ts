@@ -11,6 +11,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
     // allow dev builds to be installed with release builds
     ios.bundleIdentifier += ".dev";
     android.package += ".dev";
+    config.name += " Dev";
   } else {
     // remove permissions that aren't necessary in release
     if (!android.blockedPermissions) {
