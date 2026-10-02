@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: 4,
-    paddingVertical: 0,
+    paddingTop: 0,
   },
   listingContainer: {
     margin: 4,
