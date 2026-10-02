@@ -5,6 +5,7 @@ import { CsvTransformStream, encodeCsvField } from "../csv";
 import { upsertDefinition, WordDefinitionUpsertData } from "./dictionary-words";
 import { DictionaryData, PartOfSpeechData } from "./dictionary-meta";
 import { UserData } from "./user";
+import { recalculateWordStatistics } from "./stats";
 
 export const csvColumns = [
   "id",
@@ -251,6 +252,10 @@ export async function importCsv({
     }
   }
 
+  // update userdata to recalculate stats on relaunch in case the user closes the app
+  userData = { ...userData, updatingStats: true };
+  saveUserData(userData);
+
   // trying to fit our logic into typescript
   // possibly room for performance improvements if we can avoid the Object.assign
   const partialData: Partial<WordDefinitionUpsertData> = {};
@@ -277,7 +282,7 @@ export async function importCsv({
       nextPartOfSpeechId = dictionary.nextPartOfSpeechId;
 
       // save user data before upserting the word
-      const newUserData = {
+      userData = {
         ...userData,
         dictionaries: userData.dictionaries.map((d) => {
           if (d.id == dictionary.id) {
@@ -291,7 +296,7 @@ export async function importCsv({
         }),
       };
 
-      saveUserData(newUserData);
+      saveUserData(userData);
     }
 
     if (partialData.spelling == null || partialData.spelling == "") {
@@ -308,4 +313,8 @@ export async function importCsv({
       await upsertDefinition(dictionary.id, insertData);
     }
   }
+
+  userData = { ...userData };
+  await recalculateWordStatistics(userData);
+  saveUserData(userData);
 }
