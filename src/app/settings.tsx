@@ -537,10 +537,10 @@ const styles = StyleSheet.create({
     paddingLeft: 24,
   },
   label: {
-    fontSize: 20,
+    fontSize: 18,
   },
   value: {
-    fontSize: 20,
+    fontSize: 18,
     marginLeft: "auto",
   },
   valueIcon: {
