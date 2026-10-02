@@ -11,7 +11,7 @@ import RouteRoot from "@/src/lib/components/route-root";
 import SubMenuTopNav, {
   SubMenuBackButton,
 } from "@/src/lib/components/sub-menu-top-nav";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import { useTranslation } from "react-i18next";
 import CustomTextInput, {
   TextInputCharacterCount,
@@ -26,7 +26,7 @@ import {
 import useWordDefinitions, {
   invalidateWordDefinitions,
 } from "@/src/lib/hooks/use-word-definitions";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { Signal, useSignalLens } from "@/src/lib/hooks/use-signal";
 import { logError } from "@/src/lib/log";
 import { pickIndexWithLenBiased, swapToEnd } from "@/src/lib/practice/random";

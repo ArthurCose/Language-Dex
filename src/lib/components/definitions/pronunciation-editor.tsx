@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
 import Dialog, { DialogTitle } from "../dialog";
 import { AudioPlayer, createAudioPlayer } from "expo-audio";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import { logError } from "@/src/lib/log";
 import { MicrophoneIcon, PlayAudioIcon } from "../icons";
 import { Span } from "../text";

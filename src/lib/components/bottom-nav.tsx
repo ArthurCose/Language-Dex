@@ -1,7 +1,7 @@
 import { Theme } from "@/src/lib/themes";
 import { IconProps } from "@/src/lib/components/icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import useKeyboardVisible from "@/src/lib/hooks/use-keyboard-visible";
 
 type NavItemProps = {

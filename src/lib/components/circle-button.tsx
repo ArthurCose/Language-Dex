@@ -7,7 +7,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 
 type Props = {
   onPress?: () => void;

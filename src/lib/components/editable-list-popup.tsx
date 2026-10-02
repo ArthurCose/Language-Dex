@@ -23,7 +23,7 @@ import ReorderableList, {
 } from "react-native-reorderable-list";
 import IconButton from "./icon-button";
 import { Span } from "./text";
-import { useTheme } from "../contexts/theme";
+import { useTheme } from "../contexts/theme-context";
 import { Theme } from "../themes";
 import Dialog from "./dialog";
 import CustomTextInput from "./custom-text-input";

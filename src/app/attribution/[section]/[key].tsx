@@ -12,7 +12,7 @@ import {
   AttributionRow,
   NamespacePackages,
 } from "@/src/lib/components/attribution";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import { useTranslation } from "react-i18next";
 import { SubMenuIconButton } from "@/src/lib/components/icon-button";
 import { LinkIcon } from "@/src/lib/components/icons";

@@ -8,7 +8,7 @@ import {
   VirtualizedList,
 } from "react-native";
 import Dialog from "./dialog";
-import { useTheme } from "../contexts/theme";
+import { useTheme } from "../contexts/theme-context";
 import { Span } from "./text";
 
 type Props<T> = {

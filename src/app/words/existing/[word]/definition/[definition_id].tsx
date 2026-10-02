@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useWordDefinition } from "@/src/lib/hooks/use-word-definitions";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import DefinitionEditor from "@/src/lib/components/definitions/definition-editor";
 import { useSignalLens } from "@/src/lib/hooks/use-signal";
 

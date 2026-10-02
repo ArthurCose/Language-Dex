@@ -19,7 +19,7 @@ import {
 import Animated from "react-native-reanimated";
 import { DropdownIcon } from "@/src/lib/components/icons";
 import { Span } from "@/src/lib/components/text";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import useKeyboardVisible from "../hooks/use-keyboard-visible";
 import Dialog from "./dialog";
 import { NavigationBarSpacer } from "./system-bar-spacers";

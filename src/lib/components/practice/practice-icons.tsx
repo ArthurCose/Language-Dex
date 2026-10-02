@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { StyleSheet, TextStyle, View, Text } from "react-native";
 import { colors as guessTheWordColors } from "@/src/app/practice/guess-the-word";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import usePracticeColors from "@/src/lib/hooks/use-practice-colors";
 import { SentencePracticeIcon, MicrophoneIcon } from "../icons";
 import { useTranslation } from "react-i18next";

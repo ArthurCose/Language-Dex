@@ -11,7 +11,7 @@ import SubMenuTopNav, {
 } from "@/src/lib/components/sub-menu-top-nav";
 import { useTranslation } from "react-i18next";
 import RouteRoot from "@/src/lib/components/route-root";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 
 import data from "@/-licenses.json";
 import { Span } from "@/src/lib/components/text";

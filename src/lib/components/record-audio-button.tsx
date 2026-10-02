@@ -7,7 +7,7 @@ import {
   useAudioRecorder,
 } from "expo-audio";
 import { RecordIcon, StopRecordingIcon } from "@/src/lib/components/icons";
-import { useTheme } from "../contexts/theme";
+import { useTheme } from "../contexts/theme-context";
 import { logError } from "@/src/lib/log";
 import { useSignal, useSignalValue } from "../hooks/use-signal";
 

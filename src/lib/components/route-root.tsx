@@ -17,7 +17,7 @@ import SubMenuTopNav, {
 import { CopyLogsButton, LogsView, ShareLogsButton } from "./logs-components";
 import { logError } from "@/src/lib/log";
 import { useTranslation } from "react-i18next";
-import { useTheme } from "../contexts/theme";
+import { useTheme } from "../contexts/theme-context";
 
 type RouteRootProps = {
   style?: StyleProp<ViewStyle>;

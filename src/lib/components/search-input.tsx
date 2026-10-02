@@ -5,7 +5,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import { useTheme } from "../contexts/theme";
+import { useTheme } from "../contexts/theme-context";
 import CustomTextInput from "./custom-text-input";
 import { useTranslation } from "react-i18next";
 import { CloseIcon } from "./icons";

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useUserDataSignal } from "../contexts/user-data";
+import { useUserDataSignal } from "../contexts/user-data-context";
 import CatDialog from "./cat-dialog";
 import { useTranslation } from "react-i18next";
 import { DialogDescription } from "./dialog";

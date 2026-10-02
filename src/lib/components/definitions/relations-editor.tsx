@@ -7,7 +7,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import {
   clearSynonymCluster,
   createSynonymCluster,
@@ -37,7 +37,7 @@ import SearchWordDialog from "./search-word-dialog";
 import IconButton from "../icon-button";
 import { CloseIcon, UnlinkIcon } from "../icons";
 import { logError } from "@/src/lib/log";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import {
   addMappedToSet,
   createSetFromMapped,

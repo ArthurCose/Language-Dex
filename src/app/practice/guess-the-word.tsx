@@ -18,7 +18,7 @@ import {
   ResultsLabel,
   ResultsRow,
 } from "@/src/lib/components/practice/results";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { useSignalLens } from "@/src/lib/hooks/use-signal";
 import { logError } from "@/src/lib/log";
 import Animated, {
@@ -28,7 +28,7 @@ import Animated, {
   withDelay,
   withTiming,
 } from "react-native-reanimated";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import useKeyboardVisible from "@/src/lib/hooks/use-keyboard-visible";
 import { Theme } from "@/src/lib/themes";
 import {

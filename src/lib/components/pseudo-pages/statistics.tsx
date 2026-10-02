@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Share, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import { Span } from "../text";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { useSignalValue } from "@/src/lib/hooks/use-signal";
 import { DictionaryStats, listWords, UserData } from "@/src/lib/data";
 import { Theme } from "@/src/lib/themes";

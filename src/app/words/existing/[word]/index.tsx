@@ -15,12 +15,12 @@ import SubMenuTopNav, {
   SubMenuBackButton,
 } from "@/src/lib/components/sub-menu-top-nav";
 import { Span } from "@/src/lib/components/text";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import { router, useLocalSearchParams } from "expo-router";
 import useWordDefinitions, {
   invalidateWordDefinitions,
 } from "@/src/lib/hooks/use-word-definitions";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { useSignalValue } from "@/src/lib/hooks/use-signal";
 import { useTranslation } from "react-i18next";
 import ReorderableList, {

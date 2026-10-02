@@ -16,7 +16,7 @@ import {
 } from "@/src/lib/data";
 import { logError } from "@/src/lib/log";
 import { useTranslation } from "react-i18next";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { useSignalLens } from "@/src/lib/hooks/use-signal";
 import RouteRoot from "@/src/lib/components/route-root";
 import {
@@ -33,7 +33,7 @@ import {
   ResultsLabel,
   ResultsRow,
 } from "@/src/lib/components/practice/results";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import SubMenuTopNav, {
   SubMenuActions,
   SubMenuBackButton,

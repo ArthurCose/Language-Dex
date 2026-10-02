@@ -1,6 +1,6 @@
 import { Pressable, StyleProp, View, ViewStyle } from "react-native";
 import Animated, { CurvedTransition, Easing } from "react-native-reanimated";
-import { useTheme } from "../contexts/theme";
+import { useTheme } from "../contexts/theme-context";
 import { Span } from "./text";
 
 const gap = 8;

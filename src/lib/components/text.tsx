@@ -5,7 +5,7 @@ import {
   TextProps,
   TextStyle,
 } from "react-native";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 
 type Props = {
   style?: StyleProp<TextStyle>;

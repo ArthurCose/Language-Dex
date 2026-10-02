@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from "react";
 import * as DropDownPrimitive from "@rn-primitives/dropdown-menu";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import useWordDefinitions from "@/src/lib/hooks/use-word-definitions";
 import { DefinitionsBubble } from "./definitions/definition-bubbles";
 import { Span } from "./text";

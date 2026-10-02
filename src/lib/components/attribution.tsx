@@ -1,7 +1,7 @@
 import { StyleSheet, Pressable, View } from "react-native";
 import { Span } from "@/src/lib/components/text";
 import { router } from "expo-router";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import data from "@/-licenses.json";
 
 export type NamespacePackages = (typeof data)["npm"][0];

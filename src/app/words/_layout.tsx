@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import RouteRoot from "@/src/lib/components/route-root";
 
 export default function () {

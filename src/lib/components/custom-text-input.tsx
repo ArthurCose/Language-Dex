@@ -6,7 +6,7 @@ import {
   Text,
   StyleSheet,
 } from "react-native";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import { Signal, useSignalValue } from "@/src/lib/hooks/use-signal";
 
 type CustomTextInputProps = TextInputProps & {

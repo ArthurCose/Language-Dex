@@ -1,8 +1,8 @@
 import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
-import { useTheme } from "@/src/lib/contexts/theme";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useTheme } from "@/src/lib/contexts/theme-context";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { Signal, useSignalLens } from "@/src/lib/hooks/use-signal";
 import {
   GameWord,

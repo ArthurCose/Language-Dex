@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
-import { useUserDataSignal } from "../contexts/user-data";
+import { useUserDataSignal } from "../contexts/user-data-context";
 
 let idCounter: number = 0;
 

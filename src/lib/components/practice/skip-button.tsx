@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet } from "react-native";
 import { Span } from "../text";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import { useTranslation } from "react-i18next";
 
 export default function SkipButton({ onPress }: { onPress: () => void }) {

@@ -10,8 +10,8 @@ import {
 import { useTranslation } from "react-i18next";
 import * as Sharing from "expo-sharing";
 import { logError } from "@/src/lib/log";
-import { useTheme } from "@/src/lib/contexts/theme";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useTheme } from "@/src/lib/contexts/theme-context";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { UserData } from "@/src/lib/data/user";
 import { useSignalLens, useSignalValue } from "@/src/lib/hooks/use-signal";
 import Dialog from "@/src/lib/components/dialog";

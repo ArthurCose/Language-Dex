@@ -11,7 +11,7 @@ import {
   NavigationBarUnderlay,
 } from "@/src/lib/components/system-bar-spacers";
 import BottomListPopup from "@/src/lib/components/bottom-list-popup";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import { useSignal, useSignalValue } from "@/src/lib/hooks/use-signal";
 import { Span } from "@/src/lib/components/text";
 import db from "@/src/lib/data/db";

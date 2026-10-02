@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { useSignalLens } from "../hooks/use-signal";
 import NavRow from "./nav-row";
 import DictionaryDropdown from "./dictionary-dropdown";

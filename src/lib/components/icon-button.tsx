@@ -5,7 +5,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { useTheme } from "../contexts/theme";
+import { useTheme } from "../contexts/theme-context";
 
 type Props = {
   icon: React.FunctionComponent<{ size: number; color?: ColorValue }>;

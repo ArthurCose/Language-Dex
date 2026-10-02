@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, Pressable, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import * as DropDownPrimitive from "@rn-primitives/dropdown-menu";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { useSignalLens } from "@/src/lib/hooks/use-signal";
 import {
   DictionaryData,
@@ -12,7 +12,7 @@ import {
 import * as Clipboard from "expo-clipboard";
 import { router } from "expo-router";
 import { logError } from "@/src/lib/log";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import { Span } from "@/src/lib/components/text";
 import { NavigationBarSpacer } from "../system-bar-spacers";
 

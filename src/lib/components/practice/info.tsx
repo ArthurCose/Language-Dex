@@ -1,7 +1,7 @@
 import React from "react";
 import { Span } from "../text";
 import { StyleSheet, View } from "react-native";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import {
   ConcedeIcon,
   CorrectIcon,

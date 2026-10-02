@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
-import { useTheme } from "../contexts/theme";
+import { useTheme } from "../contexts/theme-context";
 import {
   Pressable,
   StyleProp,

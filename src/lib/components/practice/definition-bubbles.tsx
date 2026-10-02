@@ -1,4 +1,4 @@
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { Span } from "../text";
 

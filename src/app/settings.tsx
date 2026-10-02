@@ -4,12 +4,12 @@ import SubMenuTopNav, {
   SubMenuTitle,
 } from "@/src/lib/components/sub-menu-top-nav";
 import { Span } from "@/src/lib/components/text";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import ListPopup from "@/src/lib/components/list-popup";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { upsertDefinition, UserData, wordOrderOptions } from "@/src/lib/data";
 import { TFunction } from "i18next";
 import { pages } from "./index";

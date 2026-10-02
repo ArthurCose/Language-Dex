@@ -18,9 +18,9 @@ import {
   upsertDefinition,
 } from "@/src/lib/data";
 import { pickIndexWithLenBiased, swapToEnd } from "@/src/lib/practice/random";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { useSignalLens } from "@/src/lib/hooks/use-signal";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import { useAudioPlayer } from "expo-audio";
 import CircleButton from "@/src/lib/components/circle-button";
 import {

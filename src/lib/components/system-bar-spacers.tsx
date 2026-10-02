@@ -1,6 +1,6 @@
 import { View, ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useTheme } from "../contexts/theme";
+import { useTheme } from "../contexts/theme-context";
 
 export function StatusBarSpacer() {
   const insets = useSafeAreaInsets();

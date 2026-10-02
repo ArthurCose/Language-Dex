@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Text, Pressable, ScrollView } from "react-native";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import { router } from "expo-router";
 import CustomTextInput, {
   CustomMultilineTextInput,
@@ -26,7 +26,7 @@ import {
   invalidateWordDefinitions,
   useWordDefinition,
 } from "@/src/lib/hooks/use-word-definitions";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { useSignalLens, useSignalValue } from "@/src/lib/hooks/use-signal";
 import PartOfSpeechDropdown from "@/src/lib/components/definitions/part-of-speech-dropdown";
 import ConfirmationDialog, {

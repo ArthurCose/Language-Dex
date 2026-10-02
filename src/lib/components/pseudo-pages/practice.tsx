@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import {
   View,
   StyleSheet,
@@ -19,7 +19,7 @@ import ListPopup from "../list-popup";
 import { LockIcon } from "../icons";
 import { definitionMatchModeList } from "@/src/app/practice/[mode]/definition-match";
 import { unscrambleModeList } from "@/src/app/practice/[mode]/unscramble";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { useSignalLens } from "@/src/lib/hooks/use-signal";
 import Dialog, { DialogDescription, DialogTitle } from "../dialog";
 import {

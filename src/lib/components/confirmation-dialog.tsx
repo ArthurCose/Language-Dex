@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from "react-native";
 import Dialog, { DialogDescription, DialogTitle } from "./dialog";
-import { useTheme } from "../contexts/theme";
+import { useTheme } from "../contexts/theme-context";
 import { useTranslation } from "react-i18next";
 import { Span } from "./text";
 import React, { useState } from "react";

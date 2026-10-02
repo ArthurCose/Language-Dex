@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, View, TextStyle } from "react-native";
 import { useTranslation } from "react-i18next";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { Signal, useSignalLens } from "@/src/lib/hooks/use-signal";
 import {
   GameWord,

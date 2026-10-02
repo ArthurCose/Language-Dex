@@ -15,7 +15,7 @@ import {
   ConfirmationDialogActions,
 } from "@/src/lib/components/confirmation-dialog";
 import { Span } from "../text";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { useSignalLens } from "@/src/lib/hooks/use-signal";
 import { deleteDictionary } from "@/src/lib/data";
 import { LabeledTest, TestParams } from "@/src/lib/integration-tests/util";

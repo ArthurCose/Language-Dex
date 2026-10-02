@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import TopNav from "@/src/lib/components/top-nav";
 import TopNavDictionaryStack from "@/src/lib/components/top-nav-dictionary-stack";
 import { BottomNav, BottomNavItem } from "@/src/lib/components/bottom-nav";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { UserData } from "@/src/lib/data";
 import { useSignalLens } from "@/src/lib/hooks/use-signal";
 import { NavigationBarSpacer } from "@/src/lib/components/system-bar-spacers";

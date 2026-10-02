@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { StyleProp, TextStyle, ViewStyle } from "react-native";
 import { useTranslation } from "react-i18next";
 import EditableListPopup from "./editable-list-popup";
-import { useUserDataSignal } from "../contexts/user-data";
+import { useUserDataSignal } from "../contexts/user-data-context";
 import {
   deleteDictionary,
   DictionaryData,
@@ -29,7 +29,7 @@ export default function DictionaryDropdown({
   const userDataSignal = useUserDataSignal();
   const dictionaries = useSignalLens(
     userDataSignal,
-    (data) => data.dictionaries
+    (data) => data.dictionaries,
   );
   const [t] = useTranslation();
   const [deleteItem, setDeleteItem] = useState<DictionaryData | null>(null);
@@ -51,7 +51,7 @@ export default function DictionaryDropdown({
         onRename={(item, name) => {
           const [updatedData, updatedDictionary] = prepareDictionaryUpdate(
             userDataSignal.get(),
-            item.id
+            item.id,
           );
 
           updatedDictionary.name = name;
@@ -142,7 +142,7 @@ export default function DictionaryDropdown({
 function subStat(
   a: { [key: string]: unknown },
   b: { [key: string]: unknown },
-  key: string
+  key: string,
 ) {
   if (typeof a[key] == "number" && typeof b[key] == "number") {
     a[key] = Math.max(a[key] - b[key], 0);

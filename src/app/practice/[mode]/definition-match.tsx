@@ -13,7 +13,7 @@ import {
   updateStatistics,
   UserData,
 } from "@/src/lib/data";
-import { useUserDataSignal } from "@/src/lib/contexts/user-data";
+import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { Signal, useSignalLens } from "@/src/lib/hooks/use-signal";
 import { logError } from "@/src/lib/log";
 import useWordDefinitions from "@/src/lib/hooks/use-word-definitions";
@@ -27,7 +27,7 @@ import { fadeTo, flash } from "@/src/lib/practice/animations";
 import { Timer, useTimerSeconds } from "@/src/lib/practice/timer";
 import useGettableState from "@/src/lib/hooks/use-gettable-state";
 import { Theme } from "@/src/lib/themes";
-import { useTheme } from "@/src/lib/contexts/theme";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import SubMenuTopNav, {
   SubMenuActions,
   SubMenuBackButton,

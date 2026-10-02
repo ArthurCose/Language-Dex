@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { StyleProp, TextStyle, ViewStyle } from "react-native";
 import { useTranslation } from "react-i18next";
 import EditableListPopup from "../editable-list-popup";
-import { useUserDataSignal } from "../../contexts/user-data";
+import { useUserDataSignal } from "../../contexts/user-data-context";
 import { useSignalLens } from "@/src/lib/hooks/use-signal";
 import {
   deletePartOfSpeech,
