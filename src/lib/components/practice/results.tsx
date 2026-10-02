@@ -100,7 +100,7 @@ function ResultsIcon({
 }) {
   return (
     <Text style={style}>
-      <Icon size={26} />
+      <Icon size={26} color="inherit" />
     </Text>
   );
 }
