@@ -35,9 +35,9 @@ export type WordDefinitionUpsertData =
   | (Partial<
       Omit<
         WordDefinitionData,
-        "id" | "sharedId" | "spelling" | "createdAt" | "updatedAt" | "orderKey"
+        "id" | "sharedId" | "createdAt" | "updatedAt" | "orderKey"
       >
-    > & { id: number; spelling: string })
+    > & { id: number })
   | (Omit<
       WordDefinitionData,
       "id" | "sharedId" | "createdAt" | "updatedAt" | "orderKey"
@@ -396,12 +396,15 @@ export async function upsertDefinition(
   let oldDataResult: {
     sharedId: number;
     orderKey: number;
+    spelling: string;
   } | null = null;
+
+  let spelling = definition.spelling;
 
   if (definition.id != undefined) {
     // fetch old sharedId to see if we switched words
     const query =
-      "SELECT sharedId, orderKey FROM word_definition_data WHERE id = $id";
+      "SELECT sharedId, orderKey, spelling FROM word_definition_data WHERE id = $id";
     oldDataResult = await db.getFirstAsync(query, {
       $id: definition.id,
     });
@@ -411,10 +414,18 @@ export async function upsertDefinition(
       log("Failed to match definition by ID...");
       return;
     }
+
+    spelling ??= oldDataResult.spelling;
+  }
+
+  if (spelling == null) {
+    // exit early to avoid creating a shared word
+    logError("Invalid state: Missing spelling for definition upsert!");
+    return;
   }
 
   // grab the shared word
-  const sharedId = await getOrCreateWordId(dictionaryId, definition.spelling, {
+  const sharedId = await getOrCreateWordId(dictionaryId, spelling, {
     confidence: definition.confidence ?? 0,
     time,
   });
