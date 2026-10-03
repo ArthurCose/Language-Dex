@@ -11,6 +11,7 @@ export async function listGameWords(
   dictionaryId: number,
   options?: {
     minLength?: number;
+    maxLength?: number;
     limit?: number;
     requirePronunciation?: boolean;
   },
@@ -31,6 +32,11 @@ export async function listGameWords(
   if (options?.minLength != undefined) {
     query.push("AND word.graphemeCount >= $minLength");
     params.$minLength = options.minLength;
+  }
+
+  if (options?.maxLength != undefined) {
+    query.push("AND word.graphemeCount <= $maxLength");
+    params.$maxLength = options.maxLength;
   }
 
   if (options?.requirePronunciation) {

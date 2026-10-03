@@ -35,6 +35,7 @@ import {
   PronunciationIcon,
   ShortAnswerIcon,
   UseInASentenceIcon,
+  WordSearchIcon,
 } from "../practice/practice-icons";
 
 import Cat1 from "@/assets/svgs/Practice-1.svg";
@@ -184,6 +185,7 @@ export default function () {
   const [matchStatus, setMatchStatus] = useState({ locked: true });
   const [unscrambleStatus, setUnscrambleStatus] = useState({ locked: true });
   const [guessStatus, setGuessStatus] = useState({ locked: true });
+  const [wordSearchStatus, setWordSearchStatus] = useState({ locked: true });
   const [crosswordStatus, setCrosswordStatus] = useState({ locked: true });
   const [shortAnswerStatus, setShortAnswerStatus] = useState({ locked: true });
   const [useInASentenceStatus, setUseInASentenceStatus] = useState({
@@ -212,6 +214,12 @@ export default function () {
       orderBy: "longest",
       limit: 10,
       belowMaxConfidence: true,
+    });
+
+    testLock(setWordSearchStatus, listGameWords, activeDictionary, {
+      limit: 5,
+      minLength: 2,
+      maxLength: 10,
     });
 
     testLock(setCrosswordStatus, listWords, activeDictionary, {
@@ -293,6 +301,16 @@ export default function () {
           lockStatus={guessStatus}
           setLockDescription={lockCallback}
           href="/practice/guess-the-word"
+        />
+
+        <GameListing
+          label="Word_Search"
+          icon={WordSearchIcon}
+          style={listingStyles}
+          theme={theme}
+          lockStatus={wordSearchStatus}
+          setLockDescription={lockCallback}
+          href="/practice/word-search"
         />
 
         <GameListing

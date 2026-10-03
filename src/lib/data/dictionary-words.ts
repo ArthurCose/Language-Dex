@@ -78,6 +78,7 @@ export async function listWords(
     orderBy: WordOrder;
     partOfSpeech?: number | null;
     minLength?: number;
+    maxLength?: number;
     belowMaxConfidence?: boolean;
     startsWith?: string;
     limit?: number;
@@ -110,6 +111,11 @@ export async function listWords(
   if (options.minLength != undefined) {
     whereClause.push("word.graphemeCount >= $minLength");
     bindParams.$minLength = options.minLength;
+  }
+
+  if (options.maxLength != undefined) {
+    whereClause.push("word.graphemeCount <= $maxLength");
+    bindParams.$maxLength = options.maxLength;
   }
 
   if (options.belowMaxConfidence != undefined) {

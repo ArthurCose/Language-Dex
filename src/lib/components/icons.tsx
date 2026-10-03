@@ -183,6 +183,10 @@ export function ConcedeIcon(props: IconProps) {
   return <MaterialDesignIcons name="flag-variant-outline" {...props} />;
 }
 
+export function QuestionMarkIcon(props: IconProps) {
+  return <MaterialDesignIcons name="help" {...props} />;
+}
+
 export function ScoreIcon(props: IconProps) {
   return <MaterialDesignIcons name="star-outline" {...props} />;
 }

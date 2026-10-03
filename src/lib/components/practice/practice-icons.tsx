@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { StyleSheet, TextStyle, View, Text } from "react-native";
+import { StyleSheet, TextStyle, View, Text, ViewStyle } from "react-native";
+import { useTranslation } from "react-i18next";
 import { colors as guessTheWordColors } from "@/src/app/practice/guess-the-word";
 import { useTheme } from "@/src/lib/contexts/theme-context";
 import usePracticeColors from "@/src/lib/hooks/use-practice-colors";
-import { SentencePracticeIcon, MicrophoneIcon } from "../icons";
-import { useTranslation } from "react-i18next";
+import {
+  SentencePracticeIcon,
+  MicrophoneIcon,
+} from "@/src/lib/components/icons";
+import { Span } from "@/src/lib/components/text";
+import { selectionColors } from "@/src/app/practice/word-search";
 
 const READABLE_FONT_SIZE = 3;
 
@@ -260,6 +265,95 @@ const guessTheWordStyles = StyleSheet.create({
   },
   correct: {
     backgroundColor: guessTheWordColors.correctBackground,
+  },
+});
+
+const wordSearchBoard = [
+  ["X", "X", "X", "X"],
+  ["X", "X", "X", "X"],
+  ["X", "X", "X", "X"],
+  ["X", "X", "X", "X"],
+];
+const wordSearchSelections = [
+  // { x: 0, y: 2, width: 2.5, angle: "45deg" },
+  { x: 1, y: 2, width: 4, angle: "-45deg", color: selectionColors[1] },
+  { x: 2, y: 0, width: 3, angle: "90deg", color: selectionColors[4] },
+  { x: 0, y: 3, width: 4, angle: "0deg", color: selectionColors[3] },
+];
+
+export const WordSearchIcon = function () {
+  const styles = worSearchStyles;
+  const [height, setHeight] = useState(0);
+
+  const cellSize = height / wordSearchBoard.length;
+
+  const fontSize = cellSize * 0.6;
+  const fontStyle = fontSize >= READABLE_FONT_SIZE ? { fontSize } : undefined;
+  const cellStyle = [styles.cell, fontStyle];
+
+  const selectionStyle: ViewStyle = {
+    position: "absolute",
+    height: cellSize,
+    transformOrigin: [cellSize * 0.5, cellSize * 0.5, 0],
+    borderWidth: 1,
+    borderRadius: cellSize,
+  };
+
+  return (
+    <View
+      style={styles.container}
+      onLayout={(e) => {
+        e.target.measure((_x, _y, _w, h, _pageX, _pageY) => {
+          setHeight(h);
+        });
+      }}
+    >
+      {fontStyle &&
+        wordSearchBoard.map((row, y) => (
+          <View key={y} style={styles.row}>
+            {row.map((cell, x) => (
+              <Span key={x} style={cellStyle}>
+                {cell}
+              </Span>
+            ))}
+          </View>
+        ))}
+
+      {wordSearchSelections.map(({ x, y, width, angle, color }, i) => (
+        <View
+          key={i}
+          style={[
+            selectionStyle,
+            {
+              borderColor: color,
+              width: cellSize * width,
+              transform: [
+                { translateX: x * cellSize },
+                { translateY: y * cellSize },
+                { rotate: angle },
+              ],
+            },
+          ]}
+        />
+      ))}
+    </View>
+  );
+};
+
+const worSearchStyles = StyleSheet.create({
+  container: {
+    height: "100%",
+    aspectRatio: 1,
+  },
+  row: {
+    flex: 1,
+    flexDirection: "row",
+  },
+  cell: {
+    flex: 1,
+    verticalAlign: "middle",
+    textAlign: "center",
+    padding: 0,
   },
 });
 
