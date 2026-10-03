@@ -1,4 +1,3 @@
-import React from "react";
 import { StyleSheet, Pressable, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import * as DropDownPrimitive from "@rn-primitives/dropdown-menu";

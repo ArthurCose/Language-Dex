@@ -15,11 +15,10 @@ type CellData = {
   locked: boolean;
 };
 
-type BoardWordData = {
+export type BoardWordData = {
   word: string;
   graphemes: string[];
   cells: number[];
-  hint?: string;
   hintUsed?: boolean;
   conceded?: boolean;
 };
@@ -62,7 +61,7 @@ function traversePositions(
   y: number,
   horizontal: boolean,
   len: number,
-  callback: (x: number, y: number, i: number) => boolean | void
+  callback: (x: number, y: number, i: number) => boolean | void,
 ) {
   if (horizontal) {
     for (let i = 0; i < len; i++) {
@@ -88,7 +87,7 @@ function findValidPlacement(
   x: number,
   y: number,
   horizontal: boolean,
-  graphemes: string[]
+  graphemes: string[],
 ): WordPlacement | void {
   const len = graphemes.length;
 
@@ -171,7 +170,7 @@ function generateTrialBoard(words: string[]) {
     const workPosition = swapToEnd(
       workList,
       workList.length,
-      pickIndexWithLenUnbiased(workList.length)
+      pickIndexWithLenUnbiased(workList.length),
     );
 
     if (workPosition == undefined) {
@@ -201,7 +200,7 @@ function generateTrialBoard(words: string[]) {
         workPosition.x,
         workPosition.y,
         workPosition.horizontal,
-        graphemes
+        graphemes,
       );
 
       if (!placement) {
@@ -262,7 +261,7 @@ function generateTrialBoard(words: string[]) {
           } else {
             cell.words.push(word);
           }
-        }
+        },
       );
 
       board.words.push(wordData);

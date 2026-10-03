@@ -8,16 +8,16 @@ import {
   Keyboard,
 } from "react-native";
 import { Timer } from "@/src/lib/practice/timer";
-import useGettableState from "@/src/lib/hooks/use-gettable-state";
 import {
   getWordDefinitions,
   listWords,
+  maxConfidence,
   updateStatistics,
 } from "@/src/lib/data";
 import { logError } from "@/src/lib/log";
 import { useTranslation } from "react-i18next";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
-import { useSignalLens } from "@/src/lib/hooks/use-signal";
+import { useSignal, useSignalLens } from "@/src/lib/hooks/use-signal";
 import RouteRoot from "@/src/lib/components/route-root";
 import {
   DockedTextInput,
@@ -50,11 +50,13 @@ import {
 import {
   Crossword,
   generateCrossword,
+  BoardWordData,
 } from "@/src/lib/practice/crossword-generation";
 import { isRTL, toGraphemeStrings } from "@/src/lib/practice/words";
 import { pickIndexWithLenUnbiased } from "@/src/lib/practice/random";
 import Dialog from "@/src/lib/components/dialog";
 import { Span } from "@/src/lib/components/text";
+import ConfidenceStrip from "@/src/lib/components/definitions/confidence-strip";
 
 type GameState = {
   over: boolean;
@@ -137,6 +139,21 @@ function updateWordSubmission(
   }
 }
 
+function loadWords(activeDictionary: number) {
+  return listWords(activeDictionary, {
+    ascending: true,
+    orderBy: "confidence",
+    minLength: 2,
+    belowMaxConfidence: true,
+  });
+}
+
+type Hint = {
+  definition: string;
+  definitionId?: number;
+  confidence?: number;
+};
+
 export default function () {
   const theme = useTheme();
   const [t] = useTranslation();
@@ -147,21 +164,22 @@ export default function () {
   );
 
   const [allWords, setAllWords] = useState<string[] | null>(null);
-  const [gameState, setGameState, getGameState] = useGettableState(() =>
-    initGameState(),
-  );
+  const reloadingWordsSignal = useSignal(false);
+  const [gameState, setGameState] = useState(() => initGameState());
   const [wordGuess, setWordGuess] = useState("");
   const [wordGuessIndex, setWordGuessIndex] = useState<number | null>(null);
   const [hintDialogOpen, setHintDialogOpen] = useState(false);
+  const [hints, setHints] = useState<{ [wordIndex: number]: Hint | undefined }>(
+    {},
+  );
   const [hintIndex, setHintIndex] = useState(0);
+  const hintWord = gameState.board.words[hintIndex] as
+    | BoardWordData
+    | undefined;
+  const hintData = hints[hintIndex];
 
   useEffect(() => {
-    listWords(activeDictionary, {
-      ascending: true,
-      orderBy: "confidence",
-      minLength: 2,
-      belowMaxConfidence: true,
-    })
+    loadWords(activeDictionary)
       .then((words) => {
         setAllWords(words);
 
@@ -239,14 +257,25 @@ export default function () {
     const word = wordData.word;
     getWordDefinitions(activeDictionary, word.toLowerCase())
       .then((result) => {
-        const gameState = { ...getGameState() };
-        const wordData = gameState.board.words[wordIndex];
-
         if (result && result.definitions.length > 0) {
           const index = pickIndexWithLenUnbiased(result.definitions.length);
-          wordData.hint = result.definitions[index].definition;
+          const data = result.definitions[index];
+
+          setHints({
+            ...hints,
+            [wordIndex]: {
+              definitionId: data.id,
+              definition: data.definition,
+              confidence: 0,
+            },
+          });
         } else {
-          wordData.hint = t("Missing_Definition_brack");
+          setHints({
+            ...hints,
+            [wordIndex]: {
+              definition: t("Missing_Definition_brack"),
+            },
+          });
         }
 
         setHintDialogOpen(true);
@@ -402,17 +431,16 @@ export default function () {
           >
             <View style={styles.hintTitleContainer}>
               <Span style={styles.hintTitle}>
-                {gameState.over || gameState.board.words[hintIndex].conceded
-                  ? gameState.board.words[hintIndex].word
+                {gameState.over || hintWord?.conceded
+                  ? hintWord?.word
                   : t("short_answer_mystery")}
               </Span>
 
-              {(!gameState.over ||
-                gameState.board.words[hintIndex].conceded) && (
+              {hintWord && (!gameState.over || hintWord.conceded) && (
                 <View style={styles.concedeButton}>
                   <IconButton
                     icon={ConcedeIcon}
-                    disabled={gameState.board.words[hintIndex].conceded}
+                    disabled={hintWord.conceded}
                     onPress={() => {
                       const updatedGameState = {
                         ...gameState,
@@ -442,22 +470,78 @@ export default function () {
               keyboardDismissMode="none"
               keyboardShouldPersistTaps="always"
             >
-              <Span style={styles.hintText}>
-                {gameState.board.words[hintIndex].hint}
-              </Span>
+              <Span style={styles.hintText}>{hintData?.definition}</Span>
             </ScrollView>
+
+            {hintWord &&
+              hintData &&
+              hintData.confidence != null &&
+              (hintWord.conceded || gameState.over) && (
+                <ConfidenceStrip
+                  style={styles.confidenceStrip}
+                  definitionId={hintData.definitionId}
+                  confidence={hintData.confidence}
+                  setConfidence={(confidence: number) => {
+                    setHints({
+                      ...hints,
+                      [hintIndex]: { ...hintData, confidence },
+                    });
+                  }}
+                />
+              )}
           </Dialog>
 
           <ResultsDialog
             open={gameState.displayingResults}
-            onClose={() =>
-              setGameState({ ...gameState, displayingResults: false })
-            }
+            onClose={() => {
+              if (reloadingWordsSignal.get()) {
+                // don't close until words reload, acts as a weird lag signal to the user
+                // we could maybe add some loading screen, preferrably we'll load too quickly for that to be necessary
+                return;
+              }
+
+              setGameState({ ...gameState, displayingResults: false });
+            }}
             onReplay={() => {
-              const newState = initGameState();
-              startGame(newState, allWords);
-              setGameState(newState);
-              setWordGuessIndex(null);
+              if (reloadingWordsSignal.get()) {
+                // already hit the replay button, just waiting for words to load
+                return;
+              }
+
+              let wordList = allWords;
+
+              const startNextGame = () => {
+                const newState = initGameState();
+                startGame(newState, wordList);
+                setGameState(newState);
+                setWordGuessIndex(null);
+                setHints({});
+                reloadingWordsSignal.set(false);
+              };
+
+              // we need to reload the word list if a word was updated to max confidence
+              const requiresReload = gameState.board.words.some(
+                (_, i) => (hints[i]?.confidence ?? 0) == maxConfidence,
+              );
+
+              if (requiresReload) {
+                reloadingWordsSignal.set(true);
+
+                loadWords(activeDictionary)
+                  .then((words) => {
+                    // only update the word list if it leaves us with enough words to play
+                    if (words.length >= 10) {
+                      wordList = words;
+                    }
+                  })
+                  .catch(logError)
+                  .finally(startNextGame);
+
+                return;
+              }
+
+              // we can start immediately
+              startNextGame();
             }}
           >
             <ResultsRow>
@@ -531,5 +615,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     right: 0,
+  },
+  confidenceStrip: {
+    marginTop: -4,
+    marginBottom: 8,
   },
 });

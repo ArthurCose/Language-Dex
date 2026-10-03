@@ -8,20 +8,19 @@ const targetWordCount = 5;
 const maxWords = 7;
 const maxPlacementAttempts = 50;
 
-export type WordSearchWordData = {
+export type BoardWordData = {
   word: string;
   graphemes: string[];
   x: number;
   y: number;
   vector: [number, number];
   conceded?: boolean;
-  hint?: string;
 };
 
 export type WordSearch = {
   overlaps: number;
   cells: string[][];
-  words: WordSearchWordData[];
+  words: BoardWordData[];
 };
 
 function toAllowedGraphemes(word: string) {
@@ -125,7 +124,7 @@ function generateTrialPuzzle(words: string[], size: number) {
         }
       }
 
-      const wordData: WordSearchWordData = {
+      const wordData: BoardWordData = {
         word,
         graphemes,
         x: xStart,
