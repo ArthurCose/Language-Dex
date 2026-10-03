@@ -1,7 +1,10 @@
 import * as SQLite from "expo-sqlite";
 import { File, Paths } from "expo-file-system";
 import db, { extractCount } from "./db";
-import { CsvTransformStream, encodeCsvField } from "../csv";
+import {
+  CsvTransformStream,
+  encodeCsvField,
+} from "@/src/lib/text-processing/csv";
 import { upsertDefinition, WordDefinitionUpsertData } from "./dictionary-words";
 import { DictionaryData, PartOfSpeechData } from "./dictionary-meta";
 import { UserData } from "./user";

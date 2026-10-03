@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View, FlatList } from "react-native";
 import { useTheme } from "@/src/lib/contexts/theme-context";
-import extractWords from "@/src/lib/extract-words";
+import extractWords from "@/src/lib/text-processing/extract-words";
 import { useUserDataSignal } from "../contexts/user-data-context";
 import ScannedWord from "./scanned-word";
 import { listWords, updateStatistics } from "../data";
