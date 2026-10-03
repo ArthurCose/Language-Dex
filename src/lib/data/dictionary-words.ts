@@ -527,7 +527,6 @@ async function removedDefinitionCleanup(
     },
   );
 
-  console.log(deleteResult.changes);
   if (deleteResult.changes == 0) {
     // update if it still exists
     await shiftOrderKeys(oldSharedId, oldOrderKey);
