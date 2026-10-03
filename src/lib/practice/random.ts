@@ -30,7 +30,7 @@ export function swapNToEndWith<T>(
   list: T[],
   len: number,
   n: number,
-  randomFn: (len: number) => number
+  randomFn: (len: number) => number,
 ): T[] {
   const total = Math.min(len, n);
   const end = len;
@@ -46,7 +46,7 @@ export function swapNToEndWith<T>(
 export function swapToEnd<T>(
   list: T[],
   len: number,
-  index: number
+  index: number,
 ): T | undefined {
   if (len == 0) {
     return;
@@ -63,7 +63,7 @@ export function shiftNToEndWith<T>(
   list: T[],
   len: number,
   n: number,
-  randomFn: (len: number) => number
+  randomFn: (len: number) => number,
 ): T[] {
   const total = Math.min(len, n);
   const end = len;
@@ -79,7 +79,7 @@ export function shiftNToEndWith<T>(
 export function shiftToEnd<T>(
   list: T[],
   len: number,
-  index: number
+  index: number,
 ): T | undefined {
   if (len == 0) {
     return;
