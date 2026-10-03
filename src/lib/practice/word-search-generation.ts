@@ -1,4 +1,4 @@
-import { pickIndexWithLenUnbiased, swapToEnd } from "./random";
+import { pickIndexWithLenUnbiased, swap } from "./random";
 import { isRTL, toGraphemeStrings } from "./words";
 
 const excludedGlyphs = ["-", " ", "　"];
@@ -47,11 +47,21 @@ function generateTrialPuzzle(words: string[], size: number) {
   };
 
   // place random words
-  let len = words.length;
+  let wordsFrontIndex = 0;
 
   while (board.words.length < maxWords) {
-    const word = swapToEnd(words, len, pickIndexWithLenUnbiased(len));
-    len = len - 1;
+    // selecting from the pseudo front
+    const wordIndex =
+      pickIndexWithLenUnbiased(words.length - wordsFrontIndex) +
+      wordsFrontIndex;
+
+    const word = words[wordIndex];
+
+    // swapping with the front and shifting the psuedo front.
+    // this avoids moving high confidence words from the back to the front,
+    // by only moving front biased selections to the front
+    swap(words, wordsFrontIndex, wordIndex);
+    wordsFrontIndex += 1;
 
     if (word == undefined) {
       break;
