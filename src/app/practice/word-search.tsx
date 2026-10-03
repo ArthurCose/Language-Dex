@@ -410,11 +410,16 @@ export default function () {
           selection.yStep = Math.max(-1, Math.min(1, newYStep));
         }
 
-        const xDiff =
-          Math.abs((selection.x + 0.5 - x) * selection.xStep) + 0.75;
-        const yDiff =
-          Math.abs((selection.y + 0.5 - y) * selection.yStep) + 0.75;
-        selection.length = Math.max(xDiff, yDiff, 1);
+        // resolve length
+        const xDist = selection.x + 0.5 - x;
+        const yDist = selection.y + 0.5 - y;
+        let dist = Math.abs(xDist * selection.xStep + yDist * selection.yStep);
+
+        if (selection.xStep != 0 && selection.yStep != 0) {
+          dist *= 0.5;
+        }
+
+        selection.length = Math.max(dist + 0.75, 1);
 
         if (selection.length < 0) {
           // avoid negative length
