@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Text, Pressable, ScrollView } from "react-native";
+import { useEffect, useState } from "react";
+import { StyleSheet, View, Text, ScrollView } from "react-native";
 import { useTheme } from "@/src/lib/contexts/theme-context";
 import { router } from "expo-router";
 import CustomTextInput, {
@@ -8,7 +8,6 @@ import CustomTextInput, {
 import { useTranslation } from "react-i18next";
 import {
   ArrowLeftIcon,
-  ConfidenceIcon,
   DefinitionIcon,
   EducationIcon,
   ExampleIcon,
@@ -51,6 +50,7 @@ import PronunciationEditor from "./pronunciation-editor";
 import { useAudioPlayer } from "expo-audio";
 import { stripProtocol } from "@/src/lib/path";
 import { RelationsEditorData, RelationsEditor } from "./relations-editor";
+import ConfidenceStrip from "./confidence-strip";
 
 import Cat from "@/assets/svgs/Definition-Editor.svg";
 import CatInteraction from "@/src/lib/components/cat-interaction";
@@ -61,33 +61,6 @@ type Props = {
   definitionId?: number;
   setDefinitionId: (id: number) => void;
 };
-
-function ConfidenceButton({
-  confidence,
-  representedConfidence,
-  setConfidence,
-}: {
-  confidence: number;
-  representedConfidence: number;
-  setConfidence: (c: number) => void;
-}) {
-  return (
-    <Pressable
-      style={styles.confidencePressable}
-      onPress={() => setConfidence(representedConfidence)}
-    >
-      <ConfidenceIcon
-        confidence={representedConfidence}
-        style={
-          confidence == representedConfidence
-            ? undefined
-            : styles.transparentIcon
-        }
-        size={32}
-      />
-    </Pressable>
-  );
-}
 
 export default function DefinitionEditor(props: Props) {
   const theme = useTheme();
@@ -350,28 +323,11 @@ export default function DefinitionEditor(props: Props) {
             {t("Confidence_paren")}
           </Text>
 
-          <View style={styles.confidenceGroup}>
-            <ConfidenceButton
-              confidence={confidence}
-              representedConfidence={-1}
-              setConfidence={setConfidence}
-            />
-            <ConfidenceButton
-              confidence={confidence}
-              representedConfidence={0}
-              setConfidence={setConfidence}
-            />
-            <ConfidenceButton
-              confidence={confidence}
-              representedConfidence={1}
-              setConfidence={setConfidence}
-            />
-            <ConfidenceButton
-              confidence={confidence}
-              representedConfidence={2}
-              setConfidence={setConfidence}
-            />
-          </View>
+          <ConfidenceStrip
+            style={styles.confidenceStrip}
+            confidence={confidence}
+            setConfidence={setConfidence}
+          />
         </View>
 
         <View style={theme.styles.separator} />
@@ -559,17 +515,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginRight: 4,
   },
-  confidenceGroup: {
+  confidenceStrip: {
     marginLeft: "auto",
-    flexDirection: "row",
     alignContent: "stretch",
     paddingRight: 4,
-  },
-  confidencePressable: {
-    paddingHorizontal: 2,
-  },
-  transparentIcon: {
-    opacity: 0.5,
   },
   cat: {
     marginLeft: "auto",

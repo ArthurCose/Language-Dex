@@ -240,6 +240,8 @@ function createTextIcon(text: string) {
           fontSize: props.size,
           width: props.size + 7,
           height: props.size + 8,
+          textAlignVertical: "center",
+          lineHeight: props.size,
         },
         props.style,
       ]}
