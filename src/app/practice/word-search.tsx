@@ -16,7 +16,12 @@ import {
 import { logError } from "@/src/lib/log";
 import { useTranslation } from "react-i18next";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
-import { useSignalLens } from "@/src/lib/hooks/use-signal";
+import {
+  Signal,
+  useSignal,
+  useSignalLens,
+  useSignalValue,
+} from "@/src/lib/hooks/use-signal";
 import RouteRoot from "@/src/lib/components/route-root";
 import {
   ResultsClock,
@@ -92,6 +97,77 @@ function startGame(gameState: GameState, words: string[]) {
   gameState.totalTimer.resume();
 }
 
+function updateSelection(
+  selectionsSignal: Signal<Selection[]>,
+  index: number,
+  callback: (selection: Selection, selections: Selection[]) => void,
+) {
+  const selections = selectionsSignal.get();
+  let selection = selections.find((s) => s.wordIndex == index);
+
+  if (selection) {
+    selection = { ...selection };
+  } else {
+    selection = {
+      wordIndex: index,
+      x: 0,
+      y: 0,
+      length: 1,
+      xStep: 1,
+      yStep: 0,
+    };
+  }
+
+  const newSelections = selections.filter((s) => s.wordIndex != index);
+  newSelections.push(selection);
+  callback(selection, newSelections);
+
+  selectionsSignal.set(newSelections);
+}
+
+function Selections({
+  selectionsSignal,
+}: {
+  selectionsSignal: Signal<Selection[]>;
+}) {
+  const selections = useSignalValue(selectionsSignal);
+
+  return (
+    <>
+      {selections.map(({ wordIndex, x, y, length, xStep, yStep }) => {
+        // resolve render width
+        let width = cellSize * length;
+
+        if (xStep != 0 && yStep != 0) {
+          width *= sqrt2;
+          width += cellSize - cellSize * sqrt2;
+        }
+
+        return (
+          <View
+            key={wordIndex}
+            style={[
+              styles.selection,
+              {
+                borderColor: selectionColors[wordIndex],
+                width,
+                transform: [
+                  { translateX: x * cellSize },
+                  { translateY: y * cellSize + 2 },
+                  {
+                    rotate: vectorToAngle[xStep.toString() + yStep],
+                  },
+                  { translateY: (cellSize - selectionHeight) * 0.5 },
+                ],
+              },
+            ]}
+          />
+        );
+      })}
+    </>
+  );
+}
+
 const GlyphGrid = React.memo(({ cells }: { cells: string[][] }) => (
   <>
     {cells.map((row, y) => (
@@ -125,7 +201,7 @@ export default function () {
   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(
     null,
   );
-  const [selections, setSelections] = useState<Selection[]>([]);
+  const selectionsSignal = useSignal<Selection[]>([]);
 
   const [hintDialogOpen, setHintDialogOpen] = useState(false);
   const [hintIndex, setHintIndex] = useState(0);
@@ -248,34 +324,6 @@ export default function () {
       .catch(logError);
   };
 
-  const updateSelection = (
-    index: number,
-    callback: (selection: Selection, selections: Selection[]) => void,
-  ) => {
-    setSelections((selections) => {
-      let selection = selections.find((s) => s.wordIndex == index);
-
-      if (selection) {
-        selection = { ...selection };
-      } else {
-        selection = {
-          wordIndex: index,
-          x: 0,
-          y: 0,
-          length: 1,
-          xStep: 1,
-          yStep: 0,
-        };
-      }
-
-      const newSelections = selections.filter((s) => s.wordIndex != index);
-      newSelections.push(selection);
-      callback(selection, newSelections);
-
-      return newSelections;
-    });
-  };
-
   const gridTouchStart = (event: GestureResponderEvent) => {
     if (
       selectedWordIndex == null ||
@@ -287,7 +335,7 @@ export default function () {
     const x = Math.floor(event.nativeEvent.locationX / cellSize);
     const y = Math.floor(event.nativeEvent.locationY / cellSize);
 
-    updateSelection(selectedWordIndex, (selection) => {
+    updateSelection(selectionsSignal, selectedWordIndex, (selection) => {
       selection.x = x;
       selection.y = y;
       selection.length = 1;
@@ -327,7 +375,7 @@ export default function () {
       const x = (event.nativeEvent.pageX - pageX) / cellSize;
       const y = (event.nativeEvent.pageY - pageY) / cellSize;
 
-      updateSelection(selectedWordIndex, (selection) => {
+      updateSelection(selectionsSignal, selectedWordIndex, (selection) => {
         let newXStep = Math.floor(x) - selection.x;
         let newYStep = Math.floor(y) - selection.y;
 
@@ -364,21 +412,27 @@ export default function () {
       return;
     }
 
-    updateSelection(selectedWordIndex, (selection, selections) => {
-      selection.length = Math.round(selection.length);
-      clampSelection(selection);
+    updateSelection(
+      selectionsSignal,
+      selectedWordIndex,
+      (selection, selections) => {
+        selection.length = Math.round(selection.length);
+        clampSelection(selection);
 
-      if (selection.length > 1) {
-        // using queueMicrotask to avoid "Cannot update a component while rendering a different component"
-        // caused by updating external state while in a set state action (setSelections(() => {}))
-        queueMicrotask(() => testBoard(gameState, selections));
-        return;
-      }
+        if (selection.length > 1) {
+          // using queueMicrotask to avoid "Cannot update a component while rendering a different component"
+          // caused by updating external state while in a set state action (setSelections(() => {}))
+          testBoard(gameState, selections);
+          return;
+        }
 
-      setSelections((selections) =>
-        selections.filter((s) => s.wordIndex != selectedWordIndex),
-      );
-    });
+        // delete selection
+        const selectionIndex = selections.findIndex(
+          (s) => s.wordIndex == selectedWordIndex,
+        );
+        selections.splice(selectionIndex, 1);
+      },
+    );
   };
 
   return (
@@ -427,37 +481,7 @@ export default function () {
                 onTouchEnd={gridTouchCancel}
               >
                 <GlyphGrid cells={gameState.board.cells} />
-
-                {selections.map(({ wordIndex, x, y, length, xStep, yStep }) => {
-                  // resolve render width
-                  let width = cellSize * length;
-
-                  if (xStep != 0 && yStep != 0) {
-                    width *= sqrt2;
-                    width += cellSize - cellSize * sqrt2;
-                  }
-
-                  return (
-                    <View
-                      key={wordIndex}
-                      style={[
-                        styles.selection,
-                        {
-                          borderColor: selectionColors[wordIndex],
-                          width,
-                          transform: [
-                            { translateX: x * cellSize },
-                            { translateY: y * cellSize + 2 },
-                            {
-                              rotate: vectorToAngle[xStep.toString() + yStep],
-                            },
-                            { translateY: (cellSize - selectionHeight) * 0.5 },
-                          ],
-                        },
-                      ]}
-                    />
-                  );
-                })}
+                <Selections selectionsSignal={selectionsSignal} />
               </Pressable>
             </ScrollView>
           </ScrollView>
@@ -549,8 +573,11 @@ export default function () {
                       updatedGameState.conceded += 1;
 
                       // update the selection
+                      const oldSelections = selectionsSignal.get();
                       const updatedSelections = [
-                        ...selections.filter((s) => s.wordIndex != hintIndex),
+                        ...oldSelections.filter(
+                          (s) => s.wordIndex != hintIndex,
+                        ),
                         {
                           wordIndex: hintIndex,
                           x: hintWord.x,
@@ -560,7 +587,7 @@ export default function () {
                           yStep: hintWord.vector[1],
                         },
                       ];
-                      setSelections(updatedSelections);
+                      selectionsSignal.set(updatedSelections);
 
                       testBoard(updatedGameState, updatedSelections);
                       setGameState(updatedGameState);
@@ -587,7 +614,7 @@ export default function () {
               const newState = initGameState();
               startGame(newState, allWords);
               setSelectedWordIndex(null);
-              setSelections([]);
+              selectionsSignal.set([]);
               setGameState(newState);
             }}
           >
