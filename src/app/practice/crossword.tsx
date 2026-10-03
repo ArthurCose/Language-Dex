@@ -38,10 +38,8 @@ import SubMenuTopNav, {
   SubMenuActions,
   SubMenuBackButton,
 } from "@/src/lib/components/sub-menu-top-nav";
-import IconButton, {
-  SubMenuIconButton,
-} from "@/src/lib/components/icon-button";
-import { ConcedeIcon, PracticeResultsIcon } from "@/src/lib/components/icons";
+import { SubMenuIconButton } from "@/src/lib/components/icon-button";
+import { PracticeResultsIcon } from "@/src/lib/components/icons";
 import {
   ConcededScore,
   HintScore,
@@ -54,9 +52,7 @@ import {
 } from "@/src/lib/practice/crossword-generation";
 import { isRTL, toGraphemeStrings } from "@/src/lib/practice/words";
 import { pickIndexWithLenUnbiased } from "@/src/lib/practice/random";
-import Dialog from "@/src/lib/components/dialog";
-import { Span } from "@/src/lib/components/text";
-import ConfidenceStrip from "@/src/lib/components/definitions/confidence-strip";
+import HintPopup from "@/src/lib/components/practice/hint-popup";
 
 type GameState = {
   over: boolean;
@@ -425,71 +421,43 @@ export default function () {
             </DockedTextInputContainer>
           )}
 
-          <Dialog
+          <HintPopup
             open={hintDialogOpen}
             onClose={() => setHintDialogOpen(false)}
-          >
-            <View style={styles.hintTitleContainer}>
-              <Span style={styles.hintTitle}>
-                {gameState.over || hintWord?.conceded
-                  ? hintWord?.word
-                  : t("short_answer_mystery")}
-              </Span>
+            gameEnded={gameState.over}
+            conceded={hintWord?.conceded}
+            definitionId={hintData?.definitionId}
+            spelling={(gameState.over || hintWord?.conceded) && hintWord?.word}
+            definition={hintData?.definition}
+            confidence={hintData?.confidence}
+            onConcede={() => {
+              const updatedGameState = {
+                ...gameState,
+              };
+              const word = updatedGameState.board.words[hintIndex];
+              word.conceded = true;
+              updatedGameState.conceded += 1;
 
-              {hintWord && (!gameState.over || hintWord.conceded) && (
-                <View style={styles.concedeButton}>
-                  <IconButton
-                    icon={ConcedeIcon}
-                    disabled={hintWord.conceded}
-                    onPress={() => {
-                      const updatedGameState = {
-                        ...gameState,
-                      };
-                      const word = updatedGameState.board.words[hintIndex];
-                      word.conceded = true;
-                      updatedGameState.conceded += 1;
+              setWordGuess(word.word);
 
-                      setWordGuess(word.word);
+              for (let i = 0; i < word.cells.length; i++) {
+                const cell = updatedGameState.board.cellMap[word.cells[i]];
+                cell.submitted = cell.expected;
+                cell.locked = true;
+              }
 
-                      for (let i = 0; i < word.cells.length; i++) {
-                        const cell =
-                          updatedGameState.board.cellMap[word.cells[i]];
-                        cell.submitted = cell.expected;
-                        cell.locked = true;
-                      }
-
-                      testBoard(updatedGameState);
-                      setGameState(updatedGameState);
-                    }}
-                  />
-                </View>
-              )}
-            </View>
-
-            <ScrollView
-              keyboardDismissMode="none"
-              keyboardShouldPersistTaps="always"
-            >
-              <Span style={styles.hintText}>{hintData?.definition}</Span>
-            </ScrollView>
-
-            {hintWord &&
-              hintData &&
-              hintData.confidence != null &&
-              (hintWord.conceded || gameState.over) && (
-                <ConfidenceStrip
-                  style={styles.confidenceStrip}
-                  definitionId={hintData.definitionId}
-                  confidence={hintData.confidence}
-                  setConfidence={(confidence: number) => {
-                    setHints({
-                      ...hints,
-                      [hintIndex]: { ...hintData, confidence },
-                    });
-                  }}
-                />
-              )}
-          </Dialog>
+              testBoard(updatedGameState);
+              setGameState(updatedGameState);
+            }}
+            onConfidence={(confidence: number) => {
+              if (hintData) {
+                setHints({
+                  ...hints,
+                  [hintIndex]: { ...hintData, confidence },
+                });
+              }
+            }}
+          />
 
           <ResultsDialog
             open={gameState.displayingResults}
@@ -593,31 +561,5 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  hintTitleContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  hintTitle: {
-    fontSize: 20,
-    textAlign: "center",
-    paddingTop: 8,
-    flex: 1,
-    marginHorizontal: 64,
-  },
-  hintText: {
-    paddingTop: 16,
-    paddingBottom: 16,
-    paddingHorizontal: 64,
-    textAlign: "center",
-  },
-  concedeButton: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-  },
-  confidenceStrip: {
-    marginTop: -4,
-    marginBottom: 8,
   },
 });

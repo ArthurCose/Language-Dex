@@ -35,9 +35,7 @@ import SubMenuTopNav, {
   SubMenuActions,
   SubMenuBackButton,
 } from "@/src/lib/components/sub-menu-top-nav";
-import IconButton, {
-  SubMenuIconButton,
-} from "@/src/lib/components/icon-button";
+import { SubMenuIconButton } from "@/src/lib/components/icon-button";
 import {
   CancelEditIcon,
   ConcedeIcon,
@@ -47,7 +45,6 @@ import {
 } from "@/src/lib/components/icons";
 import { ConcededScore, ScoreRow } from "@/src/lib/components/practice/info";
 import { pickIndexWithLenUnbiased } from "@/src/lib/practice/random";
-import Dialog from "@/src/lib/components/dialog";
 import { Span } from "@/src/lib/components/text";
 import {
   generateWordSearch,
@@ -56,7 +53,7 @@ import {
 } from "@/src/lib/practice/word-search-generation";
 import React from "react";
 import { PressableRef } from "@rn-primitives/types";
-import ConfidenceStrip from "@/src/lib/components/definitions/confidence-strip";
+import HintPopup from "@/src/lib/components/practice/hint-popup";
 
 const BOARD_SIZE = 10;
 
@@ -573,78 +570,53 @@ export default function () {
             </Pressable>
           </ScrollView>
 
-          <Dialog
+          <HintPopup
             open={hintDialogOpen}
             onClose={() => setHintDialogOpen(false)}
-          >
-            <View style={styles.hintTitleContainer}>
-              <Span style={styles.hintTitle}>
-                {gameState.over || hintWord?.conceded
-                  ? hintWord?.word
-                  : t("short_answer_mystery")}
-              </Span>
+            gameEnded={gameState.over}
+            conceded={hintWord?.conceded}
+            definitionId={hintData?.definitionId}
+            spelling={(gameState.over || hintWord?.conceded) && hintWord?.word}
+            definition={hintData?.definition}
+            confidence={hintData?.confidence}
+            onConcede={() => {
+              if (!hintWord) {
+                return;
+              }
 
-              {hintWord && (!gameState.over || hintWord?.conceded) && (
-                <View style={styles.concedeButton}>
-                  <IconButton
-                    icon={ConcedeIcon}
-                    disabled={hintWord?.conceded}
-                    onPress={() => {
-                      const updatedGameState = {
-                        ...gameState,
-                      };
-                      hintWord.conceded = true;
-                      updatedGameState.conceded += 1;
+              const updatedGameState = {
+                ...gameState,
+              };
+              hintWord.conceded = true;
+              updatedGameState.conceded += 1;
 
-                      // update the selection
-                      const oldSelections = selectionsSignal.get();
-                      const updatedSelections = [
-                        ...oldSelections.filter(
-                          (s) => s.wordIndex != hintIndex,
-                        ),
-                        {
-                          wordIndex: hintIndex,
-                          x: hintWord.x,
-                          y: hintWord.y,
-                          length: hintWord.graphemes.length,
-                          xStep: hintWord.vector[0],
-                          yStep: hintWord.vector[1],
-                        },
-                      ];
-                      selectionsSignal.set(updatedSelections);
+              // update the selection
+              const oldSelections = selectionsSignal.get();
+              const updatedSelections = [
+                ...oldSelections.filter((s) => s.wordIndex != hintIndex),
+                {
+                  wordIndex: hintIndex,
+                  x: hintWord.x,
+                  y: hintWord.y,
+                  length: hintWord.graphemes.length,
+                  xStep: hintWord.vector[0],
+                  yStep: hintWord.vector[1],
+                },
+              ];
+              selectionsSignal.set(updatedSelections);
 
-                      testBoard(updatedGameState, updatedSelections);
-                      setGameState(updatedGameState);
-                    }}
-                  />
-                </View>
-              )}
-            </View>
-
-            <ScrollView
-              keyboardDismissMode="none"
-              keyboardShouldPersistTaps="always"
-            >
-              <Span style={styles.hintText}>{hintData?.definition}</Span>
-            </ScrollView>
-
-            {hintWord &&
-              hintData &&
-              hintData.confidence != null &&
-              (hintWord.conceded || gameState.over) && (
-                <ConfidenceStrip
-                  style={styles.confidenceStrip}
-                  definitionId={hintData.definitionId}
-                  confidence={hintData.confidence}
-                  setConfidence={(confidence: number) => {
-                    setHints({
-                      ...hints,
-                      [hintIndex]: { ...hintData, confidence },
-                    });
-                  }}
-                />
-              )}
-          </Dialog>
+              testBoard(updatedGameState, updatedSelections);
+              setGameState(updatedGameState);
+            }}
+            onConfidence={(confidence: number) => {
+              if (hintData) {
+                setHints({
+                  ...hints,
+                  [hintIndex]: { ...hintData, confidence },
+                });
+              }
+            }}
+          />
 
           <ResultsDialog
             open={gameState.displayingResults}
@@ -798,31 +770,5 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  hintTitleContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  hintTitle: {
-    fontSize: 20,
-    textAlign: "center",
-    paddingTop: 8,
-    flex: 1,
-    marginHorizontal: 64,
-  },
-  hintText: {
-    paddingTop: 16,
-    paddingBottom: 16,
-    paddingHorizontal: 64,
-    textAlign: "center",
-  },
-  concedeButton: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-  },
-  confidenceStrip: {
-    marginTop: -4,
-    marginBottom: 8,
   },
 });
