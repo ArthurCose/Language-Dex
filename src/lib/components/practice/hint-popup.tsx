@@ -93,6 +93,6 @@ const styles = StyleSheet.create({
   },
   confidenceStrip: {
     marginTop: -4,
-    marginBottom: 8,
+    marginBottom: 12,
   },
 });
