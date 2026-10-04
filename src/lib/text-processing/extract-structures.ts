@@ -6,11 +6,9 @@ function findSentenceStart(
   index: number,
   characterLimit: number,
 ) {
-  for (
-    let start = index;
-    start > 0 && index - start < characterLimit;
-    start--
-  ) {
+  let start = index;
+
+  for (; start > 0 && index - start < characterLimit; start--) {
     if (terminalPunctuation.includes(text[start])) {
       start += 1;
 
@@ -20,6 +18,27 @@ function findSentenceStart(
 
       return start;
     }
+  }
+
+  if (start == 0 && index - start <= characterLimit) {
+    return 0;
+  }
+
+  return null;
+}
+
+function findSentenceEnd(text: string, index: number, characterLimit: number) {
+  let end = index;
+
+  for (; end < text.length && end - index < characterLimit; end++) {
+    if (terminalPunctuation.includes(text[end])) {
+      end += 1;
+      return end;
+    }
+  }
+
+  if (end == text.length && end - index <= characterLimit) {
+    return end;
   }
 
   return null;
@@ -33,20 +52,13 @@ export function extractSentence(
   const start = findSentenceStart(text, index, characterLimit);
 
   if (start == null) {
-    return;
+    return null;
   }
 
   const endReadLimit = characterLimit - (index - start) + 1;
-  let end = index;
+  const end = findSentenceEnd(text, index, endReadLimit);
 
-  for (; end < text.length && end - index < endReadLimit; end++) {
-    if (terminalPunctuation.includes(text[end])) {
-      end += 1;
-      break;
-    }
-  }
-
-  if (end - start > characterLimit) {
+  if (end == null || end - start > characterLimit) {
     return null;
   }
 
@@ -78,13 +90,19 @@ export function extractParagraph(
     }
   }
 
-  const paragraph = text.slice(start, end).trim();
-
-  if (paragraph.length > characterLimit) {
+  if (end - start > characterLimit) {
     return null;
   }
 
-  return paragraph;
+  return text.slice(start, end).trim();
+}
+
+function withinSurrogatePair(text: string, index: number) {
+  return (
+    index < text.length &&
+    !text[index].isWellFormed() &&
+    !text.slice(index, index + 2).isWellFormed()
+  );
 }
 
 export function extractTrailing(
@@ -93,38 +111,56 @@ export function extractTrailing(
   word: string,
   characterLimit: number,
 ) {
-  let workString = "...";
-  let substr_limit = characterLimit - 6;
-
   // attempt to anchor to the nearest sentence start
-  let sentenceStart = findSentenceStart(text, index, characterLimit);
+  const sentenceStart = findSentenceStart(
+    text,
+    index,
+    characterLimit - word.length - 3,
+  );
 
-  if (
-    sentenceStart != null &&
-    sentenceStart + characterLimit < index + word.length
-  ) {
-    // fails to include the word, so we won't use it
-    sentenceStart = null;
+  if (sentenceStart != null) {
+    let end = sentenceStart + characterLimit - 3;
+
+    if (withinSurrogatePair(text, end)) {
+      end -= 1;
+    }
+
+    return text.slice(sentenceStart, end) + "...";
   }
 
-  // fallback to resolve start by jumping away from the middle of the word
+  // attempt to anchor to the nearest sentence end
+  const sentenceEnd = findSentenceEnd(
+    text,
+    index + word.length,
+    characterLimit - word.length - 3,
+  );
+
+  if (sentenceEnd != null) {
+    let start = Math.max(sentenceEnd - characterLimit + 3, 0);
+
+    if (withinSurrogatePair(text, start)) {
+      start += 1;
+    }
+
+    return "..." + text.slice(start, sentenceEnd);
+  }
+
+  let workString = "...";
+  let substr_limit = Math.max(characterLimit - 6, 0);
+
+  // resolve start by jumping away from the middle of the word
   const half_limit = Math.floor(substr_limit / 2);
-  let start =
-    sentenceStart ??
-    Math.max(index + Math.floor(word.length / 2) - half_limit, 0);
+  let start = Math.max(index + Math.floor(word.length / 2) - half_limit, 0);
 
   if (start == 0 || start == sentenceStart) {
     substr_limit += 3;
     workString = "";
-  } else if (
-    !text[start].isWellFormed() &&
-    !text.slice(start, start + 1).isWellFormed()
-  ) {
+  } else if (withinSurrogatePair(text, start)) {
     // avoid starting in the middle of a utf-16 codepoint
     start += 1;
   }
 
-  // resolve end by jumping from the start
+  // resolve end by jumping from the start up to the substring limit
   let end = Math.min(start + substr_limit, text.length);
 
   if (
