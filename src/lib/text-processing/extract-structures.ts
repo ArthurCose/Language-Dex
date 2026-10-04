@@ -146,16 +146,13 @@ export function extractTrailing(
   }
 
   let workString = "...";
-  let substr_limit = Math.max(characterLimit - 6, 0);
+  const substr_limit = Math.max(characterLimit - 6, 0);
 
   // resolve start by jumping away from the middle of the word
   const half_limit = Math.floor(substr_limit / 2);
   let start = Math.max(index + Math.floor(word.length / 2) - half_limit, 0);
 
-  if (start == 0 || start == sentenceStart) {
-    substr_limit += 3;
-    workString = "";
-  } else if (withinSurrogatePair(text, start)) {
+  if (withinSurrogatePair(text, start)) {
     // avoid starting in the middle of a utf-16 codepoint
     start += 1;
   }
@@ -163,10 +160,7 @@ export function extractTrailing(
   // resolve end by jumping from the start up to the substring limit
   let end = Math.min(start + substr_limit, text.length);
 
-  if (
-    !text[end - 1].isWellFormed() &&
-    !text.slice(end - 2, end).isWellFormed()
-  ) {
+  if (withinSurrogatePair(text, end - 1)) {
     // avoid ending in the middle of a utf-16 codepoint
     end -= 1;
   }
