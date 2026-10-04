@@ -56,6 +56,10 @@ Crossword is a lighter practice version of Short Answer with some initial charac
 
 Short Answer tests you on words more directly, checking to see whether you can remember a word and its spelling using only the definition.
 
+# Word Search
+
+A similar, yet more difficult challenge to Definition Match, Unscramble, and Crossword puzzles, by requiring hidden words to be matched to definitions by color.
+
 ### Use in a Sentence + Pronunciation
 
 Use in a Sentence is a difficult personal test to see your creative usage of a word, while Pronunciation is simple direct pronunciation practice for individual words.
@@ -76,13 +80,13 @@ yarn run licenses
 2. Connect your phone with debugging enabled and start the app
 
 ```bash
-yarn run android
+yarn run android-cached
 ```
 
 ## Structure
 
-- `/app`: Page level components using [file-based routing](https://docs.expo.dev/router/introduction).
-- `/lib`: Components and utility files
+- `/src/app`: Page level components using [file-based routing](https://docs.expo.dev/router/introduction).
+- `/src/lib`: Components and utility files
 - `/assets`: App assets (icons, splash screens)
 - `/licenses`: Extra license files for license-ripper
 - `/locales`: Localization files
