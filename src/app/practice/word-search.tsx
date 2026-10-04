@@ -415,14 +415,14 @@ export default function () {
           dist *= 0.5;
         }
 
-        selection.length = Math.max(dist, 0) + 1;
-
-        if (selection.length < 0) {
-          // avoid negative length
+        if (dist < 0) {
+          // smooth flipping
           selection.xStep = -selection.xStep;
           selection.yStep = -selection.yStep;
           selection.length = -selection.length;
         }
+
+        selection.length = Math.max(dist, 0) + 1;
 
         clampSelection(selection);
       });
