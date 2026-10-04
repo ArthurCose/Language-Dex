@@ -20,8 +20,8 @@ export type DictionaryStats = {
   unscrambled?: number;
   unscrambleBest?: { [mode: string]: number };
   wordsGuessed?: number;
-  wordSearchPuzzlesCompleted?: number;
   crosswordsCompleted?: number;
+  wordSearchPuzzlesCompleted?: number;
   correctShortAnswers?: number;
   sentencesConstructed?: number;
   // words

@@ -185,8 +185,8 @@ export default function () {
   const [matchStatus, setMatchStatus] = useState({ locked: true });
   const [unscrambleStatus, setUnscrambleStatus] = useState({ locked: true });
   const [guessStatus, setGuessStatus] = useState({ locked: true });
-  const [wordSearchStatus, setWordSearchStatus] = useState({ locked: true });
   const [crosswordStatus, setCrosswordStatus] = useState({ locked: true });
+  const [wordSearchStatus, setWordSearchStatus] = useState({ locked: true });
   const [shortAnswerStatus, setShortAnswerStatus] = useState({ locked: true });
   const [useInASentenceStatus, setUseInASentenceStatus] = useState({
     locked: true,
@@ -216,18 +216,18 @@ export default function () {
       belowMaxConfidence: true,
     });
 
-    testLock(setWordSearchStatus, listGameWords, activeDictionary, {
-      limit: 5,
-      minLength: 2,
-      maxLength: 10,
-    });
-
     testLock(setCrosswordStatus, listWords, activeDictionary, {
       ascending: false,
       orderBy: "longest",
       limit: 10,
       minLength: 4,
       belowMaxConfidence: true,
+    });
+
+    testLock(setWordSearchStatus, listGameWords, activeDictionary, {
+      limit: 5,
+      minLength: 2,
+      maxLength: 10,
     });
 
     testLock(setShortAnswerStatus, listGameWords, activeDictionary, {
@@ -304,16 +304,6 @@ export default function () {
         />
 
         <GameListing
-          label="Word_Search"
-          icon={WordSearchIcon}
-          style={listingStyles}
-          theme={theme}
-          lockStatus={wordSearchStatus}
-          setLockDescription={lockCallback}
-          href="/practice/word-search"
-        />
-
-        <GameListing
           label="Crossword"
           icon={CrosswordIcon}
           style={listingStyles}
@@ -321,6 +311,16 @@ export default function () {
           lockStatus={crosswordStatus}
           setLockDescription={lockCallback}
           href="/practice/crossword"
+        />
+
+        <GameListing
+          label="Word_Search"
+          icon={WordSearchIcon}
+          style={listingStyles}
+          theme={theme}
+          lockStatus={wordSearchStatus}
+          setLockDescription={lockCallback}
+          href="/practice/word-search"
         />
 
         <GameListing

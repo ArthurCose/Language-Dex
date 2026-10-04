@@ -35,8 +35,8 @@ const practiceStats: StatsList = [
   ["Words_Matched", "definitionsMatched"],
   ["Words_Unscrambled", "unscrambled"],
   ["Words_Guessed", "wordsGuessed"],
-  ["Words_Search_Puzzles_Completed", "wordSearchPuzzlesCompleted"],
   ["Crosswords_Completed", "crosswordsCompleted"],
+  ["Words_Search_Puzzles_Completed", "wordSearchPuzzlesCompleted"],
   ["Correct_Short_Answers", "correctShortAnswers"],
   ["Sentences_Constructed", "sentencesConstructed"],
 ];
