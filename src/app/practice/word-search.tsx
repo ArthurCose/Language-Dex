@@ -253,17 +253,13 @@ export default function () {
 
         // force LTR interpretation, RTL is converted to LTR during generation
         if (xStep < 0 || (xStep == 0 && yStep < 0)) {
-          console.log(yStart, yStep);
           yStart += yStep * (length - 1);
           yStep = -yStep;
-          console.log(yStart, yStep);
         }
 
         if (xStep < 0) {
-          console.log(xStart, xStep);
           xStart += xStep * (length - 1);
           xStep = -xStep;
-          console.log(xStart, xStep);
         }
 
         for (let i = 0; i < length; i++) {
