@@ -1,4 +1,5 @@
-const terminalPunctuation = [".", "¿", "?", "¡", "!", "\r", "\n"];
+const newLines = ["\r", "\n"];
+const terminalPunctuation = [".", "¿", "?", "¡", "!", ...newLines];
 const spaces = [" ", "　"];
 
 function findSentenceStart(
@@ -31,8 +32,12 @@ function findSentenceEnd(text: string, index: number, characterLimit: number) {
   let end = index;
 
   for (; end < text.length && end - index < characterLimit; end++) {
-    if (terminalPunctuation.includes(text[end])) {
-      end += 1;
+    const char = text[end];
+
+    if (terminalPunctuation.includes(char)) {
+      if (!newLines.includes(char)) {
+        end += 1;
+      }
       return end;
     }
   }
@@ -128,23 +133,6 @@ export function extractTrailing(
     return text.slice(sentenceStart, end) + "...";
   }
 
-  // attempt to anchor to the nearest sentence end
-  const sentenceEnd = findSentenceEnd(
-    text,
-    index + word.length,
-    characterLimit - word.length - 3,
-  );
-
-  if (sentenceEnd != null) {
-    let start = Math.max(sentenceEnd - characterLimit + 3, 0);
-
-    if (withinSurrogatePair(text, start)) {
-      start += 1;
-    }
-
-    return "..." + text.slice(start, sentenceEnd);
-  }
-
   let workString = "...";
   const substr_limit = Math.max(characterLimit - 6, 0);
 
@@ -160,9 +148,28 @@ export function extractTrailing(
   // resolve end by jumping from the start up to the substring limit
   let end = Math.min(start + substr_limit, text.length);
 
-  if (withinSurrogatePair(text, end - 1)) {
+  if (withinSurrogatePair(text, end)) {
     // avoid ending in the middle of a utf-16 codepoint
     end -= 1;
+  }
+
+  // attempt to anchor to the nearest sentence end
+  const sentenceEnd = findSentenceEnd(
+    text,
+    index + word.length,
+    characterLimit - word.length - 3,
+  );
+
+  // we'll only anchor to the nearest end if it's closer than the existing end
+  // this ensures there's enough context behind the word
+  if (sentenceEnd != null && sentenceEnd <= end) {
+    start = Math.max(sentenceEnd - characterLimit + 3, 0);
+
+    if (withinSurrogatePair(text, start)) {
+      start += 1;
+    }
+
+    return "..." + text.slice(start, sentenceEnd);
   }
 
   workString += text.slice(start, end);

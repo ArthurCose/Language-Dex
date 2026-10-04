@@ -1,9 +1,0 @@
-- New practice game: Word Search
-- Confidence selection now appears in hint popups
-- Words created in the Read tab start with an example from the text
-- New design for the practice list
-- Dictionaries can now import from and export to CSV
-- Smoother primary page animation
-- Removed Internet permission
-- Deleting the last definition for a word now deletes the word
-- Fixed updated definitions moving to the end of the definition list

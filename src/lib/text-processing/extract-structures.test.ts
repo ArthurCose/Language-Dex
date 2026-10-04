@@ -23,7 +23,9 @@ describe("extract-structures", () => {
   test("extractTrailing", () => {
     expect(extractTrailing("ABCDEFGHI", 1, "B", 6)).toBe("ABC...");
     expect(extractTrailing("ABCDEFGHI", 4, "E", 7)).toBe("...E...");
-    expect(extractTrailing("ABCDEFGHI", 7, "H", 6)).toBe("...GHI");
+    expect(extractTrailing("ABCDEFGHI", 7, "H", 7)).toBe("...H...");
+    expect(extractTrailing("ABCDEFGHI", 7, "H", 9)).toBe("...DEFGHI");
+    expect(extractTrailing("ABCDEFGHI\nABC", 7, "H", 9)).toBe("...DEFGHI");
   });
 
   test("UTF-16", () => {
