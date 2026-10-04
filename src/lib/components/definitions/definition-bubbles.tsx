@@ -258,7 +258,7 @@ export function DefinitionsBubble({
                 let params = "";
 
                 if (generateExample) {
-                  params = "example=" + generateExample();
+                  params = "example=" + encodeURIComponent(generateExample());
                 }
 
                 router.navigate(

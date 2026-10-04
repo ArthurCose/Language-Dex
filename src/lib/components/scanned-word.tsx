@@ -20,6 +20,7 @@ type Props = {
 
 // a tweet
 const EXAMPLE_LEN_LIMIT = 140;
+
 export function generateExample(
   text: string,
   index: number,
