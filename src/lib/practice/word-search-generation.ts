@@ -92,6 +92,7 @@ function generateTrialPuzzle(words: string[], size: number) {
       }
 
       let canPlace = true;
+      let totalOverlap = 0;
 
       for (let i = 0; i < wordLen; i++) {
         const grapheme = graphemes[i];
@@ -104,6 +105,15 @@ function generateTrialPuzzle(words: string[], size: number) {
           canPlace = false;
           break;
         }
+
+        if (existingGrapheme == grapheme) {
+          totalOverlap += 1;
+        }
+      }
+
+      if (totalOverlap == wordLen) {
+        // avoid placing words that completely overlap with another word
+        canPlace = false;
       }
 
       if (!canPlace) {
