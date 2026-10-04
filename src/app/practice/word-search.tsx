@@ -411,15 +411,15 @@ export default function () {
         }
 
         // resolve length
-        const xDist = selection.x + 0.5 - x;
-        const yDist = selection.y + 0.5 - y;
-        let dist = Math.abs(xDist * selection.xStep + yDist * selection.yStep);
+        const xDist = x - (selection.x + 0.5);
+        const yDist = y - (selection.y + 0.5);
+        let dist = xDist * selection.xStep + yDist * selection.yStep;
 
         if (selection.xStep != 0 && selection.yStep != 0) {
           dist *= 0.5;
         }
 
-        selection.length = Math.max(dist + 0.75, 1);
+        selection.length = Math.max(dist, 0) + 1;
 
         if (selection.length < 0) {
           // avoid negative length
