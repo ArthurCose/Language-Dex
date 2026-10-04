@@ -12,7 +12,7 @@
     },
     "android": {
       "package": "dev.arthurcose.languagedex",
-      "versionCode": 68,
+      "versionCode": 75,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#aa33ff"
