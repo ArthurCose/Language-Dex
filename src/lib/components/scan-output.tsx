@@ -12,6 +12,7 @@ import { useSignalLens } from "../hooks/use-signal";
 
 type Props = {
   text: string;
+  updateStats: boolean;
 };
 
 function reverseFrom<T>(list: T[], start: number) {
@@ -26,7 +27,7 @@ function reverseFrom<T>(list: T[], start: number) {
   }
 }
 
-export default function ScanOutput({ text }: Props) {
+export default function ScanOutput({ text, updateStats }: Props) {
   const theme = useTheme();
   const userDataSignal = useUserDataSignal();
   const activeDictionary = useSignalLens(
@@ -41,12 +42,14 @@ export default function ScanOutput({ text }: Props) {
     setSegments(segments);
 
     // update statistics
-    userDataSignal.set(
-      updateStatistics(userDataSignal.get(), (stats) => {
-        stats.totalScans = (stats.totalScans ?? 0) + 1;
-        stats.wordsScanned = (stats.wordsScanned ?? 0) + segments.length;
-      }),
-    );
+    if (updateStats) {
+      userDataSignal.set(
+        updateStatistics(userDataSignal.get(), (stats) => {
+          stats.totalScans = (stats.totalScans ?? 0) + 1;
+          stats.wordsScanned = (stats.wordsScanned ?? 0) + segments.length;
+        }),
+      );
+    }
 
     // second pass to detect compound words such as "ice cream"
     let cancelled = false;

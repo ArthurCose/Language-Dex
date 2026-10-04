@@ -18,6 +18,7 @@ const MAX_LEN = 2000;
 export default function Read() {
   const [t] = useTranslation();
   const theme = useTheme();
+  const [prevText, setPrevText] = useState("");
   const [text, setText] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const keyboardVisible = useKeyboardVisible();
@@ -25,7 +26,7 @@ export default function Read() {
   return (
     <>
       {confirmed ? (
-        <ScanOutput text={text} />
+        <ScanOutput text={text} updateStats={text != prevText} />
       ) : (
         <View style={[styles.textInputView, theme.styles.scanTextInput]}>
           <CustomTextInput
@@ -69,7 +70,13 @@ export default function Read() {
             <CircleButton
               style={styles.circleButton}
               containerStyle={styles.circleButtonContainer}
-              onPress={() => setConfirmed(!confirmed)}
+              onPress={() => {
+                setConfirmed(!confirmed);
+
+                if (confirmed) {
+                  setPrevText(text);
+                }
+              }}
               disabled={text.length == 0}
             >
               {confirmed ? (
