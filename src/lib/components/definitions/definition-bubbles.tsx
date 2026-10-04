@@ -31,6 +31,7 @@ type DefinitionsBubbleProps = {
     definitions: WordDefinitionData[];
   };
   close: () => void;
+  generateExample?: () => string;
 };
 
 function DefinitionContent({
@@ -172,6 +173,7 @@ export function DefinitionsBubble({
   lowercase,
   definitionResult,
   close,
+  generateExample,
 }: DefinitionsBubbleProps) {
   const theme = useTheme();
   const [t] = useTranslation();
@@ -252,10 +254,15 @@ export function DefinitionsBubble({
               android_ripple={theme.ripples.popup}
               pointerEvents="box-only"
               onPress={() => {
+                const wordParam = encodeURIComponent(lowercase);
+                let params = "";
+
+                if (generateExample) {
+                  params = "example=" + generateExample();
+                }
+
                 router.navigate(
-                  `/words/existing/${encodeURIComponent(
-                    lowercase,
-                  )}/definition/add`,
+                  `/words/existing/${wordParam}/definition/add?${params}`,
                 );
                 close();
               }}

@@ -8,6 +8,7 @@ import { useSignalLens } from "@/src/lib/hooks/use-signal";
 type SearchParams = {
   word?: string;
   definition_id?: string;
+  example?: string;
 };
 
 export default function () {
@@ -49,6 +50,7 @@ export default function () {
       setLowerCaseWord={setWord}
       definitionId={definitionId}
       setDefinitionId={setDefinitionId}
+      generatedExample={definitionId == null ? params.example : undefined}
     />
   );
 }

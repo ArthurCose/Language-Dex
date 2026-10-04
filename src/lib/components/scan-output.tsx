@@ -211,6 +211,8 @@ export default function ScanOutput({ text }: Props) {
           dictionaryId={activeDictionary}
           text={word}
           lowercase={segment.text}
+          excerptText={text}
+          excerptIndex={segment.rawIndex}
         />,
       );
 

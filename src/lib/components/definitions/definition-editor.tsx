@@ -60,6 +60,7 @@ type Props = {
   setLowerCaseWord: (word: string) => void;
   definitionId?: number;
   setDefinitionId: (id: number) => void;
+  generatedExample?: string;
 };
 
 export default function DefinitionEditor(props: Props) {
@@ -88,7 +89,8 @@ export default function DefinitionEditor(props: Props) {
   const defaultConfidence = definitionData?.confidence ?? 0;
   const defaultPartOfSpeech = definitionData?.partOfSpeech ?? null;
   const defaultDefinition = definitionData?.definition ?? "";
-  const defaultExample = definitionData?.example ?? "";
+  const storedExample = definitionData?.example ?? "";
+  const defaultExample = props.generatedExample ?? storedExample;
   const defaultNotes = definitionData?.notes ?? "";
 
   // state
@@ -189,7 +191,7 @@ export default function DefinitionEditor(props: Props) {
         ],
         [
           "totalExamples",
-          resolveStatIncrease(example != "", defaultExample != ""),
+          resolveStatIncrease(example != "", storedExample != ""),
         ],
         [
           "totalPronounced",
