@@ -49,7 +49,11 @@ type FieldUpsertPass = (
 
 const fieldUpsertMap: { [key: string]: FieldUpsertPass } = {
   id(_, data, value) {
-    data.id = value != undefined ? parseInt(value) : undefined;
+    const id = parseInt(value ?? "");
+
+    if (!isNaN(id)) {
+      data.id = id;
+    }
   },
   spelling(_, data, value) {
     data.spelling = value?.trim() ?? "";
