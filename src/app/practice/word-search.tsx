@@ -353,6 +353,23 @@ export default function () {
     const y = Math.floor(event.nativeEvent.locationY / cellSize);
 
     updateSelection(selectionsSignal, selectedWordIndex, (selection) => {
+      const xEnd = selection.x + selection.xStep * (selection.length - 1);
+      const yEnd = selection.y + selection.yStep * (selection.length - 1);
+
+      if (x == xEnd && y == yEnd) {
+        // grabbed the previous end, we don't need to change anything
+        return;
+      }
+
+      if (selection.x == x && selection.y == y) {
+        // reverse selection start so we can hold the end
+        selection.x = xEnd;
+        selection.y = yEnd;
+        selection.xStep = -selection.xStep;
+        selection.yStep = -selection.yStep;
+        return;
+      }
+
       selection.x = x;
       selection.y = y;
       selection.length = 1;
