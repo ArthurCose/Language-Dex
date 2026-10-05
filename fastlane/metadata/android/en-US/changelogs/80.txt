@@ -1,0 +1,2 @@
+- Word Search selections at the edge of the board will now only rotate to positions within the board
+- Small edits can now be made to Word Search selections by holding the selection's edge
