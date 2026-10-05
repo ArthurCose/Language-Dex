@@ -341,6 +341,33 @@ export default function () {
       .catch(logError);
   };
 
+  const resolveTouchPoint = (
+    event: GestureResponderEvent,
+    callback: (x: number, y: number) => void,
+  ) => {
+    if (!boardRef.current) {
+      callback(
+        event.nativeEvent.locationX / cellSize,
+        event.nativeEvent.locationY / cellSize,
+      );
+      return;
+    }
+
+    boardRef.current.measure((_x, _y, _w, _h, pageX, pageY) => {
+      let x = (event.nativeEvent.pageX - pageX) / cellSize;
+      let y = (event.nativeEvent.pageY - pageY) / cellSize;
+
+      const cells = gameState.board.cells;
+      const row = cells[0];
+
+      // clamp to the board
+      x = Math.max(0, Math.min(x, cells.length - 0.5));
+      y = Math.max(0, Math.min(y, row.length - 0.5));
+
+      callback(x, y);
+    });
+  };
+
   const gridTouchStart = (event: GestureResponderEvent) => {
     if (
       selectedWordIndex == null ||
@@ -349,32 +376,34 @@ export default function () {
       return;
     }
 
-    const x = Math.floor(event.nativeEvent.locationX / cellSize);
-    const y = Math.floor(event.nativeEvent.locationY / cellSize);
+    resolveTouchPoint(event, (x, y) => {
+      x = Math.floor(x);
+      y = Math.floor(y);
 
-    updateSelection(selectionsSignal, selectedWordIndex, (selection) => {
-      const xEnd = selection.x + selection.xStep * (selection.length - 1);
-      const yEnd = selection.y + selection.yStep * (selection.length - 1);
+      updateSelection(selectionsSignal, selectedWordIndex, (selection) => {
+        const xEnd = selection.x + selection.xStep * (selection.length - 1);
+        const yEnd = selection.y + selection.yStep * (selection.length - 1);
 
-      if (x == xEnd && y == yEnd) {
-        // grabbed the previous end, we don't need to change anything
-        return;
-      }
+        if (x == xEnd && y == yEnd) {
+          // grabbed the previous end, we don't need to change anything
+          return;
+        }
 
-      if (selection.x == x && selection.y == y) {
-        // reverse selection start so we can hold the end
-        selection.x = xEnd;
-        selection.y = yEnd;
-        selection.xStep = -selection.xStep;
-        selection.yStep = -selection.yStep;
-        return;
-      }
+        if (selection.x == x && selection.y == y) {
+          // reverse selection start so we can hold the end
+          selection.x = xEnd;
+          selection.y = yEnd;
+          selection.xStep = -selection.xStep;
+          selection.yStep = -selection.yStep;
+          return;
+        }
 
-      selection.x = x;
-      selection.y = y;
-      selection.length = 1;
-      selection.xStep = 1;
-      selection.yStep = 0;
+        selection.x = x;
+        selection.y = y;
+        selection.length = 1;
+        selection.xStep = 1;
+        selection.yStep = 0;
+      });
     });
   };
 
@@ -405,10 +434,7 @@ export default function () {
       return;
     }
 
-    boardRef.current.measure((_x, _y, _w, _h, pageX, pageY) => {
-      const x = (event.nativeEvent.pageX - pageX) / cellSize;
-      const y = (event.nativeEvent.pageY - pageY) / cellSize;
-
+    resolveTouchPoint(event, (x, y) => {
       updateSelection(selectionsSignal, selectedWordIndex, (selection) => {
         let newXStep = Math.floor(x) - selection.x;
         let newYStep = Math.floor(y) - selection.y;
