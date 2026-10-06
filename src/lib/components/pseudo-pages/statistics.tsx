@@ -8,7 +8,7 @@ import { useSignalValue } from "@/src/lib/hooks/use-signal";
 import { DictionaryStats, listWords, UserData } from "@/src/lib/data";
 import { Theme } from "@/src/lib/themes";
 import { logError } from "@/src/lib/log";
-import { useDictionaryVersioning } from "@/src/lib/hooks/use-word-definitions";
+import { useDictionaryVersioning } from "@/src/lib/hooks/use-word-entries";
 import { GameTitle } from "../practice/info";
 import IconButton from "../icon-button";
 import { AllDictionariesIcon, DictionaryIcon, ShareIcon } from "../icons";

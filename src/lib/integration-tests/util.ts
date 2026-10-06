@@ -1,11 +1,11 @@
 import { deepEqual } from "expo-sqlite";
-import { upsertDefinition } from "@/src/lib/data";
+import { upsertEntry } from "@/src/lib/data";
 
 export type TestParams = { nextDictionaryId: number };
 export type LabeledTest = [string, (params: TestParams) => Promise<void>];
 
 export function createWord(dictionaryId: number, spelling: string) {
-  return upsertDefinition(dictionaryId, {
+  return upsertEntry(dictionaryId, {
     spelling,
     confidence: 0,
     definition: "",

@@ -19,10 +19,10 @@ import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { useSignalLens } from "@/src/lib/hooks/use-signal";
 import { deleteDictionary } from "@/src/lib/data";
 import { LabeledTest, TestParams } from "@/src/lib/integration-tests/util";
-import { DEFINITION_TESTS } from "@/src/lib/integration-tests/definitions";
+import { DICTIONARY_ENTRY_TESTS } from "@/src/lib/integration-tests/dictionary-entries";
 import { SYNONYM_TESTS } from "@/src/lib/integration-tests/synonyms";
 
-const TESTS: LabeledTest[] = [...DEFINITION_TESTS, ...SYNONYM_TESTS];
+const TESTS: LabeledTest[] = [...DICTIONARY_ENTRY_TESTS, ...SYNONYM_TESTS];
 
 type TestResult = "passed" | "failed";
 type TestResults = { [key: string]: TestResult };

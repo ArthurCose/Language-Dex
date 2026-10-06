@@ -17,9 +17,9 @@ import SubMenuTopNav, {
 import { Span } from "@/src/lib/components/text";
 import { useTheme } from "@/src/lib/contexts/theme-context";
 import { router, useLocalSearchParams } from "expo-router";
-import useWordDefinitions, {
-  invalidateWordDefinitions,
-} from "@/src/lib/hooks/use-word-definitions";
+import useWordEntries, {
+  invalidateWordEntries,
+} from "@/src/lib/hooks/use-word-entries";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { useSignalValue } from "@/src/lib/hooks/use-signal";
 import { useTranslation } from "react-i18next";
@@ -34,9 +34,9 @@ import {
   getFileObjectPath,
   maxConfidence,
   namePartOfSpeech,
-  updateDefinitionOrderKey,
+  updateEntryOrderKey,
   updateStatistics,
-  WordDefinitionData,
+  DictionaryEntry,
 } from "@/src/lib/data";
 import { logError } from "@/src/lib/log";
 import ConfirmationDialog from "@/src/lib/components/confirmation-dialog";
@@ -49,7 +49,7 @@ function Definition({
   dictionary,
   setPronunciationUri,
 }: {
-  item: WordDefinitionData;
+  item: DictionaryEntry;
   encodedWord: string;
   dictionary: DictionaryData;
   setPronunciationUri: (uri: string) => void;
@@ -70,9 +70,7 @@ function Definition({
           android_ripple={theme.ripples.transparentButton}
           pointerEvents="box-only"
           onPress={() =>
-            router.navigate(
-              `/words/existing/${encodedWord}/definition/${item.id}`,
-            )
+            router.navigate(`/words/existing/${encodedWord}/entry/${item.id}`)
           }
         >
           <View style={styles.definitionBody}>
@@ -128,20 +126,20 @@ export default function Word() {
   const theme = useTheme();
   const [deleteRequested, setDeleteRequested] = useState(false);
 
-  const definitionMap = useWordDefinitions(userData.activeDictionary, [word]);
-  const definitionData = definitionMap?.[word];
-  const definitionsResult = definitionData?.definitionsResult;
-  const spelling = definitionsResult?.spelling ?? word;
-  const savedDefinitions = definitionsResult?.definitions;
-  const [definitions, setDefinitions] = useState(savedDefinitions ?? []);
+  const entryMap = useWordEntries(userData.activeDictionary, [word]);
+  const entry = entryMap?.[word];
+  const entriesResult = entry?.result;
+  const spelling = entriesResult?.spelling ?? word;
+  const savedEntries = entriesResult?.entries;
+  const [entries, setEntries] = useState(savedEntries ?? []);
 
   const dictionary = userData.dictionaries.find(
     (d) => d.id == userData.activeDictionary,
   )!;
 
   useEffect(() => {
-    setDefinitions(definitionData?.definitionsResult?.definitions ?? []);
-  }, [definitionData?.definitionsResult]);
+    setEntries(entry?.result?.entries ?? []);
+  }, [entry?.result]);
 
   // handle pronunciation
   const [pronunciationUri, setPronunciationUri] = useState<
@@ -173,14 +171,14 @@ export default function Word() {
         <SubMenuActions>
           <SubMenuIconButton
             icon={TrashIcon}
-            disabled={deleteRequested || savedDefinitions == undefined}
+            disabled={deleteRequested || savedEntries == undefined}
             onPress={() => setDeleteRequested(true)}
           />
 
           <SubMenuIconButton
             icon={PlusIcon}
             onPress={() =>
-              router.navigate(`/words/existing/${encodedWord}/definition/add`)
+              router.navigate(`/words/existing/${encodedWord}/entry/add`)
             }
           />
         </SubMenuActions>
@@ -190,10 +188,10 @@ export default function Word() {
       <View style={theme.styles.separator} />
 
       <ReorderableList
-        data={definitions}
+        data={entries}
         onReorder={({ from, to }) => {
-          const newList = reorderItems(definitions, from, to);
-          setDefinitions(newList);
+          const newList = reorderItems(entries, from, to);
+          setEntries(newList);
 
           const low = Math.min(from, to);
           const high = Math.max(from, to);
@@ -201,13 +199,13 @@ export default function Word() {
           const promises = [];
 
           for (let i = low; i <= high; i++) {
-            const definition = newList[i];
-            promises.push(updateDefinitionOrderKey(definition, i));
+            const entry = newList[i];
+            promises.push(updateEntryOrderKey(entry, i));
           }
 
           Promise.all(promises)
             .then(() => {
-              invalidateWordDefinitions(userData.activeDictionary, word);
+              invalidateWordEntries(userData.activeDictionary, word);
             })
             .catch(logError);
         }}
@@ -234,12 +232,12 @@ export default function Word() {
         onCancel={() => setDeleteRequested(false)}
         onConfirm={async () => {
           await deleteWord(userData.activeDictionary, word).catch(logError);
-          invalidateWordDefinitions(userData.activeDictionary, word);
+          invalidateWordEntries(userData.activeDictionary, word);
 
           // update statistics
           const wordStatList: [
             DictionaryWordStatKey,
-            (definition: WordDefinitionData) => boolean,
+            (entry: DictionaryEntry) => boolean,
           ][] = [
             ["documentedMaxConfidence", (d) => d.confidence == maxConfidence],
             ["totalExamples", (d) => d.example != ""],
@@ -249,7 +247,7 @@ export default function Word() {
           userDataSignal.set(
             updateStatistics(userDataSignal.get(), (stats) => {
               if (stats.definitions != undefined) {
-                const count = savedDefinitions?.length ?? 0;
+                const count = savedEntries?.length ?? 0;
                 stats.definitions = Math.max(stats.definitions - count, 0);
               }
 
@@ -258,7 +256,7 @@ export default function Word() {
                   continue;
                 }
 
-                const count = savedDefinitions?.filter(filter).length ?? 0;
+                const count = savedEntries?.filter(filter).length ?? 0;
                 stats[statKey] = Math.max(stats[statKey] - count, 0);
               }
             }),

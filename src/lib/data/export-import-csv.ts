@@ -5,7 +5,7 @@ import {
   CsvTransformStream,
   encodeCsvField,
 } from "@/src/lib/text-processing/csv";
-import { upsertDefinition, WordDefinitionUpsertData } from "./dictionary-words";
+import { upsertEntry, DictionaryEntryUpsertData } from "./dictionary-words";
 import { DictionaryData, PartOfSpeechData } from "./dictionary-meta";
 import { UserData } from "./user";
 import { recalculateWordStatistics } from "./stats";
@@ -43,7 +43,7 @@ const translationMap: { [key: string]: string } = {
 
 type FieldUpsertPass = (
   dictionary: DictionaryData,
-  data: Partial<WordDefinitionUpsertData>,
+  data: Partial<DictionaryEntryUpsertData>,
   value?: string,
 ) => void;
 
@@ -265,12 +265,12 @@ export async function importCsv({
 
   // trying to fit our logic into typescript
   // possibly room for performance improvements if we can avoid the Object.assign
-  const partialData: Partial<WordDefinitionUpsertData> = {};
-  const updateData: WordDefinitionUpsertData = {
+  const partialData: Partial<DictionaryEntryUpsertData> = {};
+  const updateData: DictionaryEntryUpsertData = {
     id: 0,
     spelling: "",
   };
-  const insertData: WordDefinitionUpsertData = {
+  const insertData: DictionaryEntryUpsertData = {
     spelling: "",
     definition: "",
     example: "",
@@ -313,11 +313,11 @@ export async function importCsv({
     if (partialData.id != null) {
       // updating an existing word
       Object.assign(updateData, partialData);
-      await upsertDefinition(dictionary.id, updateData);
+      await upsertEntry(dictionary.id, updateData);
     } else {
       // creating a new word
       Object.assign(insertData, partialData);
-      await upsertDefinition(dictionary.id, insertData);
+      await upsertEntry(dictionary.id, insertData);
     }
   }
 

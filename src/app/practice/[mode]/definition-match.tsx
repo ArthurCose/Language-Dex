@@ -16,13 +16,13 @@ import {
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { Signal, useSignalLens } from "@/src/lib/hooks/use-signal";
 import { logError } from "@/src/lib/log";
-import useWordDefinitions from "@/src/lib/hooks/use-word-definitions";
+import useWordEntries from "@/src/lib/hooks/use-word-entries";
 import {
   cloneAndShuffle,
   pickIndexWithLenBiased,
   swapNToEndWith,
 } from "@/src/lib/practice/random";
-import { getDefinition } from "@/src/lib/practice/definitions";
+import { getEntryFromMap } from "@/src/lib/practice/definitions";
 import { fadeTo, flash } from "@/src/lib/practice/animations";
 import { Timer, useTimerSeconds } from "@/src/lib/practice/timer";
 import useGettableState from "@/src/lib/hooks/use-gettable-state";
@@ -294,10 +294,7 @@ export default function () {
 
   const seconds = useTimerSeconds(gameState.timer);
 
-  const definitionMap = useWordDefinitions(
-    activeDictionary,
-    gameState.activeWords,
-  );
+  const entryMap = useWordEntries(activeDictionary, gameState.activeWords);
 
   useEffect(() => {
     listGameWords(activeDictionary)
@@ -548,7 +545,7 @@ export default function () {
                 }
               }}
             >
-              {getDefinition(definitionMap, right)?.definition}
+              {getEntryFromMap(entryMap, right)?.definition}
             </Card>
           </View>
         ))}

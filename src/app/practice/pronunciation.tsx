@@ -7,7 +7,7 @@ import SubMenuTopNav, {
 import RecordAudioButton from "@/src/lib/components/record-audio-button";
 import * as FileSystem from "expo-file-system/legacy";
 import { logError } from "@/src/lib/log";
-import useWordDefinitions from "@/src/lib/hooks/use-word-definitions";
+import useWordEntries from "@/src/lib/hooks/use-word-entries";
 import useGettableState from "@/src/lib/hooks/use-gettable-state";
 import {
   GameWord,
@@ -15,7 +15,7 @@ import {
   listGameWords,
   prepareNewPronunciation,
   updateStatistics,
-  upsertDefinition,
+  upsertEntry,
 } from "@/src/lib/data";
 import { pickIndexWithLenBiased, swapToEnd } from "@/src/lib/practice/random";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
@@ -109,10 +109,7 @@ export default function () {
   const [gameState, setGameState, getGameState] = useGettableState(() =>
     initGameState([]),
   );
-  const definitionMap = useWordDefinitions(
-    activeDictionary,
-    gameState.activeWords,
-  );
+  const entryMap = useWordEntries(activeDictionary, gameState.activeWords);
 
   useEffect(() => {
     listGameWords(activeDictionary)
@@ -246,8 +243,8 @@ export default function () {
   };
 
   // rendering
-  const definitionData =
-    definitionMap[gameState.activeWords[0]]?.definitionsResult?.definitions[
+  const entry =
+    entryMap[gameState.activeWords[0]]?.result?.entries[
       gameState.activeWord?.orderKey ?? 0
     ];
 
@@ -268,7 +265,7 @@ export default function () {
             style={[styles.definitionBlock, { opacity: definitionOpacity }]}
           >
             <WordBubble>{gameState.activeWord?.spelling}</WordBubble>
-            <DefinitionBubble>{definitionData?.definition}</DefinitionBubble>
+            <DefinitionBubble>{entry?.definition}</DefinitionBubble>
           </Animated.View>
 
           {!gameState.selfReporting ? (
@@ -283,12 +280,12 @@ export default function () {
           ) : (
             <Animated.View style={[styles.bottom, { opacity: inputOpacity }]}>
               <View style={styles.playAudioRow}>
-                {definitionData?.pronunciationAudio != undefined && (
+                {entry?.pronunciationAudio != undefined && (
                   <>
                     <CircleButton
                       style={styles.circleButton}
                       onPress={() => {
-                        const fileName = definitionData.pronunciationAudio;
+                        const fileName = entry.pronunciationAudio;
                         const uri = getFileObjectPath(fileName)!;
                         setPronunciationUri(uri);
                         setStartAudio(true);
@@ -379,23 +376,23 @@ export default function () {
             setGameState(gameState);
 
             const preparedPronunciation = await prepareNewPronunciation(
-              definitionData,
+              entry,
               gameState.recording,
             );
 
             if (
               preparedPronunciation.pronunciationAudio !=
-              definitionData?.pronunciationAudio
+              entry?.pronunciationAudio
             ) {
               // update the word
-              await upsertDefinition(activeDictionary, {
-                id: definitionData!.id,
-                spelling: definitionData!.spelling,
+              await upsertEntry(activeDictionary, {
+                id: entry!.id,
+                spelling: entry!.spelling,
                 pronunciationAudio: preparedPronunciation.pronunciationAudio,
               });
             }
 
-            if (definitionData?.pronunciationAudio == undefined) {
+            if (entry?.pronunciationAudio == undefined) {
               // update statistics if this is new audio
               userDataSignal.set(
                 updateStatistics(userDataSignal.get(), (stats) => {

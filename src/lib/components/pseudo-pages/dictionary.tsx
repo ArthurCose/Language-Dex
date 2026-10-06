@@ -10,7 +10,7 @@ import { listWords, wordOrderOptions } from "@/src/lib/data";
 import { Span } from "../text";
 import { router } from "expo-router";
 import { logError } from "@/src/lib/log";
-import { useDictionaryVersioning } from "@/src/lib/hooks/use-word-definitions";
+import { useDictionaryVersioning } from "@/src/lib/hooks/use-word-entries";
 import SearchInput from "../search-input";
 
 const PART_OF_SPEECH_ALL = -1;

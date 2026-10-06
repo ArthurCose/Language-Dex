@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import * as DropDownPrimitive from "@rn-primitives/dropdown-menu";
 import { useTheme } from "@/src/lib/contexts/theme-context";
-import useWordDefinitions from "@/src/lib/hooks/use-word-definitions";
+import useWordEntries from "@/src/lib/hooks/use-word-entries";
 import { DefinitionsBubble } from "./definitions/definition-bubbles";
 import { Span } from "./text";
 import {
@@ -45,15 +45,15 @@ export default function ScannedWord({
   const triggerRef = useRef<DropDownPrimitive.TriggerRef | null>(null);
 
   const wordDeps = useMemo(() => [lowercase], [lowercase]);
-  const definitionMap = useWordDefinitions(dictionaryId, wordDeps);
-  const definitionData = definitionMap[lowercase];
-  const definitionResult = definitionData && definitionData.definitionsResult;
+  const entryMap = useWordEntries(dictionaryId, wordDeps);
+  const entry = entryMap[lowercase];
+  const entryResult = entry && entry.result;
 
   const underlineStyles = [theme.styles.scanWord];
 
-  if (definitionResult && definitionResult.definitions.length > 0) {
+  if (entryResult && entryResult.entries.length > 0) {
     underlineStyles.push(theme.styles.scanOldWord);
-  } else if (definitionData?.loaded) {
+  } else if (entry?.loaded) {
     underlineStyles.push(theme.styles.scanNewWord);
   }
 
@@ -80,7 +80,7 @@ export default function ScannedWord({
         <DefinitionsBubble
           text={text}
           lowercase={lowercase}
-          definitionResult={definitionResult}
+          entryResult={entryResult}
           generateExample={() =>
             generateExample(excerptText, excerptIndex, text)
           }

@@ -20,12 +20,12 @@ import {
   GameWord,
   listGameWords,
   updateStatistics,
-  upsertDefinition,
+  upsertEntry,
   UserData,
 } from "@/src/lib/data";
-import useWordDefinitions, {
-  invalidateWordDefinitions,
-} from "@/src/lib/hooks/use-word-definitions";
+import useWordEntries, {
+  invalidateWordEntries,
+} from "@/src/lib/hooks/use-word-entries";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { Signal, useSignalLens } from "@/src/lib/hooks/use-signal";
 import { logError } from "@/src/lib/log";
@@ -126,10 +126,7 @@ export default function () {
   const [sentence, setSentence] = useState("");
 
   const [gameState, setGameState] = useState(() => initGameState([]));
-  const definitionMap = useWordDefinitions(
-    activeDictionary,
-    gameState.activeWords,
-  );
+  const entryMap = useWordEntries(activeDictionary, gameState.activeWords);
 
   useEffect(() => {
     listGameWords(activeDictionary)
@@ -178,8 +175,8 @@ export default function () {
 
   // rendering
   const keyboardVisible = useKeyboardVisible();
-  const definitionData =
-    definitionMap[gameState.activeWords[0]]?.definitionsResult?.definitions[
+  const entry =
+    entryMap[gameState.activeWords[0]]?.result?.entries[
       gameState.activeWord?.orderKey ?? 0
     ];
 
@@ -197,8 +194,8 @@ export default function () {
       </ScoreRow>
 
       <Animated.View style={[styles.wordAndDefinitionBlock, opacityStyle]}>
-        <WordBubble>{definitionData?.spelling}</WordBubble>
-        <DefinitionBubble>{definitionData?.definition}</DefinitionBubble>
+        <WordBubble>{entry?.spelling}</WordBubble>
+        <DefinitionBubble>{entry?.definition}</DefinitionBubble>
       </Animated.View>
 
       <View
@@ -274,9 +271,9 @@ export default function () {
         <DialogTitle>{t("Save_Sentence_as_Example")}</DialogTitle>
 
         <View style={styles.diff}>
-          {definitionData != undefined && definitionData.example.length > 0 && (
+          {entry != undefined && entry.example.length > 0 && (
             <>
-              <Span>{definitionData?.example}</Span>
+              <Span>{entry?.example}</Span>
               <ArrowDownIcon color={theme.colors.text} size={32} />
             </>
           )}
@@ -285,7 +282,7 @@ export default function () {
 
         <DialogDescription>
           {t("Save_Sentence_as_Example_Desc", {
-            word: definitionData?.spelling,
+            word: entry?.spelling,
           })}
         </DialogDescription>
 
@@ -302,9 +299,9 @@ export default function () {
             onPress={() => {
               const save = async () => {
                 // update the word
-                await upsertDefinition(activeDictionary, {
-                  id: definitionData!.id,
-                  spelling: definitionData!.spelling,
+                await upsertEntry(activeDictionary, {
+                  id: entry!.id,
+                  spelling: entry!.spelling,
                   example: sentence,
                 });
 
@@ -316,9 +313,9 @@ export default function () {
                 }));
 
                 advance(() => {
-                  invalidateWordDefinitions(
+                  invalidateWordEntries(
                     activeDictionary,
-                    definitionData!.spelling.toLowerCase(),
+                    entry!.spelling.toLowerCase(),
                   );
                 });
                 setSaveDialogOpen(false);

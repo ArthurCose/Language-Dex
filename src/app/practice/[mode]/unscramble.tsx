@@ -33,7 +33,7 @@ import {
   Score,
   ScoreRow,
 } from "@/src/lib/components/practice/info";
-import useWordDefinitions from "@/src/lib/hooks/use-word-definitions";
+import useWordEntries from "@/src/lib/hooks/use-word-entries";
 import CircleButton from "@/src/lib/components/circle-button";
 import {
   ArrowRightIcon,
@@ -451,10 +451,7 @@ export default function () {
     initGameState([], params.mode as UnscrambleGameMode),
   );
 
-  const definitionMap = useWordDefinitions(
-    activeDictionary,
-    gameState.activeWords,
-  );
+  const entryMap = useWordEntries(activeDictionary, gameState.activeWords);
 
   const pushAnimation = useAnimationEffects();
   const seconds = useTimerSeconds(gameState.timer);
@@ -631,8 +628,9 @@ export default function () {
           <Animated.View style={[styles.definitionBlock, opacityStyle]}>
             <DefinitionBubble>
               {
-                definitionMap[gameState.activeWords[0]]?.definitionsResult
-                  ?.definitions[gameState.activeWord?.orderKey ?? 0]?.definition
+                entryMap[gameState.activeWords[0]]?.result?.entries[
+                  gameState.activeWord?.orderKey ?? 0
+                ]?.definition
               }
             </DefinitionBubble>
           </Animated.View>

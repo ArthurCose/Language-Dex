@@ -17,16 +17,16 @@ import {
   RelationWord,
   setClusterAntonyms,
   setSynonymCluster,
-  WordDefinitionData,
+  DictionaryEntry,
 } from "@/src/lib/data";
 import {
   Signal,
   useSignalLens,
   useSignalValue,
 } from "@/src/lib/hooks/use-signal";
-import useWordDefinitions, {
-  DefinitionMap,
-} from "@/src/lib/hooks/use-word-definitions";
+import useWordEntries, {
+  DictionaryEntryMap,
+} from "@/src/lib/hooks/use-word-entries";
 import usePracticeColors from "@/src/lib/hooks/use-practice-colors";
 import { useTranslation } from "react-i18next";
 import FloatingSwitcher from "../floating-switcher";
@@ -54,7 +54,7 @@ function RelationList({
   style,
   color,
   backgroundColor,
-  definitionMap,
+  entryMap,
   words,
   setWords,
   onAdd,
@@ -62,7 +62,7 @@ function RelationList({
   style: StyleProp<ViewStyle>;
   color: ColorValue;
   backgroundColor: ColorValue;
-  definitionMap: DefinitionMap;
+  entryMap: DictionaryEntryMap;
   words: RelationWord[];
   setWords?: (words: RelationWord[]) => void;
   onAdd?: () => void;
@@ -77,9 +77,9 @@ function RelationList({
   return (
     <View style={[styles.list, style]}>
       {words.map((word) => {
-        const definition = definitionMap[
+        const entry = entryMap[
           word.spelling.toLowerCase()
-        ]?.definitionsResult?.definitions.find((d) => d.id == word.id);
+        ]?.result?.entries.find((d) => d.id == word.id);
 
         return (
           <DropDownPrimitive.Root key={word.id}>
@@ -92,9 +92,9 @@ function RelationList({
               <Span style={textStyle}>{word.spelling}</Span>
             </DropDownPrimitive.Trigger>
 
-            {word == selectedWord && definition && (
+            {word == selectedWord && entry && (
               <DefinitionBubble
-                definition={definition}
+                entry={entry}
                 readOnly
                 contrast
                 onRemove={
@@ -149,7 +149,7 @@ export type RelationEditorSynonym = {
 };
 
 export class RelationsEditorData {
-  definitionId?: number | null;
+  entryId?: number | null;
   synonymsId: Signal<number | null | undefined>;
   unlinkedSynonymsId?: number | null;
   antonymsId?: number | null;
@@ -159,10 +159,10 @@ export class RelationsEditorData {
   modified: Signal<boolean>;
   loadedSynonymClusters: Set<number>;
 
-  constructor(definition?: WordDefinitionData) {
-    const synonymsId = definition?.synonymsId;
+  constructor(entry?: DictionaryEntry) {
+    const synonymsId = entry?.synonymsId;
 
-    this.definitionId = definition?.id;
+    this.entryId = entry?.id;
     this.synonymsId = new Signal(synonymsId);
     this.synonyms = new Signal<RelationWord[]>([]);
     this.antonyms = new Signal<RelationWord[]>([]);
@@ -178,7 +178,7 @@ export class RelationsEditorData {
       listWordsInSynonymCluster(synonymsId)
         .then((words: RelationEditorSynonym[]) => {
           // remove ourself from the synonym list
-          findAndSwapRemove(words, (word) => word.id == this.definitionId);
+          findAndSwapRemove(words, (word) => word.id == this.entryId);
           sortWords(words);
 
           for (const word of words) {
@@ -290,10 +290,10 @@ export class RelationsEditorData {
 
     const complete = () => {
       // avoid storing self in these lists
-      if (this.definitionId != null && wordSet.has(this.definitionId)) {
-        wordSet.delete(this.definitionId);
-        findAndSwapRemove(words, (w) => w.id == this.definitionId);
-        findAndSwapRemove(antonyms, (w) => w.id == this.definitionId);
+      if (this.entryId != null && wordSet.has(this.entryId)) {
+        wordSet.delete(this.entryId);
+        findAndSwapRemove(words, (w) => w.id == this.entryId);
+        findAndSwapRemove(antonyms, (w) => w.id == this.entryId);
       }
 
       // avoid storing words in both lists
@@ -352,16 +352,16 @@ export class RelationsEditorData {
     return clusterId;
   }
 
-  async save(definition: RelationEditorSynonym) {
+  async save(entry: RelationEditorSynonym) {
     this.modified.set(false);
 
-    await this.#saveClusters(definition);
+    await this.#saveClusters(entry);
 
     if (this.unlinkedSynonymsId != null) {
       if (this.synonymsId.get() == null) {
         // we didn't update to a new synonym cluster
         // so we need to unset the previous one
-        await setSynonymCluster(definition, null);
+        await setSynonymCluster(entry, null);
       }
 
       // clean up old synonym cluster
@@ -370,7 +370,7 @@ export class RelationsEditorData {
     }
   }
 
-  async #saveClusters(definition: RelationEditorSynonym) {
+  async #saveClusters(entry: RelationEditorSynonym) {
     const synonyms = [...this.synonyms.get()];
     const antonyms = this.antonyms.get();
     const creatingAntonyms = this.antonymsId == null && antonyms.length > 0;
@@ -399,7 +399,7 @@ export class RelationsEditorData {
     }
 
     // add ourself to the synonym cluster
-    synonyms.push(definition);
+    synonyms.push(entry);
 
     // track prev clusters for cleanup before we update anything
     const prevClusters = createSetFromMapped(synonyms, (w) => w.synonymsId);
@@ -466,7 +466,7 @@ export function RelationsEditor({
     ],
     [synonyms, antonyms],
   );
-  const definitionMap = useWordDefinitions(activeDictionary, lowerCaseWords);
+  const entryMap = useWordEntries(activeDictionary, lowerCaseWords);
 
   const colors = usePracticeColors();
   const loadingWords = useSignalValue(data.totalLoading) > 0;
@@ -490,7 +490,7 @@ export function RelationsEditor({
             style={styles.listWrapper}
             color={colors.correct.color}
             backgroundColor={colors.correct.backgroundColor}
-            definitionMap={definitionMap}
+            entryMap={entryMap}
             words={synonyms}
             setWords={ifTruthy(!loadingWords, (words) =>
               data.updateWords("Synonyms", words),
@@ -503,7 +503,7 @@ export function RelationsEditor({
           <RelationList
             style={styles.listWrapper}
             color={colors.mistake.color}
-            definitionMap={definitionMap}
+            entryMap={entryMap}
             backgroundColor={colors.mistake.backgroundColor}
             words={antonyms}
             setWords={ifTruthy(!loadingWords, (words) =>
@@ -528,9 +528,9 @@ export function RelationsEditor({
         open={searchOpen}
         multi
         value={tab == "Synonyms" ? synonyms : antonyms}
-        onSelect={(definitions) => {
+        onSelect={(entries) => {
           setSearchOpen(false);
-          data.updateWords(tab, definitions);
+          data.updateWords(tab, entries);
         }}
         onClose={() => setSearchOpen(false)}
       />

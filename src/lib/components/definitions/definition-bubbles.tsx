@@ -6,7 +6,7 @@ import { useSignalLens } from "@/src/lib/hooks/use-signal";
 import {
   DictionaryData,
   namePartOfSpeech,
-  WordDefinitionData,
+  DictionaryEntry,
 } from "@/src/lib/data";
 import * as Clipboard from "expo-clipboard";
 import { router } from "expo-router";
@@ -16,7 +16,7 @@ import { Span } from "@/src/lib/components/text";
 import { NavigationBarSpacer } from "../system-bar-spacers";
 
 type DefinitionBubbleProps = {
-  definition: WordDefinitionData;
+  entry: DictionaryEntry;
   readOnly: boolean;
   contrast?: boolean;
   onRemove?: () => void;
@@ -26,9 +26,9 @@ type DefinitionBubbleProps = {
 type DefinitionsBubbleProps = {
   text: string;
   lowercase: string;
-  definitionResult?: {
+  entryResult?: {
     spelling: string;
-    definitions: WordDefinitionData[];
+    entries: DictionaryEntry[];
   };
   close: () => void;
   generateExample?: () => string;
@@ -36,15 +36,15 @@ type DefinitionsBubbleProps = {
 
 function DefinitionContent({
   dictionary,
-  definition,
+  entry,
 }: {
   dictionary: DictionaryData;
-  definition: WordDefinitionData;
+  entry: DictionaryEntry;
 }) {
   const theme = useTheme();
   const [t] = useTranslation();
 
-  const partOfSpeech = namePartOfSpeech(dictionary, definition.partOfSpeech);
+  const partOfSpeech = namePartOfSpeech(dictionary, entry.partOfSpeech);
 
   return (
     <>
@@ -52,11 +52,11 @@ function DefinitionContent({
         {partOfSpeech ?? t("unknown")}
       </Span>
 
-      <Span style={styles.definition}>{definition.definition}</Span>
+      <Span style={styles.definition}>{entry.definition}</Span>
 
-      {definition.example.length > 0 && (
+      {entry.example.length > 0 && (
         <Span style={[styles.definition, theme.styles.example]}>
-          {definition.example}
+          {entry.example}
         </Span>
       )}
     </>
@@ -64,7 +64,7 @@ function DefinitionContent({
 }
 
 export function DefinitionBubble({
-  definition,
+  entry,
   readOnly,
   contrast,
   onRemove,
@@ -78,7 +78,7 @@ export function DefinitionBubble({
     (data) => data.dictionaries.find((d) => d.id == data.activeDictionary)!,
   );
 
-  const lowercase = definition.spelling.toLowerCase();
+  const lowercase = entry.spelling.toLowerCase();
 
   return (
     <DropDownPrimitive.Portal>
@@ -107,7 +107,7 @@ export function DefinitionBubble({
                 close();
               }}
             >
-              <Span style={[styles.wordTitle]}>{definition.spelling}</Span>
+              <Span style={[styles.wordTitle]}>{entry.spelling}</Span>
             </Pressable>
 
             <Pressable
@@ -123,15 +123,12 @@ export function DefinitionBubble({
                 router.navigate(
                   `/words/existing/${encodeURIComponent(
                     lowercase,
-                  )}/definition/${encodeURIComponent(definition.id)}`,
+                  )}/entry/${encodeURIComponent(entry.id)}`,
                 );
                 close();
               }}
             >
-              <DefinitionContent
-                dictionary={dictionary}
-                definition={definition}
-              />
+              <DefinitionContent dictionary={dictionary} entry={entry} />
             </Pressable>
 
             {onRemove ? (
@@ -152,7 +149,7 @@ export function DefinitionBubble({
                 android_ripple={theme.ripples.popup}
                 pointerEvents="box-only"
                 onPress={() => {
-                  Clipboard.setStringAsync(definition.spelling).catch(logError);
+                  Clipboard.setStringAsync(entry.spelling).catch(logError);
                   close();
                 }}
               >
@@ -171,7 +168,7 @@ export function DefinitionBubble({
 export function DefinitionsBubble({
   text,
   lowercase,
-  definitionResult,
+  entryResult,
   close,
   generateExample,
 }: DefinitionsBubbleProps) {
@@ -197,7 +194,7 @@ export function DefinitionsBubble({
               theme.styles.definitionBubble,
             ]}
           >
-            {definitionResult && (
+            {entryResult && (
               <>
                 <Pressable
                   style={[styles.bordered, theme.styles.definitionBorders]}
@@ -210,15 +207,13 @@ export function DefinitionsBubble({
                     close();
                   }}
                 >
-                  <Span style={[styles.wordTitle]}>
-                    {definitionResult.spelling}
-                  </Span>
+                  <Span style={[styles.wordTitle]}>{entryResult.spelling}</Span>
                 </Pressable>
 
-                {definitionResult.definitions.map((definition) => {
+                {entryResult.entries.map((entry) => {
                   return (
                     <Pressable
-                      key={definition.id}
+                      key={entry.id}
                       style={[
                         styles.definitionBlock,
                         styles.bordered,
@@ -230,14 +225,14 @@ export function DefinitionsBubble({
                         router.navigate(
                           `/words/existing/${encodeURIComponent(
                             lowercase,
-                          )}/definition/${encodeURIComponent(definition.id)}`,
+                          )}/entry/${encodeURIComponent(entry.id)}`,
                         );
                         close();
                       }}
                     >
                       <DefinitionContent
                         dictionary={dictionary}
-                        definition={definition}
+                        entry={entry}
                       />
                     </Pressable>
                   );
@@ -262,7 +257,7 @@ export function DefinitionsBubble({
                 }
 
                 router.navigate(
-                  `/words/existing/${wordParam}/definition/add?${params}`,
+                  `/words/existing/${wordParam}/entry/add?${params}`,
                 );
                 close();
               }}

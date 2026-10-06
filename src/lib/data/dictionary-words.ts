@@ -15,7 +15,7 @@ type FileName = string;
 
 export const maxConfidence = 2;
 
-export type WordDefinitionData = {
+export type DictionaryEntry = {
   id: number;
   sharedId: number;
   orderKey: number;
@@ -31,15 +31,15 @@ export type WordDefinitionData = {
   updatedAt: number;
 };
 
-export type WordDefinitionUpsertData =
+export type DictionaryEntryUpsertData =
   | (Partial<
       Omit<
-        WordDefinitionData,
+        DictionaryEntry,
         "id" | "sharedId" | "createdAt" | "updatedAt" | "orderKey"
       >
     > & { id: number })
   | (Omit<
-      WordDefinitionData,
+      DictionaryEntry,
       "id" | "sharedId" | "createdAt" | "updatedAt" | "orderKey"
     > & {
       id?: undefined;
@@ -179,11 +179,11 @@ export async function listWords(
   return output;
 }
 
-export async function getWordDefinitions(
+export async function getWordEntries(
   dictionaryId: number,
   lowerCaseSpelling: string,
 ) {
-  const definitions: WordDefinitionData[] = [];
+  const entries: DictionaryEntry[] = [];
 
   const wordResult = await db.getFirstAsync<{ id: number; spelling: string }>(
     "SELECT id, spelling FROM word_shared_data WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $spelling",
@@ -194,20 +194,20 @@ export async function getWordDefinitions(
     return;
   }
 
-  const results = db.getEachAsync<WordDefinitionData>(
+  const entryResults = db.getEachAsync<DictionaryEntry>(
     "SELECT * FROM word_definition_data WHERE sharedId = $id",
     {
       $id: wordResult.id,
     },
   );
 
-  for await (const row of results) {
-    definitions.push(row);
+  for await (const row of entryResults) {
+    entries.push(row);
   }
 
-  definitions.sort((a, b) => a.orderKey - b.orderKey);
+  entries.sort((a, b) => a.orderKey - b.orderKey);
 
-  return { spelling: wordResult.spelling, definitions };
+  return { spelling: wordResult.spelling, entries };
 }
 
 async function getOrCreateWordId(
@@ -285,7 +285,7 @@ async function updateSharedData(sharedId: number) {
     { $sharedId: sharedId },
   );
 
-  // use the first definition's capitalization
+  // use the first entry's capitalization
   const spellingResult = await db.getFirstAsync<{
     spelling: string;
   }>(
@@ -305,10 +305,10 @@ async function updateSharedData(sharedId: number) {
 }
 
 export async function prepareNewPronunciation(
-  definitionData?: WordDefinitionData,
+  entry?: DictionaryEntry,
   uri?: string | null,
 ) {
-  let pronunciationAudio = definitionData?.pronunciationAudio ?? null;
+  let pronunciationAudio = entry?.pronunciationAudio ?? null;
   const prevPronunciationUri = getFileObjectPath(pronunciationAudio);
   let finalize = () => {};
 
@@ -355,15 +355,15 @@ async function resolveNewOrderKey(sharedId: number) {
   return countResult?.["COUNT(*)"] ?? 0;
 }
 
-export async function upsertDefinition(
+export async function upsertEntry(
   dictionaryId: number,
-  definition: WordDefinitionUpsertData,
+  entry: DictionaryEntryUpsertData,
 ) {
-  log("Upserting Definition...");
+  log("Upserting Entry...");
 
   const time = Date.now();
 
-  const copyList: (keyof WordDefinitionUpsertData)[] = [
+  const copyList: (keyof DictionaryEntryUpsertData)[] = [
     "spelling",
     "confidence",
     "partOfSpeech",
@@ -381,7 +381,7 @@ export async function upsertDefinition(
 
   // copy values from definition data into params and append to the set list
   for (const key of copyList) {
-    const value = definition[key];
+    const value = entry[key];
 
     if (value === undefined) {
       continue;
@@ -399,19 +399,19 @@ export async function upsertDefinition(
     spelling: string;
   } | null = null;
 
-  let spelling = definition.spelling;
+  let spelling = entry.spelling;
 
-  if (definition.id != undefined) {
+  if (entry.id != undefined) {
     // fetch old sharedId to see if we switched words
     const query =
       "SELECT sharedId, orderKey, spelling FROM word_definition_data WHERE id = $id";
     oldDataResult = await db.getFirstAsync(query, {
-      $id: definition.id,
+      $id: entry.id,
     });
 
     if (!oldDataResult) {
       // exit early to avoid creating a shared word
-      log("Failed to match definition by ID...");
+      log("Failed to match entry by ID...");
       return;
     }
 
@@ -420,18 +420,18 @@ export async function upsertDefinition(
 
   if (spelling == null) {
     // exit early to avoid creating a shared word
-    logError("Invalid state: Missing spelling for definition upsert!");
+    logError("Invalid state: Missing spelling for entry upsert!");
     return;
   }
 
   // grab the shared word
   const sharedId = await getOrCreateWordId(dictionaryId, spelling, {
-    confidence: definition.confidence ?? 0,
+    confidence: entry.confidence ?? 0,
     time,
   });
   setParams.$sharedId = sharedId;
 
-  if (definition.id != undefined) {
+  if (entry.id != undefined) {
     // update
     log("Upsert is Updating.");
 
@@ -440,7 +440,7 @@ export async function upsertDefinition(
       return;
     }
 
-    setParams.$id = definition.id;
+    setParams.$id = entry.id;
 
     setList.push("orderKey");
     setParams.$orderKey = await resolveNewOrderKey(sharedId);
@@ -455,16 +455,13 @@ export async function upsertDefinition(
     );
 
     // update old shared data to complete switching words
-    await removedDefinitionCleanup(
-      oldDataResult.sharedId,
-      oldDataResult.orderKey,
-    );
+    await removedEntryCleanup(oldDataResult.sharedId, oldDataResult.orderKey);
 
     // update current shared data
     await updateSharedData(sharedId);
 
     log("Upsert Complete!");
-    return definition.id;
+    return entry.id;
   } else {
     log("Upsert is Inserting.");
 
@@ -489,14 +486,14 @@ export async function upsertDefinition(
   }
 }
 
-export async function updateDefinitionOrderKey(
-  definitionData: WordDefinitionData,
+export async function updateEntryOrderKey(
+  entry: DictionaryEntry,
   orderKey: number,
 ) {
   await db.runAsync(
     "UPDATE word_definition_data SET orderKey = $orderKey WHERE id = $id",
     {
-      $id: definitionData.id,
+      $id: entry.id,
       $orderKey: orderKey,
     },
   );
@@ -505,8 +502,8 @@ export async function updateDefinitionOrderKey(
     await db.runAsync(
       "UPDATE word_shared_data SET spelling = $spelling WHERE id = $id",
       {
-        $id: definitionData.sharedId,
-        $spelling: definitionData.spelling,
+        $id: entry.sharedId,
+        $spelling: entry.spelling,
       },
     );
   }
@@ -522,11 +519,8 @@ async function shiftOrderKeys(sharedId: number, greaterThanOrderKey: number) {
   );
 }
 
-// Used to update or remove shared data after deleting a definition or migrating it to a new shared word
-async function removedDefinitionCleanup(
-  oldSharedId: number,
-  oldOrderKey: number,
-) {
+// Used to update or remove shared data after deleting an entry or migrating it to a new shared word
+async function removedEntryCleanup(oldSharedId: number, oldOrderKey: number) {
   // delete if empty
   const deleteResult = await db.runAsync(
     [
@@ -545,8 +539,8 @@ async function removedDefinitionCleanup(
   }
 }
 
-export async function deleteDefinition(id: number) {
-  log("Deleting Definition...");
+export async function deleteEntry(id: number) {
+  log("Deleting Entry...");
 
   const result = await db.getFirstAsync<{
     sharedId: number;
@@ -561,7 +555,7 @@ export async function deleteDefinition(id: number) {
   );
 
   if (!result) {
-    log("Definition does not exist...");
+    log("Entry does not exist...");
     return;
   }
 
@@ -580,7 +574,7 @@ export async function deleteDefinition(id: number) {
     await deleteEmptySynonymCluster(result.synonymsId);
   }
 
-  await removedDefinitionCleanup(result.sharedId, result.orderKey);
+  await removedEntryCleanup(result.sharedId, result.orderKey);
 
   log("Delete Complete!");
 }
@@ -621,13 +615,13 @@ export async function deleteWord(dictionaryId: number, word: string) {
     }
   }
 
-  // delete definitions
+  // delete entries
   await db.runAsync(
     "DELETE FROM word_definition_data WHERE sharedId = $sharedId",
     { $sharedId: sharedId },
   );
 
-  // delete empty synonym clusters after deleting definitions
+  // delete empty synonym clusters after deleting entries
   for (const clusterId of clusterIds) {
     await deleteEmptySynonymCluster(clusterId);
   }

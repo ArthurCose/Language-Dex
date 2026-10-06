@@ -532,7 +532,7 @@ export async function importData(
       "SELECT COUNT(*) FROM word_definition_data",
     );
 
-    const definitionResults = importDb.getEachAsync<{
+    const entryResults = importDb.getEachAsync<{
       dictionaryId: number;
       sharedId: number;
       example?: string | null;
@@ -541,7 +541,7 @@ export async function importData(
       // pronunciationAudio?: string | null;
     }>("SELECT * FROM word_definition_data");
 
-    const definitionCopyKeys = [
+    const entryCopyKeys = [
       "orderKey",
       "spelling",
       "confidence",
@@ -556,11 +556,11 @@ export async function importData(
 
     await bulkInsert(
       "word_definition_data",
-      ["dictionaryId", "sharedId", "synonymsId", ...definitionCopyKeys],
+      ["dictionaryId", "sharedId", "synonymsId", ...entryCopyKeys],
       async (statement) => {
         let i = 0;
 
-        for await (const result of definitionResults) {
+        for await (const result of entryResults) {
           const dictionary = importDictionaryMap[result.dictionaryId];
 
           i++;
@@ -578,7 +578,7 @@ export async function importData(
                 : null,
           };
 
-          for (const key of definitionCopyKeys) {
+          for (const key of entryCopyKeys) {
             bindParams["$" + key] = (result as { [key: string]: unknown })[key];
           }
 

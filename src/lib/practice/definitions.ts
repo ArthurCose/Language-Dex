@@ -1,10 +1,11 @@
 import { GameWord } from "../data";
-import { DefinitionMap } from "../hooks/use-word-definitions";
+import { DictionaryEntryMap } from "../hooks/use-word-entries";
 
-export function getDefinition(
-  definitionMap: DefinitionMap,
-  gameWord: GameWord
+export function getEntryFromMap(
+  entryMap: DictionaryEntryMap,
+  gameWord: GameWord,
 ) {
-  return definitionMap[gameWord.spelling.toLowerCase()]?.definitionsResult
-    ?.definitions[gameWord.orderKey];
+  return entryMap[gameWord.spelling.toLowerCase()]?.result?.entries[
+    gameWord.orderKey
+  ];
 }

@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { Timer } from "@/src/lib/practice/timer";
 import {
-  getWordDefinitions,
+  getWordEntries,
   listWords,
   maxConfidence,
   updateStatistics,
@@ -182,7 +182,7 @@ const GlyphGrid = React.memo(({ cells }: { cells: string[][] }) => (
 
 type Hint = {
   definition: string;
-  definitionId?: number;
+  entryId?: number;
   confidence?: number;
 };
 
@@ -315,17 +315,17 @@ export default function () {
     setGameState({ ...gameState });
 
     const word = wordData.word;
-    getWordDefinitions(activeDictionary, word.toLowerCase())
+    getWordEntries(activeDictionary, word.toLowerCase())
       .then((result) => {
-        if (result && result.definitions.length > 0) {
-          const index = pickIndexWithLenUnbiased(result.definitions.length);
-          const data = result.definitions[index];
+        if (result && result.entries.length > 0) {
+          const index = pickIndexWithLenUnbiased(result.entries.length);
+          const entry = result.entries[index];
 
           setHints({
             ...hints,
             [wordIndex]: {
-              definitionId: data.id,
-              definition: data.definition,
+              entryId: entry.id,
+              definition: entry.definition,
               confidence: 0,
             },
           });
@@ -619,7 +619,7 @@ export default function () {
             onClose={() => setHintDialogOpen(false)}
             gameEnded={gameState.over}
             conceded={hintWord?.conceded}
-            definitionId={hintData?.definitionId}
+            entryId={hintData?.entryId}
             spelling={(gameState.over || hintWord?.conceded) && hintWord?.word}
             definition={hintData?.definition}
             confidence={hintData?.confidence}

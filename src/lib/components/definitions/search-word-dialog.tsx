@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { listWords, WordDefinitionData } from "@/src/lib/data";
+import { listWords, DictionaryEntry } from "@/src/lib/data";
 import Dialog from "../dialog";
 import { Pressable, StyleSheet, View, VirtualizedList } from "react-native";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
@@ -9,28 +9,27 @@ import { useTranslation } from "react-i18next";
 import { Span } from "../text";
 import { useTheme } from "@/src/lib/contexts/theme-context";
 import SearchInput from "../search-input";
-import useWordDefinitions from "@/src/lib/hooks/use-word-definitions";
+import useWordEntries from "@/src/lib/hooks/use-word-entries";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "../icons";
 
-function ListWordDefinitions<T extends { id: number }>({
+function ListWordEntries<T extends { id: number }>({
   dictionaryId,
   spelling,
-  selectedDefinitions,
+  selectedEntries,
   onSelect,
 }: {
   dictionaryId: number;
   spelling: string;
-  selectedDefinitions: T[];
-  onSelect: (definition: WordDefinitionData) => void;
+  selectedEntries: T[];
+  onSelect: (entry: DictionaryEntry) => void;
 }) {
   const [t] = useTranslation();
   const theme = useTheme();
 
   const lowerCase = spelling.toLowerCase();
-  const definitionMap = useWordDefinitions(dictionaryId, [lowerCase]);
+  const entryMap = useWordEntries(dictionaryId, [lowerCase]);
 
-  const definitions =
-    definitionMap[lowerCase]?.definitionsResult?.definitions ?? [];
+  const entries = entryMap[lowerCase]?.result?.entries ?? [];
 
   const userDataSignal = useUserDataSignal();
   const activeDictionary = useSignalLens(userDataSignal, (data) =>
@@ -45,19 +44,19 @@ function ListWordDefinitions<T extends { id: number }>({
 
   return (
     <>
-      {definitions.map((definition) => {
+      {entries.map((entry) => {
         const partOfSpeech = activeDictionary.partsOfSpeech.find(
-          (p) => p.id == definition.partOfSpeech,
+          (p) => p.id == entry.partOfSpeech,
         )?.name;
 
-        const selected = selectedDefinitions.some((d) => d.id == definition.id);
+        const selected = selectedEntries.some((d) => d.id == entry.id);
 
         return (
           <Pressable
-            key={definition.id}
+            key={entry.id}
             style={buttonStyles}
             android_ripple={theme.ripples.transparentButton}
-            onPress={() => onSelect(definition)}
+            onPress={() => onSelect(entry)}
           >
             {/* todo: use DefinitionContent from definition-bubbles instead? mainly wanting a better name for the component */}
             <View>
@@ -65,11 +64,11 @@ function ListWordDefinitions<T extends { id: number }>({
                 {partOfSpeech ?? t("unknown")}
               </Span>
 
-              <Span style={styles.definition}>{definition.definition}</Span>
+              <Span style={styles.definition}>{entry.definition}</Span>
 
-              {definition.example.length > 0 && (
+              {entry.example.length > 0 && (
                 <Span style={[styles.definition, theme.styles.example]}>
-                  {definition.example}
+                  {entry.example}
                 </Span>
               )}
             </View>
@@ -93,12 +92,12 @@ type Props<T extends { id: number }> = {
   | {
       multi?: false;
       value?: T;
-      onSelect: (definition: WordDefinitionData) => void;
+      onSelect: (entry: DictionaryEntry) => void;
     }
   | {
       multi: true;
       value?: T[];
-      onSelect: (definitions: (T | WordDefinitionData)[]) => void;
+      onSelect: (entries: (T | DictionaryEntry)[]) => void;
     }
 );
 
@@ -114,9 +113,7 @@ export default function SearchWordDialog<T extends { id: number }>({
   const [filteredWords, setFilteredWords] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState("");
   const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
-  const [selectedList, setSelectedList] = useState<(T | WordDefinitionData)[]>(
-    [],
-  );
+  const [selectedList, setSelectedList] = useState<(T | DictionaryEntry)[]>([]);
 
   const userDataSignal = useUserDataSignal();
   const activeDictionary = useSignalLens(
@@ -137,7 +134,7 @@ export default function SearchWordDialog<T extends { id: number }>({
     }
   }, [multi, value]);
 
-  // possibly causes a lag spike when loading definition editor
+  // possibly causes a lag spike when loading entry editor
   // but prevents visual issues when opening the dialog
   useEffect(() => {
     listWords(activeDictionary, {
@@ -194,23 +191,21 @@ export default function SearchWordDialog<T extends { id: number }>({
             </Pressable>
 
             {expanded[item] && (
-              <ListWordDefinitions
+              <ListWordEntries
                 dictionaryId={activeDictionary}
                 spelling={item}
-                selectedDefinitions={selectedList}
-                onSelect={(definition) => {
+                selectedEntries={selectedList}
+                onSelect={(entry) => {
                   if (!multi) {
-                    onSelect(definition);
+                    onSelect(entry);
                     onClose();
                     return;
                   }
 
-                  const index = selectedList.findIndex(
-                    (d) => d.id == definition.id,
-                  );
+                  const index = selectedList.findIndex((d) => d.id == entry.id);
 
                   if (index == -1) {
-                    setSelectedList([...selectedList, definition]);
+                    setSelectedList([...selectedList, entry]);
                   } else {
                     setSelectedList(selectedList.toSpliced(index, 1));
                   }

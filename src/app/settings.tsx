@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import ListPopup from "@/src/lib/components/list-popup";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
-import { upsertDefinition, UserData, wordOrderOptions } from "@/src/lib/data";
+import { upsertEntry, UserData, wordOrderOptions } from "@/src/lib/data";
 import { TFunction } from "i18next";
 import { pages } from "./index";
 import { logError } from "@/src/lib/log";
@@ -414,7 +414,7 @@ function DevelopmentSection({
 
                   const word = chars.join("");
 
-                  await upsertDefinition(dictionaryId, {
+                  await upsertEntry(dictionaryId, {
                     spelling: word,
                     confidence: 0,
                     definition: word,

@@ -21,7 +21,7 @@ import {
   IncorrectScore,
   ScoreRow,
 } from "@/src/lib/components/practice/info";
-import useWordDefinitions from "@/src/lib/hooks/use-word-definitions";
+import useWordEntries from "@/src/lib/hooks/use-word-entries";
 import { Span } from "@/src/lib/components/text";
 import Animated, {
   useSharedValue,
@@ -108,10 +108,7 @@ export default function () {
 
   const [gameState, setGameState] = useState(() => initGameState([]));
 
-  const definitionMap = useWordDefinitions(
-    activeDictionary,
-    gameState.activeWords,
-  );
+  const entryMap = useWordEntries(activeDictionary, gameState.activeWords);
 
   const [pendingGuess, setPendingGuess] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -246,9 +243,9 @@ export default function () {
             <View style={styles.definitionBlock}>
               <DefinitionBubble>
                 {
-                  definitionMap[gameState.activeWords[0]]?.definitionsResult
-                    ?.definitions[gameState.activeWord?.orderKey ?? 0]
-                    ?.definition
+                  entryMap[gameState.activeWords[0]]?.result?.entries[
+                    gameState.activeWord?.orderKey ?? 0
+                  ]?.definition
                 }
               </DefinitionBubble>
             </View>

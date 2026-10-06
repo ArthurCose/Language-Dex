@@ -11,7 +11,7 @@ export default function HintPopup({
   open,
   gameEnded,
   conceded,
-  definitionId,
+  entryId,
   spelling,
   definition,
   confidence,
@@ -22,7 +22,7 @@ export default function HintPopup({
   open: boolean;
   gameEnded: boolean;
   conceded?: boolean;
-  definitionId?: number;
+  entryId?: number;
   spelling?: string | boolean;
   definition?: string;
   confidence?: number;
@@ -59,7 +59,7 @@ export default function HintPopup({
       {confidence != null && (conceded || gameEnded) && (
         <ConfidenceStrip
           style={styles.confidenceStrip}
-          definitionId={definitionId}
+          entryId={entryId}
           confidence={confidence}
           setConfidence={onConfidence}
         />

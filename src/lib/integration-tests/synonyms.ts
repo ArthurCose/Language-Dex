@@ -7,17 +7,16 @@ import {
 } from "./util";
 import { RelationsEditorData } from "@/src/lib/components/definitions/relations-editor";
 import {
-  deleteDefinition,
+  deleteEntry,
   deleteDictionary,
   deleteWord,
-  getWordDefinitions,
-  WordDefinitionData,
+  getWordEntries,
+  DictionaryEntry,
 } from "@/src/lib/data";
 import db from "@/src/lib/data/db";
 
-async function getDefinition(dictionaryId: number, lowercaseSpelling: string) {
-  return (await getWordDefinitions(dictionaryId, lowercaseSpelling))!
-    .definitions[0];
+async function getEntry(dictionaryId: number, lowercaseSpelling: string) {
+  return (await getWordEntries(dictionaryId, lowercaseSpelling))!.entries[0];
 }
 
 async function countClusters() {
@@ -29,27 +28,27 @@ async function countClusters() {
 
 class SynonymTestEnvironment {
   dictionaryId: number;
-  wordDefinitions: { [key: string]: WordDefinitionData | undefined };
+  wordEntries: { [key: string]: DictionaryEntry | undefined };
 
   constructor(params: TestParams) {
-    this.wordDefinitions = {};
+    this.wordEntries = {};
     this.dictionaryId = params.nextDictionaryId;
   }
 
-  async getOrLoadDefinition(lowercaseSpelling: string) {
-    let definition = this.wordDefinitions[lowercaseSpelling];
+  async getOrLoadEntry(lowercaseSpelling: string) {
+    let entry = this.wordEntries[lowercaseSpelling];
 
-    if (!definition) {
-      definition = (await getDefinition(this.dictionaryId, lowercaseSpelling))!;
-      this.wordDefinitions[lowercaseSpelling] = definition;
+    if (!entry) {
+      entry = (await getEntry(this.dictionaryId, lowercaseSpelling))!;
+      this.wordEntries[lowercaseSpelling] = entry;
     }
 
-    return definition;
+    return entry;
   }
 
   async loadEditor(lowercaseSpelling: string) {
-    const definition = await this.getOrLoadDefinition(lowercaseSpelling);
-    const wrapper = new SynonymEditorWrapper(this, definition);
+    const entry = await this.getOrLoadEntry(lowercaseSpelling);
+    const wrapper = new SynonymEditorWrapper(this, entry);
 
     await wrapper.reload();
 
@@ -64,10 +63,10 @@ class SynonymEditorWrapper {
   #spelling: string;
   #prevConnections: string[];
 
-  constructor(env: SynonymTestEnvironment, definition: WordDefinitionData) {
+  constructor(env: SynonymTestEnvironment, entry: DictionaryEntry) {
     this.#env = env;
     this.#editor = undefined!; // we'll set this later
-    this.#spelling = definition.spelling;
+    this.#spelling = entry.spelling;
     this.#prevConnections = [];
   }
 
@@ -90,7 +89,7 @@ class SynonymEditorWrapper {
 
   async reload() {
     this.#editor = new RelationsEditorData(
-      this.#env.wordDefinitions[this.#spelling],
+      this.#env.wordEntries[this.#spelling],
     );
 
     await this.#settle();
@@ -111,84 +110,84 @@ class SynonymEditorWrapper {
   }
 
   async addSynonyms(lowercaseWords: string[]) {
-    const definitions = await Promise.all(
-      lowercaseWords.map((spelling) => this.#env.getOrLoadDefinition(spelling)),
+    const entries = await Promise.all(
+      lowercaseWords.map((spelling) => this.#env.getOrLoadEntry(spelling)),
     );
 
     this.#editor.updateWords("Synonyms", [
       ...this.#editor.synonyms.get(),
-      ...definitions,
+      ...entries,
     ]);
 
     await this.#settle();
   }
 
   async setAntonyms(lowercaseWords: string[]) {
-    const definitions = await Promise.all(
-      lowercaseWords.map((spelling) => this.#env.getOrLoadDefinition(spelling)),
+    const entries = await Promise.all(
+      lowercaseWords.map((spelling) => this.#env.getOrLoadEntry(spelling)),
     );
 
-    this.#editor.updateWords("Antonyms", definitions);
+    this.#editor.updateWords("Antonyms", entries);
 
     await this.#settle();
   }
 
   async setSynonyms(lowercaseWords: string[]) {
-    const definitions = await Promise.all(
-      lowercaseWords.map((spelling) => this.#env.getOrLoadDefinition(spelling)),
+    const entries = await Promise.all(
+      lowercaseWords.map((spelling) => this.#env.getOrLoadEntry(spelling)),
     );
 
-    this.#editor.updateWords("Synonyms", definitions);
+    this.#editor.updateWords("Synonyms", entries);
 
     await this.#settle();
   }
 
   async addAntonyms(lowercaseWords: string[]) {
-    const definitions = await Promise.all(
-      lowercaseWords.map((spelling) => this.#env.getOrLoadDefinition(spelling)),
+    const entries = await Promise.all(
+      lowercaseWords.map((spelling) => this.#env.getOrLoadEntry(spelling)),
     );
 
     this.#editor.updateWords("Antonyms", [
       ...this.#editor.antonyms.get(),
-      ...definitions,
+      ...entries,
     ]);
 
     await this.#settle();
   }
 
   async save() {
-    const definition = this.#env.wordDefinitions[this.#spelling]!;
-    await this.#editor.save(definition);
+    const entry = this.#env.wordEntries[this.#spelling]!;
+    await this.#editor.save(entry);
 
     const synonymsId = this.#editor.synonymsId.get();
     const antonymsId = this.#editor.antonymsId;
 
-    definition.synonymsId = synonymsId;
+    entry.synonymsId = synonymsId;
 
     // unset synonymIds for old connections
     for (const spelling of this.#prevConnections) {
-      const definition = this.#env.wordDefinitions[spelling];
+      const entry = this.#env.wordEntries[spelling];
 
-      if (definition) {
-        definition.synonymsId = null;
+      if (entry) {
+        entry.synonymsId = null;
       }
     }
 
     // set synonymIds for the latest synonyms
     for (const { spelling } of this.#editor.synonyms.get()) {
-      const definition = this.#env.wordDefinitions[spelling];
+      const entry = this.#env.wordEntries[spelling];
 
-      if (definition) {
-        definition.synonymsId = synonymsId;
+      if (entry) {
+        entry.synonymsId = synonymsId;
       }
     }
 
     // set synonymIds for the latest antonyms
     for (const { spelling } of this.#editor.antonyms.get()) {
-      const definition = this.#env.wordDefinitions[spelling];
+      const entry = this.#env.wordEntries[spelling];
 
-      if (definition) {
-        definition.synonymsId = antonymsId;
+      if (entry) {
+        entry.synonymsId = antonymsId;
       }
     }
 
@@ -244,10 +243,10 @@ export const SYNONYM_TESTS: LabeledTest[] = [
         "We should have a cluster created for synonyms and antoynms",
       );
 
-      // check definitions
-      const wordA = await getDefinition(dictionaryId, "a");
-      const wordB = await getDefinition(dictionaryId, "b");
-      const wordC = await getDefinition(dictionaryId, "c");
+      // check entries
+      const wordA = await getEntry(dictionaryId, "a");
+      const wordB = await getEntry(dictionaryId, "b");
+      const wordC = await getEntry(dictionaryId, "c");
 
       assert(wordA.synonymsId != null, "Synonyms set");
       assertDeepEq(
@@ -452,13 +451,10 @@ export const SYNONYM_TESTS: LabeledTest[] = [
 
       async function assertNoRelation() {
         for (const lowercaseSpelling of words) {
-          const definition = await getDefinition(
-            dictionaryId,
-            lowercaseSpelling,
-          );
+          const entry = await getEntry(dictionaryId, lowercaseSpelling);
 
           assertDeepEq(
-            definition.synonymsId,
+            entry.synonymsId,
             null,
             "Synonym cluster should be null after clearing sets",
           );
@@ -529,13 +525,13 @@ export const SYNONYM_TESTS: LabeledTest[] = [
       );
 
       // deleting individual definitons
-      await deleteDefinition(wordIds[0]);
-      await deleteDefinition(wordIds[1]);
+      await deleteEntry(wordIds[0]);
+      await deleteEntry(wordIds[1]);
 
       assertDeepEq(
         originalClusterCount + 2,
         await countClusters(),
-        "Clusters should delete with definitions",
+        "Clusters should delete with entries",
       );
 
       // deleting shared word data

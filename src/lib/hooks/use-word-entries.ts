@@ -1,68 +1,68 @@
 import { useEffect, useMemo, useState } from "react";
-import { getWordDefinitions, WordDefinitionData } from "../data";
+import { getWordEntries, DictionaryEntry } from "../data";
 import { logError } from "../log";
 import { Signal, useSignalValue } from "./use-signal";
 
-type WordDefinitionState = {
+type WordEntryState = {
   loaded: boolean;
-  definitionsResult?: {
+  result?: {
     spelling: string;
-    definitions: WordDefinitionData[];
+    entries: DictionaryEntry[];
   };
   versionSignal: Signal<number>;
 };
 
-export type DefinitionMap = {
-  [lowerCaseWord: string]: WordDefinitionState | undefined;
+export type DictionaryEntryMap = {
+  [lowerCaseWord: string]: WordEntryState | undefined;
 };
 
-const cache: { [dictionary: number]: DefinitionMap | undefined } = {};
+const cache: { [dictionary: number]: DictionaryEntryMap | undefined } = {};
 
-let definitionVersionCounter = 0;
+let entryVersionCounter = 0;
 
-function fetchDefinition(
+function fetchEntries(
   dictionaryId: number,
   lowerCaseWord: string,
-  cachedWord: WordDefinitionState,
+  cachedWord: WordEntryState,
 ) {
-  // fetch definitions
-  return getWordDefinitions(dictionaryId, lowerCaseWord).then((result) => {
+  // fetch entries
+  return getWordEntries(dictionaryId, lowerCaseWord).then((result) => {
     cachedWord.loaded = true;
-    cachedWord.definitionsResult = result;
+    cachedWord.result = result;
 
-    definitionVersionCounter += 1;
-    cachedWord.versionSignal.set(definitionVersionCounter);
+    entryVersionCounter += 1;
+    cachedWord.versionSignal.set(entryVersionCounter);
   });
 }
 
-export default function useWordDefinitions(
+export default function useWordEntries(
   dictionaryId: number,
   lowerCaseWords: string[],
-): DefinitionMap {
+): DictionaryEntryMap {
   // only using this state to drive updates
-  const [_, setVersion] = useState(definitionVersionCounter);
+  const [_, setVersion] = useState(entryVersionCounter);
 
   if (!cache[dictionaryId]) {
     cache[dictionaryId] = {};
   }
 
   useEffect(() => {
-    const definitionMap = cache[dictionaryId]!;
+    const entryMap = cache[dictionaryId]!;
 
     for (const word of lowerCaseWords) {
-      let cachedWord = definitionMap[word];
+      let cachedWord = entryMap[word];
 
       if (!cachedWord) {
         // add to cache
         cachedWord = {
           loaded: false,
-          versionSignal: new Signal(definitionVersionCounter),
+          versionSignal: new Signal(entryVersionCounter),
         };
 
-        // fetch definitions
-        fetchDefinition(dictionaryId, word, cachedWord).catch(logError);
+        // fetch entries
+        fetchEntries(dictionaryId, word, cachedWord).catch(logError);
 
-        definitionMap[word] = cachedWord;
+        entryMap[word] = cachedWord;
       }
 
       // subscribe
@@ -72,7 +72,7 @@ export default function useWordDefinitions(
     return () => {
       // unsubscribe
       for (const word of lowerCaseWords) {
-        const cachedWord = definitionMap[word];
+        const cachedWord = entryMap[word];
 
         if (cachedWord) {
           cachedWord.versionSignal.unsubscribe(setVersion);
@@ -83,14 +83,14 @@ export default function useWordDefinitions(
       // from slightly updating the word list as the only subscriber
       queueMicrotask(() => {
         for (const word of lowerCaseWords) {
-          const cachedWord = definitionMap[word];
+          const cachedWord = entryMap[word];
 
           if (!cachedWord) {
             continue;
           }
 
           if (cachedWord.versionSignal.subscriptionCount() == 0) {
-            delete definitionMap[word];
+            delete entryMap[word];
           }
         }
       });
@@ -100,22 +100,22 @@ export default function useWordDefinitions(
   return cache[dictionaryId];
 }
 
-export function useWordDefinition(
+export function useWordEntry(
   dicitonaryId: number,
   lowerCaseWord?: string,
-  definitionId?: number,
-): [boolean, WordDefinitionData?] {
+  entryId?: number,
+): [boolean, DictionaryEntry?] {
   const words = useMemo(
     () => (lowerCaseWord != undefined ? [lowerCaseWord] : []),
     [lowerCaseWord],
   );
-  const definitionMap = useWordDefinitions(dicitonaryId, words);
+  const entryMap = useWordEntries(dicitonaryId, words);
 
-  if (lowerCaseWord == undefined || definitionId == undefined) {
+  if (lowerCaseWord == undefined || entryId == undefined) {
     return [true];
   }
 
-  const wordState = definitionMap[lowerCaseWord];
+  const wordState = entryMap[lowerCaseWord];
 
   if (!wordState) {
     return [false];
@@ -123,7 +123,7 @@ export function useWordDefinition(
 
   return [
     wordState.loaded,
-    wordState.definitionsResult?.definitions.find((d) => d.id == definitionId),
+    wordState.result?.entries.find((d) => d.id == entryId),
   ];
 }
 
@@ -133,30 +133,30 @@ export function bumpDictionaryVersion() {
   dictionaryVersionSignal.set(dictionaryVersionSignal.get() + 1);
 }
 
-export function invalidateWordDefinitions(
+export function invalidateWordEntries(
   dictionaryId: number,
   lowerCaseWord: string,
 ) {
-  const definitionMap = cache[dictionaryId];
+  const entryMap = cache[dictionaryId];
 
-  if (!definitionMap) {
+  if (!entryMap) {
     return;
   }
 
-  let cachedWord = definitionMap[lowerCaseWord];
+  let cachedWord = entryMap[lowerCaseWord];
 
   if (cachedWord) {
     cachedWord.loaded = false;
-    cachedWord.definitionsResult = undefined;
+    cachedWord.result = undefined;
   } else {
     cachedWord = {
       loaded: false,
-      versionSignal: new Signal(definitionVersionCounter),
+      versionSignal: new Signal(entryVersionCounter),
     };
-    definitionMap[lowerCaseWord] = cachedWord;
+    entryMap[lowerCaseWord] = cachedWord;
   }
 
-  fetchDefinition(dictionaryId, lowerCaseWord, cachedWord)
+  fetchEntries(dictionaryId, lowerCaseWord, cachedWord)
     .then(bumpDictionaryVersion)
     .catch(logError);
 }

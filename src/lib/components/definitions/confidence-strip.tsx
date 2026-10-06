@@ -6,7 +6,7 @@ import {
   ViewStyle,
 } from "react-native";
 import { ConfidenceIcon } from "../icons";
-import { maxConfidence, updateStatistics, upsertDefinition } from "../../data";
+import { maxConfidence, updateStatistics, upsertEntry } from "../../data";
 import { useUserDataSignal } from "../../contexts/user-data-context";
 import { logError } from "../../log";
 
@@ -40,18 +40,18 @@ function ConfidenceButton({
 export default function ConfidenceStrip({
   style,
   confidence,
-  definitionId,
+  entryId,
   setConfidence,
 }: {
   style?: StyleProp<ViewStyle>;
   confidence: number;
   // updates the definition on selection when set
-  definitionId?: number;
+  entryId?: number;
   setConfidence: (confidence: number) => void;
 }) {
   const userDataSignal = useUserDataSignal();
 
-  if (definitionId != null) {
+  if (entryId != null) {
     const prevCallback = setConfidence;
 
     setConfidence = (value) => {
@@ -62,8 +62,8 @@ export default function ConfidenceStrip({
       }
 
       const userData = userDataSignal.get();
-      upsertDefinition(userData.activeDictionary, {
-        id: definitionId,
+      upsertEntry(userData.activeDictionary, {
+        id: entryId,
         confidence: value,
       })
         .then(() => {

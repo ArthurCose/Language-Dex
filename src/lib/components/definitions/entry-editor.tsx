@@ -22,9 +22,9 @@ import IconButton, {
   SubMenuIconButton,
 } from "@/src/lib/components/icon-button";
 import {
-  invalidateWordDefinitions,
-  useWordDefinition,
-} from "@/src/lib/hooks/use-word-definitions";
+  invalidateWordEntries,
+  useWordEntry,
+} from "@/src/lib/hooks/use-word-entries";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { useSignalLens, useSignalValue } from "@/src/lib/hooks/use-signal";
 import PartOfSpeechDropdown from "@/src/lib/components/definitions/part-of-speech-dropdown";
@@ -32,14 +32,14 @@ import ConfirmationDialog, {
   DiscardDialog,
 } from "@/src/lib/components/confirmation-dialog";
 import {
-  deleteDefinition,
+  deleteEntry,
   DictionaryWordStatKey,
   getFileObjectPath,
   maxConfidence,
   prepareNewPronunciation,
   resolveStatIncrease,
   updateStatistics,
-  upsertDefinition,
+  upsertEntry,
 } from "@/src/lib/data";
 import { logError } from "@/src/lib/log";
 import SubMenuTopNav, {
@@ -58,12 +58,12 @@ import CatInteraction from "@/src/lib/components/cat-interaction";
 type Props = {
   lowerCaseWord?: string;
   setLowerCaseWord: (word: string) => void;
-  definitionId?: number;
-  setDefinitionId: (id: number) => void;
+  entryId?: number;
+  setEntryId: (id: number) => void;
   generatedExample?: string;
 };
 
-export default function DefinitionEditor(props: Props) {
+export default function EntryEditor(props: Props) {
   const theme = useTheme();
   const [t] = useTranslation();
   const userDataSignal = useUserDataSignal();
@@ -72,10 +72,10 @@ export default function DefinitionEditor(props: Props) {
     (data) => data.activeDictionary,
   );
 
-  const [definitionLoaded, definitionData] = useWordDefinition(
+  const [entryLoaded, entry] = useWordEntry(
     activeDictionary,
     props.lowerCaseWord,
-    props.definitionId,
+    props.entryId,
   );
 
   const [saving, setSaving] = useState(false);
@@ -83,15 +83,15 @@ export default function DefinitionEditor(props: Props) {
   const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
 
   // defaults
-  const defaultSpelling = definitionData?.spelling ?? props.lowerCaseWord ?? "";
+  const defaultSpelling = entry?.spelling ?? props.lowerCaseWord ?? "";
   const defaultPronunciationUri =
-    getFileObjectPath(definitionData?.pronunciationAudio) ?? null;
-  const defaultConfidence = definitionData?.confidence ?? 0;
-  const defaultPartOfSpeech = definitionData?.partOfSpeech ?? null;
-  const defaultDefinition = definitionData?.definition ?? "";
-  const storedExample = definitionData?.example ?? "";
+    getFileObjectPath(entry?.pronunciationAudio) ?? null;
+  const defaultConfidence = entry?.confidence ?? 0;
+  const defaultPartOfSpeech = entry?.partOfSpeech ?? null;
+  const defaultDefinition = entry?.definition ?? "";
+  const storedExample = entry?.example ?? "";
   const defaultExample = props.generatedExample ?? storedExample;
-  const defaultNotes = definitionData?.notes ?? "";
+  const defaultNotes = entry?.notes ?? "";
 
   // state
   const [spelling, setSpelling] = useState(defaultSpelling);
@@ -103,26 +103,22 @@ export default function DefinitionEditor(props: Props) {
   const [definition, setDefinition] = useState(defaultDefinition);
   const [example, setExample] = useState(defaultExample);
   const [notes, setNotes] = useState(defaultNotes);
-  const [relationsEditorData] = useState(
-    () => new RelationsEditorData(definitionData),
-  );
+  const [relationsEditorData] = useState(() => new RelationsEditorData(entry));
   const relationsEdited = useSignalValue(relationsEditorData.modified);
 
   useEffect(() => {
-    if (definitionData) {
-      setSpelling(definitionData.spelling);
-      setPronunciationUri(
-        getFileObjectPath(definitionData.pronunciationAudio) ?? null,
-      );
-      setConfidence(definitionData.confidence);
-      setPartOfSpeech(definitionData.partOfSpeech ?? null);
-      setDefinition(definitionData.definition);
-      setExample(definitionData.example);
-      setNotes(definitionData.notes);
+    if (entry) {
+      setSpelling(entry.spelling);
+      setPronunciationUri(getFileObjectPath(entry.pronunciationAudio) ?? null);
+      setConfidence(entry.confidence);
+      setPartOfSpeech(entry.partOfSpeech ?? null);
+      setDefinition(entry.definition);
+      setExample(entry.example);
+      setNotes(entry.notes);
       // uncomment and adjust if we can ever transition from one definition editor to another
       // setRelationsEditorData(new RelationsEditorData(definitionData));
     }
-  }, [definitionData]);
+  }, [entry]);
 
   // detecting pending changes
   const hasPendingChanges =
@@ -148,20 +144,19 @@ export default function DefinitionEditor(props: Props) {
     try {
       const lowerCaseSpelling = spelling.toLowerCase().trim();
       const migratingWords =
-        props.lowerCaseWord != lowerCaseSpelling &&
-        props.definitionId != undefined;
+        props.lowerCaseWord != lowerCaseSpelling && props.entryId != undefined;
 
       // handle pronunciation files
       const preparedPronunciation = await prepareNewPronunciation(
-        definitionData,
+        entry,
         pronunciationUri,
       );
 
       // create or update the word
-      const definitionId = await upsertDefinition(activeDictionary, {
+      const entryId = await upsertEntry(activeDictionary, {
         // coercion to force interpretation as a full "insert"
         // making all required fields required
-        id: props.definitionId!,
+        id: props.entryId!,
         spelling: spelling.trim(),
         pronunciationAudio: preparedPronunciation.pronunciationAudio,
         partOfSpeech,
@@ -171,7 +166,7 @@ export default function DefinitionEditor(props: Props) {
         confidence,
       });
 
-      if (definitionId == null) {
+      if (entryId == null) {
         throw new Error("Failed to save definition");
       }
 
@@ -179,7 +174,7 @@ export default function DefinitionEditor(props: Props) {
       preparedPronunciation.finalize();
 
       // update statistics
-      const newDefinition = props.definitionId == undefined;
+      const newDefinition = props.entryId == undefined;
       const statChanges: [DictionaryWordStatKey, number][] = [
         ["definitions", newDefinition ? 1 : 0],
         [
@@ -212,21 +207,21 @@ export default function DefinitionEditor(props: Props) {
 
       // keep identifiers in sync
       props.setLowerCaseWord(lowerCaseSpelling);
-      props.setDefinitionId(definitionId);
+      props.setEntryId(entryId);
 
       // save relations
       await relationsEditorData.save({
-        id: definitionId,
+        id: entryId,
         spelling: spelling.trim(),
       });
 
       // invalidate the old word
       if (migratingWords && props.lowerCaseWord != undefined) {
-        invalidateWordDefinitions(activeDictionary, props.lowerCaseWord);
+        invalidateWordEntries(activeDictionary, props.lowerCaseWord);
       }
 
       // invalidate the new word
-      invalidateWordDefinitions(activeDictionary, lowerCaseSpelling);
+      invalidateWordEntries(activeDictionary, lowerCaseSpelling);
     } catch (e) {
       logError(e);
     }
@@ -239,7 +234,7 @@ export default function DefinitionEditor(props: Props) {
   const saveDisabled =
     deleteRequested ||
     saving ||
-    !definitionLoaded ||
+    !entryLoaded ||
     definition.trim().length == 0 ||
     spelling.trim().length == 0 ||
     !hasPendingChanges;
@@ -259,7 +254,7 @@ export default function DefinitionEditor(props: Props) {
         />
 
         <SubMenuActions>
-          {props.definitionId != undefined && (
+          {props.entryId != undefined && (
             <SubMenuIconButton
               icon={TrashIcon}
               disabled={deleteRequested}
@@ -288,7 +283,7 @@ export default function DefinitionEditor(props: Props) {
             <PronunciationEditor
               saved={!saving}
               pronunciationUri={
-                getFileObjectPath(definitionData?.pronunciationAudio) ?? null
+                getFileObjectPath(entry?.pronunciationAudio) ?? null
               }
               setPronunciationUri={(uri) => {
                 if (uri != pronunciationUri) {
@@ -426,12 +421,9 @@ export default function DefinitionEditor(props: Props) {
         confirmationText={t("Confirm")}
         onCancel={() => setDeleteRequested(false)}
         onConfirm={async () => {
-          if (
-            props.lowerCaseWord != undefined &&
-            props.definitionId != undefined
-          ) {
-            await deleteDefinition(props.definitionId).catch(logError);
-            invalidateWordDefinitions(activeDictionary, props.lowerCaseWord);
+          if (props.lowerCaseWord != undefined && props.entryId != undefined) {
+            await deleteEntry(props.entryId).catch(logError);
+            invalidateWordEntries(activeDictionary, props.lowerCaseWord);
 
             // update statistics
             userDataSignal.set(
@@ -441,14 +433,14 @@ export default function DefinitionEditor(props: Props) {
                 }
 
                 if (
-                  definitionData?.example != undefined &&
+                  entry?.example != undefined &&
                   stats.totalExamples != undefined
                 ) {
                   stats.totalExamples = Math.max(stats.totalExamples - 1, 0);
                 }
 
                 if (
-                  definitionData?.pronunciationAudio != undefined &&
+                  entry?.pronunciationAudio != undefined &&
                   stats.totalPronounced != undefined
                 ) {
                   stats.totalPronounced = Math.max(

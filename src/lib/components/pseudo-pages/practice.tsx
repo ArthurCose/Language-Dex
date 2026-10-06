@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 import { Span } from "../text";
 import { Theme } from "@/src/lib/themes";
 import { Href, router } from "expo-router";
-import { useDictionaryVersioning } from "@/src/lib/hooks/use-word-definitions";
+import { useDictionaryVersioning } from "@/src/lib/hooks/use-word-entries";
 import { listGameWords, listWords } from "@/src/lib/data";
 import { logError } from "@/src/lib/log";
 import ListPopup from "../list-popup";

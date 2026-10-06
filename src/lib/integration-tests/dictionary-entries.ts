@@ -1,30 +1,25 @@
 import { assertDeepEq, createWords, LabeledTest } from "./util";
 import {
-  deleteDefinition,
+  deleteEntry,
   deleteDictionary,
   deleteWord,
   listGameWords,
   listWords,
 } from "@/src/lib/data";
 
-export const DEFINITION_TESTS: LabeledTest[] = [
+export const DICTIONARY_ENTRY_TESTS: LabeledTest[] = [
   [
     "Definitions",
     async (params) => {
       const dictionaryId = params.nextDictionaryId;
 
-      const definitionIds = await createWords(dictionaryId, [
-        "A",
-        "a",
-        "a",
-        "b",
-      ]);
+      const entryIds = await createWords(dictionaryId, ["A", "a", "a", "b"]);
 
       function listSharedWords() {
         return listWords(dictionaryId, { orderBy: "alphabetical" });
       }
 
-      async function listDefinitionSpellings() {
+      async function listSpellings() {
         const gameWords = await listGameWords(dictionaryId);
         const words = gameWords.map((w) => w.spelling);
         words.sort();
@@ -32,20 +27,20 @@ export const DEFINITION_TESTS: LabeledTest[] = [
       }
 
       assertDeepEq(
-        await listDefinitionSpellings(),
+        await listSpellings(),
         ["A", "a", "a", "b"],
-        "Every definition should be inserted",
+        "Every entry should be inserted",
       );
       assertDeepEq(
         await listSharedWords(),
         ["A", "b"],
-        "Definitions should be grouped by case insensitive spelling",
+        "Entries should be grouped by case insensitive spelling",
       );
 
-      // Remove a definition
-      await deleteDefinition(definitionIds[1]);
+      // Remove an entry
+      await deleteEntry(entryIds[1]);
       assertDeepEq(
-        await listDefinitionSpellings(),
+        await listSpellings(),
         ["A", "a", "b"],
         "Only 'a' should be removed",
       );
@@ -53,9 +48,9 @@ export const DEFINITION_TESTS: LabeledTest[] = [
       // Remove a word
       await deleteWord(dictionaryId, "A");
       assertDeepEq(
-        await listDefinitionSpellings(),
+        await listSpellings(),
         ["b"],
-        "All definitions matching 'A' should be removed",
+        "All entries matching 'A' should be removed",
       );
       assertDeepEq(
         await listSharedWords(),
@@ -65,11 +60,7 @@ export const DEFINITION_TESTS: LabeledTest[] = [
 
       // clean up
       await deleteDictionary(dictionaryId);
-      assertDeepEq(
-        await listDefinitionSpellings(),
-        [],
-        "Definitions cleaned up",
-      );
+      assertDeepEq(await listSpellings(), [], "Entries cleaned up");
       assertDeepEq(await listSharedWords(), [], "Shared words cleaned up");
     },
   ],

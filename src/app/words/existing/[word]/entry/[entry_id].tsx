@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useLocalSearchParams, useNavigation } from "expo-router";
-import { useWordDefinition } from "@/src/lib/hooks/use-word-definitions";
+import { useWordEntry } from "@/src/lib/hooks/use-word-entries";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
-import DefinitionEditor from "@/src/lib/components/definitions/definition-editor";
+import EntryEditor from "@/src/lib/components/definitions/entry-editor";
 import { useSignalLens } from "@/src/lib/hooks/use-signal";
 
 type SearchParams = {
   word?: string;
-  definition_id?: string;
+  entry_id?: string;
   example?: string;
 };
 
@@ -20,37 +20,29 @@ export default function () {
     (data) => data.activeDictionary,
   );
   const [word, setWord] = useState(() => params.word?.toLowerCase());
-  const [definitionId, setDefinitionId] = useState(
-    parseInt(params.definition_id!) || undefined,
+  const [entryId, setEntryId] = useState(
+    parseInt(params.entry_id!) || undefined,
   );
 
-  const [definitionLoaded, definitionData] = useWordDefinition(
-    activeDictionary,
-    word,
-    definitionId,
-  );
+  const [entryLoaded, entry] = useWordEntry(activeDictionary, word, entryId);
 
   useEffect(() => {
-    if (
-      definitionId == undefined ||
-      !definitionLoaded ||
-      !navigation.isFocused()
-    ) {
+    if (entryId == undefined || !entryLoaded || !navigation.isFocused()) {
       return;
     }
 
-    if (!definitionData) {
+    if (!entry) {
       navigation.goBack();
     }
-  }, [definitionLoaded, definitionData]);
+  }, [entryLoaded, entry]);
 
   return (
-    <DefinitionEditor
+    <EntryEditor
       lowerCaseWord={word}
       setLowerCaseWord={setWord}
-      definitionId={definitionId}
-      setDefinitionId={setDefinitionId}
-      generatedExample={definitionId == null ? params.example : undefined}
+      entryId={entryId}
+      setEntryId={setEntryId}
+      generatedExample={entryId == null ? params.example : undefined}
     />
   );
 }
