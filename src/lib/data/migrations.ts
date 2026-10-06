@@ -1,5 +1,5 @@
 import { UserData } from "./user";
-import db from "./db";
+import db, { backupDb, restoreDbFromBackup } from "./db";
 import { log } from "../log";
 
 const migrateUpList = [
@@ -49,10 +49,17 @@ export async function migrateUp(data: UserData) {
     return false;
   }
 
-  for (let i = data.version; i < dataRevisions; i++) {
-    log("Migrating userData to version  " + (i + 1));
-    await migrateUpList[i](data);
-    log("Migration complete");
+  backupDb();
+
+  try {
+    for (let i = data.version; i < dataRevisions; i++) {
+      log("Migrating userData to version " + (i + 1));
+      await migrateUpList[i](data);
+      log("Migration complete");
+    }
+  } catch (err) {
+    restoreDbFromBackup();
+    throw err;
   }
 
   data.version = dataRevisions;

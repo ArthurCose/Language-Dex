@@ -1,10 +1,47 @@
 import * as SQLite from "expo-sqlite";
+import { File } from "expo-file-system";
 
-const db = SQLite.openDatabaseSync("db");
+let db = SQLite.openDatabaseSync("db");
+const dbPath = "file://" + db.databasePath;
+const backupPath = dbPath.slice(0, dbPath.lastIndexOf("/") + 1) + "backup";
 
 export default db;
 
+export function backupDb() {
+  db.closeSync();
+
+  const file = new File(dbPath);
+  file.copySync(new File(backupPath));
+
+  db = SQLite.openDatabaseSync("db");
+}
+
+export function restoreDbFromBackup() {
+  const backup = new File(backupPath);
+
+  if (!backup.exists) {
+    return;
+  }
+
+  db.closeSync();
+
+  const originalFile = new File(dbPath);
+  backup.moveSync(originalFile, { overwrite: true });
+
+  db = SQLite.openDatabaseSync("db");
+}
+
+export function deleteBackup() {
+  const backup = new File(backupPath);
+
+  if (backup.exists) {
+    backup.delete();
+  }
+}
+
 export async function initDb() {
+  restoreDbFromBackup();
+
   await db.execAsync(`
 PRAGMA journal_mode = WAL;
 PRAGMA auto_vacuum = FULL;
