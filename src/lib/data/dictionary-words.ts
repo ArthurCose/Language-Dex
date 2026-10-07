@@ -1,7 +1,7 @@
 import * as FileSystem from "expo-file-system/legacy";
 import * as SQLite from "expo-sqlite";
 import Unistring from "@akahuku/unistring";
-import db from "./db";
+import db, { extractCount } from "./db";
 import { log, logError } from "../log";
 import {
   createNewFileObjectId,
@@ -211,13 +211,14 @@ export async function getWordEntries(
 }
 
 async function getOrCreateWordId(
+  txn: SQLite.SQLiteDatabase,
   dictionaryId: number,
   word: string,
   options?: { confidence: number; time: number },
 ) {
   const lowerCaseWord = word.toLowerCase();
 
-  const wordRow = await db.getFirstAsync<{ id: number }>(
+  const wordRow = await txn.getFirstAsync<{ id: number }>(
     "SELECT id FROM word_shared_data WHERE insensitiveSpelling = $lowerCase AND dictionaryId = $dictionaryId",
     {
       $lowerCase: lowerCaseWord,
@@ -242,7 +243,7 @@ async function getOrCreateWordId(
 
   const time = options?.time ?? Date.now();
 
-  const result = await db.runAsync(
+  const result = await txn.runAsync(
     [
       "INSERT INTO word_shared_data (",
       keys.join(", "),
@@ -265,8 +266,8 @@ async function getOrCreateWordId(
   return result.lastInsertRowId;
 }
 
-async function updateSharedData(sharedId: number) {
-  const sharedDataResult = await db.getFirstAsync<{
+async function updateSharedData(txn: SQLite.SQLiteDatabase, sharedId: number) {
+  const sharedDataResult = await txn.getFirstAsync<{
     spelling: string;
     createdAt: number;
   }>("SELECT spelling, createdAt FROM word_shared_data WHERE id = $id", {
@@ -277,7 +278,7 @@ async function updateSharedData(sharedId: number) {
     return;
   }
 
-  const statsResult = await db.getFirstAsync<{
+  const statsResult = await txn.getFirstAsync<{
     "MIN(confidence)": number;
     "MAX(createdAt)": number;
   }>(
@@ -286,14 +287,14 @@ async function updateSharedData(sharedId: number) {
   );
 
   // use the first entry's capitalization
-  const spellingResult = await db.getFirstAsync<{
+  const spellingResult = await txn.getFirstAsync<{
     spelling: string;
   }>(
     "SELECT spelling FROM word_definition_data WHERE sharedId = $sharedId AND orderKey = 0",
     { $sharedId: sharedId },
   );
 
-  await db.runAsync(
+  await txn.runAsync(
     "UPDATE word_shared_data SET spelling = $spelling, minConfidence = $minConfidence, latestAt = $latestAt WHERE id = $id",
     {
       $id: sharedId,
@@ -347,18 +348,17 @@ export async function prepareNewPronunciation(
 }
 
 async function resolveNewOrderKey(sharedId: number) {
-  const countResult = await db.getFirstAsync<{ "COUNT(*)": number }>(
+  return await extractCount(
+    db,
     "SELECT COUNT(*) FROM word_definition_data WHERE sharedId = $sharedId",
     { $sharedId: sharedId },
   );
-
-  return countResult?.["COUNT(*)"] ?? 0;
 }
 
 export async function upsertEntry(
   dictionaryId: number,
   entry: DictionaryEntryUpsertData,
-) {
+): Promise<number | undefined> {
   log("Upserting Entry...");
 
   const time = Date.now();
@@ -424,66 +424,80 @@ export async function upsertEntry(
     return;
   }
 
-  // grab the shared word
-  const sharedId = await getOrCreateWordId(dictionaryId, spelling, {
-    confidence: entry.confidence ?? 0,
-    time,
-  });
-  setParams.$sharedId = sharedId;
+  let id: number | null = null;
 
-  if (entry.id != undefined) {
-    // update
-    log("Upsert is Updating.");
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    // grab the shared word
+    const sharedId = await getOrCreateWordId(txn, dictionaryId, spelling, {
+      confidence: entry.confidence ?? 0,
+      time,
+    });
+    setParams.$sharedId = sharedId;
 
-    if (!oldDataResult) {
-      // unnecessary due to the check above, but makes TS happy
-      return;
+    if (entry.id != undefined) {
+      // update
+      log("Upsert is Updating.");
+
+      if (!oldDataResult) {
+        // unnecessary due to the check above, but makes TS happy
+        return;
+      }
+
+      setParams.$id = entry.id;
+
+      setList.push("orderKey");
+      setParams.$orderKey = await resolveNewOrderKey(sharedId);
+
+      await txn.runAsync(
+        [
+          "UPDATE word_definition_data SET",
+          setList.map((k) => k + " = $" + k).join(", "),
+          "WHERE id = $id",
+        ].join(" "),
+        setParams,
+      );
+
+      // update old shared data to complete switching words
+      await removedEntryCleanup(
+        txn,
+        oldDataResult.sharedId,
+        oldDataResult.orderKey,
+      );
+
+      // update current shared data
+      await updateSharedData(txn, sharedId);
+
+      log("Upsert Complete!");
+      id = entry.id;
+    } else {
+      log("Upsert is Inserting.");
+
+      // copy properties only required by inserting
+      setList.push("sharedId", "createdAt", "orderKey");
+      setParams.$createdAt = time;
+      setParams.$orderKey = await resolveNewOrderKey(sharedId);
+
+      const result = await txn.runAsync(
+        [
+          "INSERT INTO word_definition_data (",
+          setList.join(", "),
+          ") VALUES (",
+          setList.map((k) => "$" + k).join(", "),
+          ")",
+        ].join(" "),
+        setParams,
+      );
+
+      log("Upsert Complete!");
+      id = result.lastInsertRowId;
     }
+  });
 
-    setParams.$id = entry.id;
-
-    setList.push("orderKey");
-    setParams.$orderKey = await resolveNewOrderKey(sharedId);
-
-    await db.runAsync(
-      [
-        "UPDATE word_definition_data SET",
-        setList.map((k) => k + " = $" + k).join(", "),
-        "WHERE id = $id",
-      ].join(" "),
-      setParams,
-    );
-
-    // update old shared data to complete switching words
-    await removedEntryCleanup(oldDataResult.sharedId, oldDataResult.orderKey);
-
-    // update current shared data
-    await updateSharedData(sharedId);
-
-    log("Upsert Complete!");
-    return entry.id;
-  } else {
-    log("Upsert is Inserting.");
-
-    // copy properties only required by inserting
-    setList.push("sharedId", "createdAt", "orderKey");
-    setParams.$createdAt = time;
-    setParams.$orderKey = await resolveNewOrderKey(sharedId);
-
-    const result = await db.runAsync(
-      [
-        "INSERT INTO word_definition_data (",
-        setList.join(", "),
-        ") VALUES (",
-        setList.map((k) => "$" + k).join(", "),
-        ")",
-      ].join(" "),
-      setParams,
-    );
-
-    log("Upsert Complete!");
-    return result.lastInsertRowId;
+  if (id == null) {
+    throw new Error("Entry upsert failed");
   }
+
+  return id;
 }
 
 export async function updateEntryOrderKey(
@@ -509,8 +523,12 @@ export async function updateEntryOrderKey(
   }
 }
 
-async function shiftOrderKeys(sharedId: number, greaterThanOrderKey: number) {
-  await db.runAsync(
+async function shiftOrderKeys(
+  txn: SQLite.SQLiteDatabase,
+  sharedId: number,
+  greaterThanOrderKey: number,
+) {
+  await txn.runAsync(
     "UPDATE word_definition_data SET orderKey = orderKey - 1 WHERE sharedId = $sharedId AND orderKey > $orderKey",
     {
       $sharedId: sharedId,
@@ -520,9 +538,13 @@ async function shiftOrderKeys(sharedId: number, greaterThanOrderKey: number) {
 }
 
 // Used to update or remove shared data after deleting an entry or migrating it to a new shared word
-async function removedEntryCleanup(oldSharedId: number, oldOrderKey: number) {
+async function removedEntryCleanup(
+  txn: SQLite.SQLiteDatabase,
+  oldSharedId: number,
+  oldOrderKey: number,
+) {
   // delete if empty
-  const deleteResult = await db.runAsync(
+  const deleteResult = await txn.runAsync(
     [
       "DELETE FROM word_shared_data WHERE id = $sharedId",
       "AND NOT EXISTS (SELECT 1 FROM word_definition_data WHERE sharedId = $sharedId)",
@@ -534,8 +556,8 @@ async function removedEntryCleanup(oldSharedId: number, oldOrderKey: number) {
 
   if (deleteResult.changes == 0) {
     // update if it still exists
-    await shiftOrderKeys(oldSharedId, oldOrderKey);
-    await updateSharedData(oldSharedId);
+    await shiftOrderKeys(txn, oldSharedId, oldOrderKey);
+    await updateSharedData(txn, oldSharedId);
   }
 }
 
@@ -574,7 +596,7 @@ export async function deleteEntry(id: number) {
     await deleteEmptySynonymCluster(result.synonymsId);
   }
 
-  await removedEntryCleanup(result.sharedId, result.orderKey);
+  await removedEntryCleanup(db, result.sharedId, result.orderKey);
 
   log("Delete Complete!");
 }
