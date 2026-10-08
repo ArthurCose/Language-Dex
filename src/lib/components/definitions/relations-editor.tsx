@@ -43,6 +43,7 @@ import {
   createSetFromMapped,
 } from "@/src/lib/structures/existence-set";
 import { findAndSwapRemove } from "@/src/lib/structures/array";
+import { normalize } from "../../text-processing/normalization";
 
 function ifTruthy<T>(condition: any, v: T) {
   if (condition) {
@@ -77,9 +78,9 @@ function RelationList({
   return (
     <View style={[styles.list, style]}>
       {words.map((word) => {
-        const entry = entryMap[
-          word.spelling.toLowerCase()
-        ]?.result?.entries.find((d) => d.id == word.id);
+        const entry = entryMap[normalize(word.spelling)]?.result?.entries.find(
+          (d) => d.id == word.id,
+        );
 
         return (
           <DropDownPrimitive.Root key={word.id}>
@@ -459,14 +460,14 @@ export function RelationsEditor({
     (data) => data.activeDictionary,
   );
 
-  const lowerCaseWords = useMemo(
+  const normalizedWords = useMemo(
     () => [
-      ...synonyms.map((w) => w.spelling.toLowerCase()),
-      ...antonyms.map((w) => w.spelling.toLowerCase()),
+      ...synonyms.map((w) => normalize(w.spelling)),
+      ...antonyms.map((w) => normalize(w.spelling)),
     ],
     [synonyms, antonyms],
   );
-  const entryMap = useWordEntries(activeDictionary, lowerCaseWords);
+  const entryMap = useWordEntries(activeDictionary, normalizedWords);
 
   const colors = usePracticeColors();
   const loadingWords = useSignalValue(data.totalLoading) > 0;

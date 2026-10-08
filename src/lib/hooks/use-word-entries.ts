@@ -2,18 +2,19 @@ import { useEffect, useMemo, useState } from "react";
 import { getWordEntries, DictionaryEntry } from "../data";
 import { logError } from "../log";
 import { Signal, useSignalValue } from "./use-signal";
+import { normalize } from "../text-processing/normalization";
 
 type WordEntryState = {
   loaded: boolean;
   result?: {
-    spelling: string;
+    spellings: string[];
     entries: DictionaryEntry[];
   };
   versionSignal: Signal<number>;
 };
 
 export type DictionaryEntryMap = {
-  [lowerCaseWord: string]: WordEntryState | undefined;
+  [normalizedWord: string]: WordEntryState | undefined;
 };
 
 const cache: { [dictionary: number]: DictionaryEntryMap | undefined } = {};
@@ -22,11 +23,11 @@ let entryVersionCounter = 0;
 
 function fetchEntries(
   dictionaryId: number,
-  lowerCaseWord: string,
+  normalizedWord: string,
   cachedWord: WordEntryState,
 ) {
   // fetch entries
-  return getWordEntries(dictionaryId, lowerCaseWord).then((result) => {
+  return getWordEntries(dictionaryId, normalizedWord).then((result) => {
     cachedWord.loaded = true;
     cachedWord.result = result;
 
@@ -37,7 +38,7 @@ function fetchEntries(
 
 export default function useWordEntries(
   dictionaryId: number,
-  lowerCaseWords: string[],
+  normalizedWords: string[],
 ): DictionaryEntryMap {
   // only using this state to drive updates
   const [_, setVersion] = useState(entryVersionCounter);
@@ -49,7 +50,7 @@ export default function useWordEntries(
   useEffect(() => {
     const entryMap = cache[dictionaryId]!;
 
-    for (const word of lowerCaseWords) {
+    for (const word of normalizedWords) {
       let cachedWord = entryMap[word];
 
       if (!cachedWord) {
@@ -71,7 +72,7 @@ export default function useWordEntries(
 
     return () => {
       // unsubscribe
-      for (const word of lowerCaseWords) {
+      for (const word of normalizedWords) {
         const cachedWord = entryMap[word];
 
         if (cachedWord) {
@@ -82,7 +83,7 @@ export default function useWordEntries(
       // use a microtask to prevent delete + refetch
       // from slightly updating the word list as the only subscriber
       queueMicrotask(() => {
-        for (const word of lowerCaseWords) {
+        for (const word of normalizedWords) {
           const cachedWord = entryMap[word];
 
           if (!cachedWord) {
@@ -95,27 +96,27 @@ export default function useWordEntries(
         }
       });
     };
-  }, [dictionaryId, lowerCaseWords]);
+  }, [dictionaryId, normalizedWords]);
 
   return cache[dictionaryId];
 }
 
 export function useWordEntry(
   dicitonaryId: number,
-  lowerCaseWord?: string,
+  normalizedWord?: string,
   entryId?: number,
 ): [boolean, DictionaryEntry?] {
   const words = useMemo(
-    () => (lowerCaseWord != undefined ? [lowerCaseWord] : []),
-    [lowerCaseWord],
+    () => (normalizedWord != undefined ? [normalizedWord] : []),
+    [normalizedWord],
   );
   const entryMap = useWordEntries(dicitonaryId, words);
 
-  if (lowerCaseWord == undefined || entryId == undefined) {
+  if (normalizedWord == undefined || entryId == undefined) {
     return [true];
   }
 
-  const wordState = entryMap[lowerCaseWord];
+  const wordState = entryMap[normalizedWord];
 
   if (!wordState) {
     return [false];
@@ -133,17 +134,15 @@ export function bumpDictionaryVersion() {
   dictionaryVersionSignal.set(dictionaryVersionSignal.get() + 1);
 }
 
-export function invalidateWordEntries(
-  dictionaryId: number,
-  lowerCaseWord: string,
-) {
+export function invalidateWordEntries(dictionaryId: number, word: string) {
   const entryMap = cache[dictionaryId];
 
   if (!entryMap) {
     return;
   }
 
-  let cachedWord = entryMap[lowerCaseWord];
+  const normalizedWord = normalize(word);
+  let cachedWord = entryMap[normalizedWord];
 
   if (cachedWord) {
     cachedWord.loaded = false;
@@ -153,10 +152,10 @@ export function invalidateWordEntries(
       loaded: false,
       versionSignal: new Signal(entryVersionCounter),
     };
-    entryMap[lowerCaseWord] = cachedWord;
+    entryMap[normalizedWord] = cachedWord;
   }
 
-  fetchEntries(dictionaryId, lowerCaseWord, cachedWord)
+  fetchEntries(dictionaryId, normalizedWord, cachedWord)
     .then(bumpDictionaryVersion)
     .catch(logError);
 }

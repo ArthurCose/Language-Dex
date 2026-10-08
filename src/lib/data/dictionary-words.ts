@@ -10,6 +10,7 @@ import {
 } from "./files";
 import { deleteEmptySynonymCluster } from "./dictionary-clusters";
 import { copyExtension } from "../path";
+import { normalize } from "../text-processing/normalization";
 
 type FileName = string;
 
@@ -56,19 +57,24 @@ export const wordOrderOptions: WordOrder[] = [
 
 export async function isValidWord(dictionaryId: number, word: string) {
   const query = [
-    "SELECT COUNT(*) FROM word_shared_data",
-    "WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $spelling",
+    "SELECT spelling FROM word_shared_data",
+    "WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $normalized",
   ];
 
-  const result = await db.getFirstAsync<{ ["COUNT(*)"]: number }>(
-    query.join(" "),
-    {
-      $dictionaryId: dictionaryId,
-      $spelling: word.toLowerCase(),
-    },
-  );
+  const results = await db.getAllAsync<{ spelling: string }>(query.join(" "), {
+    $dictionaryId: dictionaryId,
+    $normalized: normalize(word),
+  });
 
-  return result != null && result["COUNT(*)"] != 0;
+  const lowercased = word.toLowerCase();
+
+  for (const { spelling } of results) {
+    if (lowercased == spelling.toLowerCase()) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export async function listWords(
@@ -126,7 +132,7 @@ export async function listWords(
   if (options.startsWith != undefined) {
     whereClause.push("word.insensitiveSpelling LIKE $startsWith");
     bindParams.$startsWith =
-      options.startsWith.toLowerCase().replace(/\\%_/g, "\\") + "%";
+      normalize(options.startsWith).replace(/\\%_/g, "\\") + "%";
   }
 
   if (whereClause.length > 0) {
@@ -179,35 +185,46 @@ export async function listWords(
   return output;
 }
 
+/** Result includes entries with mismatching diacritics */
 export async function getWordEntries(
   dictionaryId: number,
-  lowerCaseSpelling: string,
+  normalizedSpelling: string,
 ) {
+  const spellings = [];
   const entries: DictionaryEntry[] = [];
 
-  const wordResult = await db.getFirstAsync<{ id: number; spelling: string }>(
-    "SELECT id, spelling FROM word_shared_data WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $spelling",
-    { $dictionaryId: dictionaryId, $spelling: lowerCaseSpelling },
+  const wordResults = await db.getAllAsync<{ id: number; spelling: string }>(
+    "SELECT id, spelling FROM word_shared_data WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $spelling ORDER BY spelling",
+    { $dictionaryId: dictionaryId, $spelling: normalizedSpelling },
   );
 
-  if (!wordResult) {
+  for (const { id: sharedId, spelling } of wordResults) {
+    const entryResults = db.getEachAsync<DictionaryEntry>(
+      "SELECT * FROM word_definition_data WHERE sharedId = $id",
+      { $id: sharedId },
+    );
+
+    for await (const row of entryResults) {
+      entries.push(row);
+    }
+
+    spellings.push(spelling);
+  }
+
+  entries.sort((a, b) => {
+    if (a.sharedId == b.sharedId) {
+      // if everything is equal, sort by order key
+      return a.orderKey - b.orderKey;
+    }
+
+    return a.sharedId - b.sharedId;
+  });
+
+  if (entries.length == 0) {
     return;
   }
 
-  const entryResults = db.getEachAsync<DictionaryEntry>(
-    "SELECT * FROM word_definition_data WHERE sharedId = $id",
-    {
-      $id: wordResult.id,
-    },
-  );
-
-  for await (const row of entryResults) {
-    entries.push(row);
-  }
-
-  entries.sort((a, b) => a.orderKey - b.orderKey);
-
-  return { spelling: wordResult.spelling, entries };
+  return { spellings, entries };
 }
 
 async function getOrCreateWordId(
@@ -216,18 +233,25 @@ async function getOrCreateWordId(
   word: string,
   options?: { confidence: number; time: number },
 ) {
-  const lowerCaseWord = word.toLowerCase();
+  const normalizedWord = normalize(word);
 
-  const wordRow = await txn.getFirstAsync<{ id: number }>(
-    "SELECT id FROM word_shared_data WHERE insensitiveSpelling = $lowerCase AND dictionaryId = $dictionaryId",
+  const possibleResults = await txn.getAllAsync<{
+    id: number;
+    spelling: string;
+  }>(
+    "SELECT id, spelling FROM word_shared_data WHERE insensitiveSpelling = $normalized AND dictionaryId = $dictionaryId",
     {
-      $lowerCase: lowerCaseWord,
+      $normalized: normalizedWord,
       $dictionaryId: dictionaryId,
     },
   );
 
-  if (wordRow) {
-    return wordRow.id;
+  const lowercasedWord = word.toLowerCase();
+
+  for (const { id, spelling } of possibleResults) {
+    if (lowercasedWord == spelling.toLowerCase()) {
+      return id;
+    }
   }
 
   const keys = [
@@ -254,8 +278,8 @@ async function getOrCreateWordId(
     {
       $dictionaryId: dictionaryId,
       $spelling: word,
-      $insensitiveSpelling: lowerCaseWord,
-      $graphemeCount: Unistring(lowerCaseWord).length,
+      $insensitiveSpelling: normalizedWord,
+      $graphemeCount: Unistring(word).length,
       $minConfidence: options?.confidence ?? 0,
       $latestAt: time,
       $createdAt: time,
@@ -604,11 +628,20 @@ export async function deleteEntry(id: number) {
 export async function deleteWord(dictionaryId: number, word: string) {
   log("Deleting Word...");
 
-  word = word.toLowerCase();
+  word = normalize(word);
 
-  const result = await db.getFirstAsync<{ id: number }>(
-    "SELECT id FROM word_shared_data WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $lowerCase",
-    { $dictionaryId: dictionaryId, $lowerCase: word },
+  const possibleResults = await db.getAllAsync<{
+    id: number;
+    spelling: string;
+  }>(
+    "SELECT id, spelling FROM word_shared_data WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $normalized",
+    { $dictionaryId: dictionaryId, $normalized: word },
+  );
+
+  // match by lowercase to make sure diacritics match
+  const lowercase = word.toLowerCase();
+  const result = possibleResults.find(
+    (result) => result.spelling.toLowerCase() == lowercase,
   );
 
   if (!result) {

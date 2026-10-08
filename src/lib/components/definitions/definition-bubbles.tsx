@@ -14,6 +14,8 @@ import { logError } from "@/src/lib/log";
 import { useTheme } from "@/src/lib/contexts/theme-context";
 import { Span } from "@/src/lib/components/text";
 import { NavigationBarSpacer } from "../system-bar-spacers";
+import { useMemo } from "react";
+import { normalize } from "../../text-processing/normalization";
 
 type DefinitionBubbleProps = {
   entry: DictionaryEntry;
@@ -25,9 +27,8 @@ type DefinitionBubbleProps = {
 
 type DefinitionsBubbleProps = {
   text: string;
-  lowercase: string;
   entryResult?: {
-    spelling: string;
+    spellings: string[];
     entries: DictionaryEntry[];
   };
   close: () => void;
@@ -78,7 +79,7 @@ export function DefinitionBubble({
     (data) => data.dictionaries.find((d) => d.id == data.activeDictionary)!,
   );
 
-  const lowercase = entry.spelling.toLowerCase();
+  const text = entry.spelling;
 
   return (
     <DropDownPrimitive.Portal>
@@ -101,9 +102,7 @@ export function DefinitionBubble({
               pointerEvents="box-only"
               disabled={readOnly}
               onPress={() => {
-                router.navigate(
-                  `/words/existing/${encodeURIComponent(lowercase)}`,
-                );
+                router.navigate(`/words/existing/${encodeURIComponent(text)}`);
                 close();
               }}
             >
@@ -122,7 +121,7 @@ export function DefinitionBubble({
               onPress={() => {
                 router.navigate(
                   `/words/existing/${encodeURIComponent(
-                    lowercase,
+                    text,
                   )}/entry/${encodeURIComponent(entry.id)}`,
                 );
                 close();
@@ -167,7 +166,6 @@ export function DefinitionBubble({
 
 export function DefinitionsBubble({
   text,
-  lowercase,
   entryResult,
   close,
   generateExample,
@@ -179,6 +177,52 @@ export function DefinitionsBubble({
     userDataSignal,
     (data) => data.dictionaries.find((d) => d.id == data.activeDictionary)!,
   );
+
+  const entryBlocks = useMemo(() => {
+    if (!entryResult) {
+      return;
+    }
+
+    type EntryBlock = {
+      spelling: string;
+      lowercaseSpelling: string;
+      entries: DictionaryEntry[];
+    };
+
+    const lowercasedText = text.toLowerCase();
+    const strictDiacritics = lowercasedText != normalize(text);
+
+    const blocks: EntryBlock[] = [];
+    let lastBlock: EntryBlock | undefined;
+
+    for (const entry of entryResult.entries) {
+      const lowercaseSpelling = entry.spelling.toLowerCase();
+
+      if (lastBlock?.lowercaseSpelling == lowercaseSpelling) {
+        lastBlock.entries.push(entry);
+        continue;
+      }
+
+      if (strictDiacritics && lowercaseSpelling != lowercasedText) {
+        continue;
+      }
+
+      lastBlock = {
+        spelling: entry.spelling,
+        lowercaseSpelling,
+        entries: [entry],
+      };
+
+      if (lowercaseSpelling == lowercasedText) {
+        // if this block matches the text, store it at the top
+        blocks.unshift(lastBlock);
+      } else {
+        blocks.push(lastBlock);
+      }
+    }
+
+    return blocks;
+  }, [entryResult]);
 
   return (
     <DropDownPrimitive.Portal>
@@ -194,51 +238,52 @@ export function DefinitionsBubble({
               theme.styles.definitionBubble,
             ]}
           >
-            {entryResult && (
-              <>
-                <Pressable
-                  style={[styles.bordered, theme.styles.definitionBorders]}
-                  android_ripple={theme.ripples.popup}
-                  pointerEvents="box-only"
-                  onPress={() => {
-                    router.navigate(
-                      `/words/existing/${encodeURIComponent(lowercase)}`,
-                    );
-                    close();
-                  }}
-                >
-                  <Span style={[styles.wordTitle]}>{entryResult.spelling}</Span>
-                </Pressable>
+            {entryBlocks &&
+              entryBlocks.map((block) => (
+                <View key={block.lowercaseSpelling}>
+                  <Pressable
+                    style={[styles.bordered, theme.styles.definitionBorders]}
+                    android_ripple={theme.ripples.popup}
+                    pointerEvents="box-only"
+                    onPress={() => {
+                      router.navigate(
+                        `/words/existing/${encodeURIComponent(block.spelling)}`,
+                      );
+                      close();
+                    }}
+                  >
+                    <Span style={[styles.wordTitle]}>{block.spelling}</Span>
+                  </Pressable>
 
-                {entryResult.entries.map((entry) => {
-                  return (
-                    <Pressable
-                      key={entry.id}
-                      style={[
-                        styles.definitionBlock,
-                        styles.bordered,
-                        theme.styles.definitionBorders,
-                      ]}
-                      android_ripple={theme.ripples.popup}
-                      pointerEvents="box-only"
-                      onPress={() => {
-                        router.navigate(
-                          `/words/existing/${encodeURIComponent(
-                            lowercase,
-                          )}/entry/${encodeURIComponent(entry.id)}`,
-                        );
-                        close();
-                      }}
-                    >
-                      <DefinitionContent
-                        dictionary={dictionary}
-                        entry={entry}
-                      />
-                    </Pressable>
-                  );
-                })}
-              </>
-            )}
+                  {block.entries.map((entry) => {
+                    return (
+                      <Pressable
+                        key={entry.id}
+                        style={[
+                          styles.definitionBlock,
+                          styles.bordered,
+                          theme.styles.definitionBorders,
+                        ]}
+                        android_ripple={theme.ripples.popup}
+                        pointerEvents="box-only"
+                        onPress={() => {
+                          router.navigate(
+                            `/words/existing/${encodeURIComponent(
+                              text,
+                            )}/entry/${encodeURIComponent(entry.id)}`,
+                          );
+                          close();
+                        }}
+                      >
+                        <DefinitionContent
+                          dictionary={dictionary}
+                          entry={entry}
+                        />
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              ))}
 
             <Pressable
               style={[
@@ -249,7 +294,7 @@ export function DefinitionsBubble({
               android_ripple={theme.ripples.popup}
               pointerEvents="box-only"
               onPress={() => {
-                const wordParam = encodeURIComponent(lowercase);
+                const wordParam = encodeURIComponent(text);
                 let params = "";
 
                 if (generateExample) {

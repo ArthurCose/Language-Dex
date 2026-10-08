@@ -54,10 +54,11 @@ import ConfidenceStrip from "./confidence-strip";
 
 import Cat from "@/assets/svgs/Definition-Editor.svg";
 import CatInteraction from "@/src/lib/components/cat-interaction";
+import { normalize } from "../../text-processing/normalization";
 
 type Props = {
-  lowerCaseWord?: string;
-  setLowerCaseWord: (word: string) => void;
+  normalizedWord?: string;
+  setNormalizedWord: (word: string) => void;
   entryId?: number;
   setEntryId: (id: number) => void;
   generatedExample?: string;
@@ -74,7 +75,7 @@ export default function EntryEditor(props: Props) {
 
   const [entryLoaded, entry] = useWordEntry(
     activeDictionary,
-    props.lowerCaseWord,
+    props.normalizedWord,
     props.entryId,
   );
 
@@ -83,7 +84,7 @@ export default function EntryEditor(props: Props) {
   const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
 
   // defaults
-  const defaultSpelling = entry?.spelling ?? props.lowerCaseWord ?? "";
+  const defaultSpelling = entry?.spelling ?? props.normalizedWord ?? "";
   const defaultPronunciationUri =
     getFileObjectPath(entry?.pronunciationAudio) ?? null;
   const defaultConfidence = entry?.confidence ?? 0;
@@ -142,9 +143,10 @@ export default function EntryEditor(props: Props) {
     setSaving(true);
 
     try {
-      const lowerCaseSpelling = spelling.toLowerCase().trim();
+      const normalizedSpelling = normalize(spelling).trim();
       const migratingWords =
-        props.lowerCaseWord != lowerCaseSpelling && props.entryId != undefined;
+        props.normalizedWord != normalizedSpelling &&
+        props.entryId != undefined;
 
       // handle pronunciation files
       const preparedPronunciation = await prepareNewPronunciation(
@@ -206,7 +208,7 @@ export default function EntryEditor(props: Props) {
       );
 
       // keep identifiers in sync
-      props.setLowerCaseWord(lowerCaseSpelling);
+      props.setNormalizedWord(normalizedSpelling);
       props.setEntryId(entryId);
 
       // save relations
@@ -216,12 +218,12 @@ export default function EntryEditor(props: Props) {
       });
 
       // invalidate the old word
-      if (migratingWords && props.lowerCaseWord != undefined) {
-        invalidateWordEntries(activeDictionary, props.lowerCaseWord);
+      if (migratingWords && props.normalizedWord != undefined) {
+        invalidateWordEntries(activeDictionary, props.normalizedWord);
       }
 
       // invalidate the new word
-      invalidateWordEntries(activeDictionary, lowerCaseSpelling);
+      invalidateWordEntries(activeDictionary, normalizedSpelling);
     } catch (e) {
       logError(e);
     }
@@ -421,9 +423,9 @@ export default function EntryEditor(props: Props) {
         confirmationText={t("Confirm")}
         onCancel={() => setDeleteRequested(false)}
         onConfirm={async () => {
-          if (props.lowerCaseWord != undefined && props.entryId != undefined) {
+          if (props.normalizedWord != undefined && props.entryId != undefined) {
             await deleteEntry(props.entryId).catch(logError);
-            invalidateWordEntries(activeDictionary, props.lowerCaseWord);
+            invalidateWordEntries(activeDictionary, props.normalizedWord);
 
             // update statistics
             userDataSignal.set(

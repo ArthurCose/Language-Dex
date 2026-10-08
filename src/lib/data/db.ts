@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS word_shared_data (
 
 CREATE INDEX IF NOT EXISTS word_shared_data_spelling_index ON word_shared_data(
   dictionaryId,
-  spelling
+  insensitiveSpelling
 );
 
 CREATE INDEX IF NOT EXISTS word_shared_data_latest_index ON word_shared_data(

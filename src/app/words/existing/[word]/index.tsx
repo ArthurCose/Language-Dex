@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import IconButton, {
   SubMenuIconButton,
@@ -42,6 +42,7 @@ import { logError } from "@/src/lib/log";
 import ConfirmationDialog from "@/src/lib/components/confirmation-dialog";
 import { useAudioPlayer } from "expo-audio";
 import { stripProtocol } from "@/src/lib/path";
+import { normalize } from "@/src/lib/text-processing/normalization";
 
 function Definition({
   item,
@@ -126,20 +127,25 @@ export default function Word() {
   const theme = useTheme();
   const [deleteRequested, setDeleteRequested] = useState(false);
 
-  const entryMap = useWordEntries(userData.activeDictionary, [word]);
-  const entry = entryMap?.[word];
-  const entriesResult = entry?.result;
-  const spelling = entriesResult?.spelling ?? word;
-  const savedEntries = entriesResult?.entries;
-  const [entries, setEntries] = useState(savedEntries ?? []);
+  const normalizedWord = normalize(word);
+  const lowercased = word.toLowerCase();
+
+  const entryMap = useWordEntries(userData.activeDictionary, [normalizedWord]);
+  const entryState = entryMap?.[normalizedWord];
+  const entriesResult = entryState?.result;
+  const spelling =
+    entriesResult?.spellings.find((s) => s.toLowerCase() == lowercased) ?? word;
+  const entries = useMemo(() => {
+    const entries = entriesResult?.entries.filter(
+      (entry) => entry.spelling.toLowerCase() == lowercased,
+    );
+
+    return entries ?? [];
+  }, [entriesResult]);
 
   const dictionary = userData.dictionaries.find(
     (d) => d.id == userData.activeDictionary,
   )!;
-
-  useEffect(() => {
-    setEntries(entry?.result?.entries ?? []);
-  }, [entry?.result]);
 
   // handle pronunciation
   const [pronunciationUri, setPronunciationUri] = useState<
@@ -171,7 +177,7 @@ export default function Word() {
         <SubMenuActions>
           <SubMenuIconButton
             icon={TrashIcon}
-            disabled={deleteRequested || savedEntries == undefined}
+            disabled={deleteRequested || entriesResult == undefined}
             onPress={() => setDeleteRequested(true)}
           />
 
@@ -191,7 +197,6 @@ export default function Word() {
         data={entries}
         onReorder={({ from, to }) => {
           const newList = reorderItems(entries, from, to);
-          setEntries(newList);
 
           const low = Math.min(from, to);
           const high = Math.max(from, to);
@@ -247,7 +252,7 @@ export default function Word() {
           userDataSignal.set(
             updateStatistics(userDataSignal.get(), (stats) => {
               if (stats.definitions != undefined) {
-                const count = savedEntries?.length ?? 0;
+                const count = entries?.length ?? 0;
                 stats.definitions = Math.max(stats.definitions - count, 0);
               }
 
@@ -256,7 +261,7 @@ export default function Word() {
                   continue;
                 }
 
-                const count = savedEntries?.filter(filter).length ?? 0;
+                const count = entries?.filter(filter).length ?? 0;
                 stats[statKey] = Math.max(stats[statKey] - count, 0);
               }
             }),

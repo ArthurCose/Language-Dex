@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useColorScheme as useSystemColorScheme } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ThemeContext } from "@/src/lib/contexts/theme-context";
 import { themeList, themeConstructors } from "@/src/lib/themes";
 import { loadUserData, saveUserData, UserData } from "@/src/lib/data";
-import { db, initDb } from "@/src/lib/data/db";
+import { initDb } from "@/src/lib/data/db";
 import { launchCleanup } from "@/src/lib/data/cleanup";
 import { UserDataContext } from "@/src/lib/contexts/user-data-context";
 import { Stack, usePathname } from "expo-router";
@@ -60,8 +60,15 @@ export default function RootLayout() {
     clearLog();
 
     launchCleanup()
-      .then(() => initDb())
-      .then(() => loadUserData(t))
+      .then(async () => {
+        const userData = await loadUserData(t);
+
+        // load userData before initializing db to allow the user data to perform migrations
+        // before applying incompatible queries
+        await initDb();
+
+        return userData;
+      })
       .then((data) => {
         userDataSignal.set(data);
         userDataSignal.subscribe((data) => saveUserData(data!).catch(logError));

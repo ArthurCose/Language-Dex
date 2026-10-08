@@ -12,6 +12,7 @@ import { router } from "expo-router";
 import { logError } from "@/src/lib/log";
 import { useDictionaryVersioning } from "@/src/lib/hooks/use-word-entries";
 import SearchInput from "../search-input";
+import { normalize } from "../../text-processing/normalization";
 
 const PART_OF_SPEECH_ALL = -1;
 const PART_OF_SPEECH_UNKNOWN = -2;
@@ -28,9 +29,7 @@ function Word({ item: word }: { item: string }) {
       android_ripple={theme.ripples.transparentButton}
       pointerEvents="box-only"
       onPress={() =>
-        router.navigate(
-          `/words/existing/${encodeURIComponent(word.toLowerCase())}`,
-        )
+        router.navigate(`/words/existing/${encodeURIComponent(word)}`)
       }
     >
       <Span numberOfLines={1} style={theme.styles.dictionaryWordButtonText}>
@@ -75,9 +74,9 @@ export default function Dictionary() {
   // resolve final word list
   const filteredWords = useMemo(() => {
     if (searchValue) {
-      const lowerCaseSearchValue = searchValue.toLowerCase();
+      const normalizedSearchValue = normalize(searchValue);
       return allWords.filter((w) =>
-        w.toLowerCase().startsWith(lowerCaseSearchValue),
+        normalize(w).startsWith(normalizedSearchValue),
       );
     }
 

@@ -13,7 +13,7 @@ import {
 type Props = {
   dictionaryId: number;
   text: string;
-  lowercase: string;
+  normalized: string;
   excerptText: string;
   excerptIndex: number;
 };
@@ -36,7 +36,7 @@ export function generateExample(
 export default function ScannedWord({
   dictionaryId,
   text,
-  lowercase,
+  normalized,
   excerptText,
   excerptIndex,
 }: Props) {
@@ -44,9 +44,9 @@ export default function ScannedWord({
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<DropDownPrimitive.TriggerRef | null>(null);
 
-  const wordDeps = useMemo(() => [lowercase], [lowercase]);
+  const wordDeps = useMemo(() => [normalized], [normalized]);
   const entryMap = useWordEntries(dictionaryId, wordDeps);
-  const entry = entryMap[lowercase];
+  const entry = entryMap[normalized];
   const entryResult = entry && entry.result;
 
   const underlineStyles = [theme.styles.scanWord];
@@ -79,7 +79,6 @@ export default function ScannedWord({
       {open && (
         <DefinitionsBubble
           text={text}
-          lowercase={lowercase}
           entryResult={entryResult}
           generateExample={() =>
             generateExample(excerptText, excerptIndex, text)

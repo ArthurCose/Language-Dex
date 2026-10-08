@@ -23,9 +23,8 @@ import {
   upsertEntry,
   UserData,
 } from "@/src/lib/data";
-import useWordEntries, {
-  invalidateWordEntries,
-} from "@/src/lib/hooks/use-word-entries";
+import { invalidateWordEntries } from "@/src/lib/hooks/use-word-entries";
+import { useGameWordEntry } from "@/src/lib/hooks/use-game-word-entry";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { Signal, useSignalLens } from "@/src/lib/hooks/use-signal";
 import { logError } from "@/src/lib/log";
@@ -63,7 +62,6 @@ type GameState = {
   bagWords: GameWord[];
   bagLen: number;
   activeWord?: GameWord;
-  activeWords: string[];
   score: number;
   saveCount: number;
   roundStarted: boolean;
@@ -75,7 +73,6 @@ function initGameState(words: GameWord[]) {
     over: false,
     bagWords: words,
     bagLen: words.length,
-    activeWords: [],
     score: 0,
     saveCount: 0,
     roundStarted: false,
@@ -98,11 +95,9 @@ function setUpNextRound(gameState: GameState) {
   }
 
   if (!gameState.activeWord) {
-    gameState.activeWords = [];
     return;
   }
 
-  gameState.activeWords = [gameState.activeWord.spelling.toLowerCase()];
   gameState.roundStarted = true;
 }
 
@@ -126,7 +121,7 @@ export default function () {
   const [sentence, setSentence] = useState("");
 
   const [gameState, setGameState] = useState(() => initGameState([]));
-  const entryMap = useWordEntries(activeDictionary, gameState.activeWords);
+  const entry = useGameWordEntry(activeDictionary, gameState.activeWord);
 
   useEffect(() => {
     listGameWords(activeDictionary)
@@ -175,10 +170,6 @@ export default function () {
 
   // rendering
   const keyboardVisible = useKeyboardVisible();
-  const entry =
-    entryMap[gameState.activeWords[0]]?.result?.entries[
-      gameState.activeWord?.orderKey ?? 0
-    ];
 
   return (
     <RouteRoot>
@@ -313,10 +304,7 @@ export default function () {
                 }));
 
                 advance(() => {
-                  invalidateWordEntries(
-                    activeDictionary,
-                    entry!.spelling.toLowerCase(),
-                  );
+                  invalidateWordEntries(activeDictionary, entry!.spelling);
                 });
                 setSaveDialogOpen(false);
               };

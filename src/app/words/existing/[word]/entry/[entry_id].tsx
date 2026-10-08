@@ -4,6 +4,7 @@ import { useWordEntry } from "@/src/lib/hooks/use-word-entries";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import EntryEditor from "@/src/lib/components/definitions/entry-editor";
 import { useSignalLens } from "@/src/lib/hooks/use-signal";
+import { normalize } from "@/src/lib/text-processing/normalization";
 
 type SearchParams = {
   word?: string;
@@ -19,12 +20,18 @@ export default function () {
     userDataSignal,
     (data) => data.activeDictionary,
   );
-  const [word, setWord] = useState(() => params.word?.toLowerCase());
+  const [normalizedWord, setNormalizedWord] = useState(() =>
+    params.word != null ? normalize(params.word) : undefined,
+  );
   const [entryId, setEntryId] = useState(
     parseInt(params.entry_id!) || undefined,
   );
 
-  const [entryLoaded, entry] = useWordEntry(activeDictionary, word, entryId);
+  const [entryLoaded, entry] = useWordEntry(
+    activeDictionary,
+    normalizedWord,
+    entryId,
+  );
 
   useEffect(() => {
     if (entryId == undefined || !entryLoaded || !navigation.isFocused()) {
@@ -38,8 +45,8 @@ export default function () {
 
   return (
     <EntryEditor
-      lowerCaseWord={word}
-      setLowerCaseWord={setWord}
+      normalizedWord={normalizedWord}
+      setNormalizedWord={setNormalizedWord}
       entryId={entryId}
       setEntryId={setEntryId}
       generatedExample={entryId == null ? params.example : undefined}

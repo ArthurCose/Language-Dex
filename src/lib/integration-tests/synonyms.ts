@@ -15,8 +15,8 @@ import {
 } from "@/src/lib/data";
 import { db } from "@/src/lib/data/db";
 
-async function getEntry(dictionaryId: number, lowercaseSpelling: string) {
-  return (await getWordEntries(dictionaryId, lowercaseSpelling))!.entries[0];
+async function getEntry(dictionaryId: number, normalizedSpelling: string) {
+  return (await getWordEntries(dictionaryId, normalizedSpelling))!.entries[0];
 }
 
 async function countClusters() {
@@ -35,19 +35,19 @@ class SynonymTestEnvironment {
     this.dictionaryId = params.nextDictionaryId;
   }
 
-  async getOrLoadEntry(lowercaseSpelling: string) {
-    let entry = this.wordEntries[lowercaseSpelling];
+  async getOrLoadEntry(normalizedSpelling: string) {
+    let entry = this.wordEntries[normalizedSpelling];
 
     if (!entry) {
-      entry = (await getEntry(this.dictionaryId, lowercaseSpelling))!;
-      this.wordEntries[lowercaseSpelling] = entry;
+      entry = (await getEntry(this.dictionaryId, normalizedSpelling))!;
+      this.wordEntries[normalizedSpelling] = entry;
     }
 
     return entry;
   }
 
-  async loadEditor(lowercaseSpelling: string) {
-    const entry = await this.getOrLoadEntry(lowercaseSpelling);
+  async loadEditor(normalizedSpelling: string) {
+    const entry = await this.getOrLoadEntry(normalizedSpelling);
     const wrapper = new SynonymEditorWrapper(this, entry);
 
     await wrapper.reload();
@@ -109,9 +109,9 @@ class SynonymEditorWrapper {
     this.#prevConnections.length = 0;
   }
 
-  async addSynonyms(lowercaseWords: string[]) {
+  async addSynonyms(normalizedWords: string[]) {
     const entries = await Promise.all(
-      lowercaseWords.map((spelling) => this.#env.getOrLoadEntry(spelling)),
+      normalizedWords.map((spelling) => this.#env.getOrLoadEntry(spelling)),
     );
 
     this.#editor.updateWords("Synonyms", [
@@ -122,9 +122,9 @@ class SynonymEditorWrapper {
     await this.#settle();
   }
 
-  async setAntonyms(lowercaseWords: string[]) {
+  async setAntonyms(normalizedWords: string[]) {
     const entries = await Promise.all(
-      lowercaseWords.map((spelling) => this.#env.getOrLoadEntry(spelling)),
+      normalizedWords.map((spelling) => this.#env.getOrLoadEntry(spelling)),
     );
 
     this.#editor.updateWords("Antonyms", entries);
@@ -132,9 +132,9 @@ class SynonymEditorWrapper {
     await this.#settle();
   }
 
-  async setSynonyms(lowercaseWords: string[]) {
+  async setSynonyms(normalizedWords: string[]) {
     const entries = await Promise.all(
-      lowercaseWords.map((spelling) => this.#env.getOrLoadEntry(spelling)),
+      normalizedWords.map((spelling) => this.#env.getOrLoadEntry(spelling)),
     );
 
     this.#editor.updateWords("Synonyms", entries);
@@ -142,9 +142,9 @@ class SynonymEditorWrapper {
     await this.#settle();
   }
 
-  async addAntonyms(lowercaseWords: string[]) {
+  async addAntonyms(normalizedWords: string[]) {
     const entries = await Promise.all(
-      lowercaseWords.map((spelling) => this.#env.getOrLoadEntry(spelling)),
+      normalizedWords.map((spelling) => this.#env.getOrLoadEntry(spelling)),
     );
 
     this.#editor.updateWords("Antonyms", [
@@ -450,8 +450,8 @@ export const SYNONYM_TESTS: LabeledTest[] = [
       }
 
       async function assertNoRelation() {
-        for (const lowercaseSpelling of words) {
-          const entry = await getEntry(dictionaryId, lowercaseSpelling);
+        for (const normalizedSpelling of words) {
+          const entry = await getEntry(dictionaryId, normalizedSpelling);
 
           assertDeepEq(
             entry.synonymsId,

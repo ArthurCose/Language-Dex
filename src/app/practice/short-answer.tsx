@@ -21,7 +21,7 @@ import {
   IncorrectScore,
   ScoreRow,
 } from "@/src/lib/components/practice/info";
-import useWordEntries from "@/src/lib/hooks/use-word-entries";
+import { useGameWordEntry } from "@/src/lib/hooks/use-game-word-entry";
 import { Span } from "@/src/lib/components/text";
 import Animated, {
   useSharedValue,
@@ -46,7 +46,6 @@ type GameState = {
   bagWords: GameWord[];
   bagLen: number;
   activeWord?: GameWord;
-  activeWords: string[];
   incorrectCount: number;
   correctCount: number;
   roundStarted: boolean;
@@ -57,7 +56,6 @@ function initGameState(words: GameWord[]) {
     loading: true,
     bagWords: words,
     bagLen: words.length,
-    activeWords: [],
     incorrectCount: 0,
     correctCount: 0,
     roundStarted: false,
@@ -80,11 +78,8 @@ function setUpNextRound(gameState: GameState) {
   }
 
   if (!gameState.activeWord) {
-    gameState.activeWords = [];
     return;
   }
-
-  gameState.activeWords = [gameState.activeWord.spelling.toLowerCase()];
 
   gameState.roundStarted = true;
 }
@@ -108,7 +103,7 @@ export default function () {
 
   const [gameState, setGameState] = useState(() => initGameState([]));
 
-  const entryMap = useWordEntries(activeDictionary, gameState.activeWords);
+  const entry = useGameWordEntry(activeDictionary, gameState.activeWord);
 
   const [pendingGuess, setPendingGuess] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -164,7 +159,8 @@ export default function () {
     setSubmitted(true);
 
     const correct =
-      pendingGuess.trim().toLowerCase() == gameState.activeWords[0];
+      pendingGuess.trim().toLowerCase() ==
+      gameState.activeWord?.spelling.toLowerCase();
 
     if (correct) {
       setSubmissionColor({ color: practiceColors.correct.color });
@@ -241,13 +237,7 @@ export default function () {
         <>
           <Animated.View style={[styles.definitionAndWordBlock, opacityStyle]}>
             <View style={styles.definitionBlock}>
-              <DefinitionBubble>
-                {
-                  entryMap[gameState.activeWords[0]]?.result?.entries[
-                    gameState.activeWord?.orderKey ?? 0
-                  ]?.definition
-                }
-              </DefinitionBubble>
+              <DefinitionBubble>{entry?.definition}</DefinitionBubble>
             </View>
 
             <View style={styles.wordBlock}>

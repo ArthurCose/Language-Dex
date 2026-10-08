@@ -72,6 +72,7 @@ import {
 } from "@/src/lib/practice/words";
 import useAnimationEffects from "@/src/lib/hooks/use-animation-effects";
 import { DefinitionBubble } from "@/src/lib/components/practice/definition-bubbles";
+import { useGameWordEntry } from "@/src/lib/hooks/use-game-word-entry";
 
 const FADE_DURATION = 400;
 
@@ -93,7 +94,6 @@ type GameState = {
   bagWords: GameWord[];
   bagLen: number;
   activeWord?: GameWord;
-  activeWords: string[];
   graphemes: Grapheme[];
   graphemeBoxes: ({ x: number; y: number; w: number; h: number } | undefined)[];
   graphemeInteraction: boolean;
@@ -117,7 +117,6 @@ function initGameState(words: GameWord[], mode: UnscrambleGameMode) {
     displayingResults: false,
     bagWords: words,
     bagLen: words.length,
-    activeWords: [],
     graphemes: [],
     graphemeBoxes: [],
     graphemeInteraction: false,
@@ -156,11 +155,8 @@ function setUpNextRound(gameState: GameState) {
   gameState.allCorrect = false;
 
   if (!gameState.activeWord) {
-    gameState.activeWords = [];
     return;
   }
-
-  gameState.activeWords = [gameState.activeWord.spelling.toLowerCase()];
 
   gameState.graphemes = toGraphemes(gameState.activeWord.spelling);
 
@@ -451,7 +447,7 @@ export default function () {
     initGameState([], params.mode as UnscrambleGameMode),
   );
 
-  const entryMap = useWordEntries(activeDictionary, gameState.activeWords);
+  const entry = useGameWordEntry(activeDictionary, gameState.activeWord);
 
   const pushAnimation = useAnimationEffects();
   const seconds = useTimerSeconds(gameState.timer);
@@ -532,7 +528,7 @@ export default function () {
 
   const gameOver =
     !gameState.loading &&
-    (gameState.activeWords.length == 0 || seconds > gameState.maxTime);
+    (gameState.activeWord == null || seconds > gameState.maxTime);
 
   useEffect(() => {
     if (!gameOver) {
@@ -626,13 +622,7 @@ export default function () {
       {!gameState.loading && (
         <>
           <Animated.View style={[styles.definitionBlock, opacityStyle]}>
-            <DefinitionBubble>
-              {
-                entryMap[gameState.activeWords[0]]?.result?.entries[
-                  gameState.activeWord?.orderKey ?? 0
-                ]?.definition
-              }
-            </DefinitionBubble>
+            <DefinitionBubble>{entry?.definition}</DefinitionBubble>
           </Animated.View>
 
           <Animated.View style={[styles.chipsBlock, opacityStyle]}>

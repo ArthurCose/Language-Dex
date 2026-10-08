@@ -54,6 +54,7 @@ import {
 import React from "react";
 import { PressableRef } from "@rn-primitives/types";
 import HintPopup from "@/src/lib/components/practice/hint-popup";
+import { normalize } from "@/src/lib/text-processing/normalization";
 
 const BOARD_SIZE = 10;
 
@@ -315,11 +316,16 @@ export default function () {
     setGameState({ ...gameState });
 
     const word = wordData.word;
-    getWordEntries(activeDictionary, word.toLowerCase())
+    getWordEntries(activeDictionary, normalize(word))
       .then((result) => {
-        if (result && result.entries.length > 0) {
-          const index = pickIndexWithLenUnbiased(result.entries.length);
-          const entry = result.entries[index];
+        const lowerCaseWord = word.toLowerCase();
+        const entries = result?.entries.filter(
+          (w) => w.spelling.toLowerCase() == lowerCaseWord,
+        );
+
+        if (entries && entries.length > 0) {
+          const index = pickIndexWithLenUnbiased(entries.length);
+          const entry = entries[index];
 
           setHints({
             ...hints,

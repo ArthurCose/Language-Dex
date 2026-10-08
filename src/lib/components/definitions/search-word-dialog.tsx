@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { listWords, DictionaryEntry } from "@/src/lib/data";
 import Dialog from "../dialog";
 import { Pressable, StyleSheet, View, VirtualizedList } from "react-native";
@@ -11,6 +11,7 @@ import { useTheme } from "@/src/lib/contexts/theme-context";
 import SearchInput from "../search-input";
 import useWordEntries from "@/src/lib/hooks/use-word-entries";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "../icons";
+import { normalize } from "../../text-processing/normalization";
 
 function ListWordEntries<T extends { id: number }>({
   dictionaryId,
@@ -26,10 +27,21 @@ function ListWordEntries<T extends { id: number }>({
   const [t] = useTranslation();
   const theme = useTheme();
 
-  const lowerCase = spelling.toLowerCase();
-  const entryMap = useWordEntries(dictionaryId, [lowerCase]);
+  const normalized = normalize(spelling);
+  const entryMap = useWordEntries(dictionaryId, [normalized]);
 
-  const entries = entryMap[lowerCase]?.result?.entries ?? [];
+  const entries = useMemo(() => {
+    const lowercaseSpelling = spelling.toLowerCase();
+    const result = entryMap[normalized]?.result;
+
+    if (!result) {
+      return [];
+    }
+
+    return result.entries.filter(
+      (entry) => entry.spelling.toLowerCase() == lowercaseSpelling,
+    );
+  }, [entryMap[normalized]]);
 
   const userDataSignal = useUserDataSignal();
   const activeDictionary = useSignalLens(userDataSignal, (data) =>
@@ -110,7 +122,6 @@ export default function SearchWordDialog<T extends { id: number }>({
 }: Props<T>) {
   const theme = useTheme();
   const [words, setWords] = useState<string[]>([]);
-  const [filteredWords, setFilteredWords] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState("");
   const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
   const [selectedList, setSelectedList] = useState<(T | DictionaryEntry)[]>([]);
@@ -120,6 +131,18 @@ export default function SearchWordDialog<T extends { id: number }>({
     userDataSignal,
     (data) => data.activeDictionary,
   );
+
+  const filteredWords = useMemo(() => {
+    if (searchValue == "") {
+      return words;
+    }
+
+    const normalizedSearchValue = normalize(searchValue);
+
+    return words.filter((word) =>
+      normalize(word).startsWith(normalizedSearchValue),
+    );
+  }, [words, searchValue]);
 
   // resets state when opening the dialog
   useEffect(() => {
@@ -144,16 +167,6 @@ export default function SearchWordDialog<T extends { id: number }>({
       .then(setWords)
       .catch(logError);
   }, []);
-
-  useEffect(() => {
-    const lowerCaseSearchValue = searchValue.toLowerCase();
-
-    setFilteredWords(
-      words.filter((word) =>
-        word.toLowerCase().startsWith(lowerCaseSearchValue),
-      ),
-    );
-  }, [words, searchValue]);
 
   return (
     <Dialog

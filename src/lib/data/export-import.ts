@@ -5,6 +5,7 @@ import { log } from "../log";
 import { UserData } from "./user";
 import { DictionaryData } from "./dictionary-meta";
 import { maxConfidence } from "./dictionary-words";
+import { normalize } from "../text-processing/normalization";
 
 const EXPORT_DB_NAME = "export.sqlite";
 const IMPORT_DB_NAME = "import";
@@ -455,7 +456,7 @@ export async function importData(
 
           const bindParams: { [key: string]: any } = {
             $dictionaryId: dictionary.id,
-            $insensitiveSpelling: result.spelling.toLowerCase(),
+            $insensitiveSpelling: normalize(result.spelling),
           };
 
           for (const key of wordCopyKeys) {

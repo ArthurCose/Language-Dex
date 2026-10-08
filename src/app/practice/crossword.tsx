@@ -53,6 +53,7 @@ import {
 import { isRTL, toGraphemeStrings } from "@/src/lib/practice/words";
 import { pickIndexWithLenUnbiased } from "@/src/lib/practice/random";
 import HintPopup from "@/src/lib/components/practice/hint-popup";
+import { normalize } from "@/src/lib/text-processing/normalization";
 
 type GameState = {
   over: boolean;
@@ -251,11 +252,16 @@ export default function () {
     setGameState({ ...gameState });
 
     const word = wordData.word;
-    getWordEntries(activeDictionary, word.toLowerCase())
+    getWordEntries(activeDictionary, normalize(word))
       .then((result) => {
-        if (result && result.entries.length > 0) {
-          const index = pickIndexWithLenUnbiased(result.entries.length);
-          const data = result.entries[index];
+        const lowerCaseWord = word.toLowerCase();
+        const entries = result?.entries.filter(
+          (w) => w.spelling.toLowerCase() == lowerCaseWord,
+        );
+
+        if (entries && entries.length > 0) {
+          const index = pickIndexWithLenUnbiased(entries.length);
+          const data = entries[index];
 
           setHints({
             ...hints,

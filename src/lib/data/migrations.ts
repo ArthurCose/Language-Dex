@@ -1,6 +1,7 @@
 import { UserData } from "./user";
-import { db, backupDb, restoreDbFromBackup } from "./db";
+import { db, backupDb, restoreDbFromBackup, deleteBackup } from "./db";
 import { log } from "../log";
+import { normalize } from "../text-processing/normalization";
 
 const migrateUpList = [
   async (_: UserData) => {
@@ -37,6 +38,24 @@ const migrateUpList = [
   async (userData: UserData) => {
     // request a stats update by marking an incomplete stat update
     userData.updatingStats = true;
+  },
+  async () => {
+    await db.execAsync("DROP INDEX IF EXISTS word_shared_data_spelling_index");
+
+    const spellingIterator = db.getEachAsync<{
+      id: number;
+      spelling: string;
+    }>("SELECT id, spelling FROM word_shared_data");
+    const updateStatement = await db.prepareAsync(
+      "UPDATE word_shared_data SET insensitiveSpelling = $normalized WHERE id = $id",
+    );
+
+    for await (const { id, spelling } of spellingIterator) {
+      await updateStatement.executeAsync({
+        $id: id,
+        $normalized: normalize(spelling),
+      });
+    }
   },
 ];
 

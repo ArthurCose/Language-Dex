@@ -58,6 +58,7 @@ import {
 import RouteRoot from "@/src/lib/components/route-root";
 import { SubMenuIconButton } from "@/src/lib/components/icon-button";
 import { PracticeResultsIcon } from "@/src/lib/components/icons";
+import { normalize } from "@/src/lib/text-processing/normalization";
 
 export type DefinitionMatchGameMode = "endless" | "timed" | "rush";
 export const definitionMatchModeList: DefinitionMatchGameMode[] = [
@@ -138,7 +139,7 @@ function setUpNextRound(gameState: GameState) {
   for (let i = 0; i < leftWords.length; i++) {
     const leftWord = leftWords[i];
     gameState.rows.push([leftWord, rightWords[i]]);
-    gameState.activeWords.push(leftWord.spelling.toLowerCase());
+    gameState.activeWords.push(normalize(leftWord.spelling));
   }
 
   gameState.leftSelection = undefined;

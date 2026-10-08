@@ -9,6 +9,7 @@ import { isRTL } from "../practice/words";
 import { SegmentationResult } from "@akahuku/unistring";
 import { logError } from "../log";
 import { useSignalLens } from "../hooks/use-signal";
+import { normalize } from "../text-processing/normalization";
 
 type Props = {
   text: string;
@@ -213,7 +214,7 @@ export default function ScanOutput({ text, updateStats }: Props) {
           key={segment.rawIndex}
           dictionaryId={activeDictionary}
           text={word}
-          lowercase={segment.text}
+          normalized={normalize(segment.text)}
           excerptText={text}
           excerptIndex={segment.rawIndex}
         />,

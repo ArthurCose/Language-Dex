@@ -7,7 +7,7 @@ import SubMenuTopNav, {
 import RecordAudioButton from "@/src/lib/components/record-audio-button";
 import * as FileSystem from "expo-file-system/legacy";
 import { logError } from "@/src/lib/log";
-import useWordEntries from "@/src/lib/hooks/use-word-entries";
+import { useGameWordEntry } from "@/src/lib/hooks/use-game-word-entry";
 import useGettableState from "@/src/lib/hooks/use-gettable-state";
 import {
   GameWord,
@@ -52,7 +52,6 @@ type GameState = {
   bagWords: GameWord[];
   bagLen: number;
   activeWord?: GameWord;
-  activeWords: string[];
   score: number;
   saveCount: number;
   selfReporting: boolean;
@@ -67,7 +66,6 @@ function initGameState(words: GameWord[]) {
     over: false,
     bagWords: words,
     bagLen: words.length,
-    activeWords: [],
     score: 0,
     saveCount: 0,
     selfReporting: false,
@@ -88,13 +86,6 @@ function setUpNextRound(gameState: GameState) {
     bagIndex,
   );
   gameState.bagLen -= 1;
-
-  if (!gameState.activeWord) {
-    gameState.activeWords = [];
-    return;
-  }
-
-  gameState.activeWords = [gameState.activeWord.spelling.toLowerCase()];
 }
 
 export default function () {
@@ -109,7 +100,7 @@ export default function () {
   const [gameState, setGameState, getGameState] = useGettableState(() =>
     initGameState([]),
   );
-  const entryMap = useWordEntries(activeDictionary, gameState.activeWords);
+  const entry = useGameWordEntry(activeDictionary, gameState.activeWord);
 
   useEffect(() => {
     listGameWords(activeDictionary)
@@ -241,12 +232,6 @@ export default function () {
     setGameState((gameState) => ({ ...gameState, recording: uri }));
     transition(false);
   };
-
-  // rendering
-  const entry =
-    entryMap[gameState.activeWords[0]]?.result?.entries[
-      gameState.activeWord?.orderKey ?? 0
-    ];
 
   return (
     <RouteRoot>
