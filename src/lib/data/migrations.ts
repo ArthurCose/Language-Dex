@@ -62,6 +62,8 @@ export async function migrateUp(data: UserData) {
     throw err;
   }
 
+  deleteBackup();
+
   data.version = dataRevisions;
   return true;
 }
