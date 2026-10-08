@@ -1,6 +1,6 @@
 import * as SQLite from "expo-sqlite";
 import { File, Paths } from "expo-file-system";
-import db, { extractCount } from "./db";
+import { db, extractCount } from "./db";
 import {
   CsvTransformStream,
   encodeCsvField,

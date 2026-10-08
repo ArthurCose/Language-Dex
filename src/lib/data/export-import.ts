@@ -1,6 +1,6 @@
 import * as SQLite from "expo-sqlite";
 import * as FileSystem from "expo-file-system/legacy";
-import db, { extractCount } from "./db";
+import { db, extractCount } from "./db";
 import { log } from "../log";
 import { UserData } from "./user";
 import { DictionaryData } from "./dictionary-meta";
