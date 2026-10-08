@@ -1,4 +1,4 @@
-import db from "./db";
+import { db } from "./db";
 import { logError } from "../log";
 
 export function explainQueryPlan(queryString: string) {

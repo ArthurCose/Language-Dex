@@ -14,7 +14,7 @@ import BottomListPopup from "@/src/lib/components/bottom-list-popup";
 import { useTheme } from "@/src/lib/contexts/theme-context";
 import { useSignal, useSignalValue } from "@/src/lib/hooks/use-signal";
 import { Span } from "@/src/lib/components/text";
-import db from "@/src/lib/data/db";
+import { db } from "@/src/lib/data/db";
 
 type TableMeta = { name: string; sql: string; columns: string[] };
 type TableRow = { [key: string]: any };

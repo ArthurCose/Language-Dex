@@ -1,7 +1,7 @@
 import * as FileSystem from "expo-file-system/legacy";
 import * as SQLite from "expo-sqlite";
 import Unistring from "@akahuku/unistring";
-import db, { extractCount } from "./db";
+import { db, extractCount } from "./db";
 import { log, logError } from "../log";
 import {
   createNewFileObjectId,

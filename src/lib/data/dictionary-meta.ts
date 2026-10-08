@@ -1,4 +1,4 @@
-import db from "./db";
+import { db } from "./db";
 import { log, logError } from "../log";
 import { DictionaryStats } from "./stats";
 import { deleteFileObject } from "./files";

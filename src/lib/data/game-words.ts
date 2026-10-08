@@ -1,5 +1,5 @@
 import * as SQLite from "expo-sqlite";
-import db from "./db";
+import { db } from "./db";
 import { maxConfidence } from "./dictionary-words";
 
 export type GameWord = {

@@ -1,5 +1,5 @@
 import { UserData } from "./user";
-import db, { backupDb, restoreDbFromBackup } from "./db";
+import { db, backupDb, restoreDbFromBackup } from "./db";
 import { log } from "../log";
 
 const migrateUpList = [

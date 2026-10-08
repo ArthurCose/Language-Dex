@@ -1,4 +1,4 @@
-import db from "./db";
+import { db } from "./db";
 import { log } from "../log";
 import { UserData } from "./user";
 import { DictionaryData } from "./dictionary-meta";

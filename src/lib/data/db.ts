@@ -1,11 +1,10 @@
 import * as SQLite from "expo-sqlite";
 import { File } from "expo-file-system";
 
-let db = SQLite.openDatabaseSync("db");
+export let db = SQLite.openDatabaseSync("db");
+
 const dbPath = "file://" + db.databasePath;
 const backupPath = dbPath.slice(0, dbPath.lastIndexOf("/") + 1) + "backup";
-
-export default db;
 
 export function backupDb() {
   db.closeSync();

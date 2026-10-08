@@ -13,7 +13,7 @@ import {
   getWordEntries,
   DictionaryEntry,
 } from "@/src/lib/data";
-import db from "@/src/lib/data/db";
+import { db } from "@/src/lib/data/db";
 
 async function getEntry(dictionaryId: number, lowercaseSpelling: string) {
   return (await getWordEntries(dictionaryId, lowercaseSpelling))!.entries[0];
