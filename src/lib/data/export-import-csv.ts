@@ -293,10 +293,11 @@ export async function importCsv({
         ...userData,
         dictionaries: userData.dictionaries.map((d) => {
           if (d.id == dictionary.id) {
-            return {
+            dictionary = {
               ...d,
               partsOfSpeech: [...d.partsOfSpeech],
             };
+            return dictionary;
           }
 
           return d;
