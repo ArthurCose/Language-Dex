@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@akahuku/unistring": "^0.6.2",
+    "@expo/dom-webview": "^57.0.1",
+    "@expo/log-box": "^57.0.4",
     "@expo/metro-runtime": "~57.0.16",
     "@gorhom/bottom-sheet": "^5.1.8",
     "@react-native-vector-icons/material-design-icons": "^13.1.2",
