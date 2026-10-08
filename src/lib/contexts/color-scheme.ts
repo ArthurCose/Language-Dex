@@ -1,13 +1,30 @@
 import { useColorScheme as useSystemColorTheme } from "react-native";
 import { useUserDataSignal } from "./user-data-context";
-import { useSignalLens } from "../hooks/use-signal";
+import { Signal, useSignalLens } from "../hooks/use-signal";
+import { UserData } from "../data";
 
-export function useColorScheme(): "light" | "dark" {
+export function useColorSchemeWithUserDataSignal(
+  userDataSignal: Signal<UserData | undefined>,
+): "light" | "dark" {
   const userDataColorScheme = useSignalLens(
-    useUserDataSignal(),
-    (data) => data.colorScheme,
+    userDataSignal,
+    (data) => data?.colorScheme,
   );
   const systemColorScheme = useSystemColorTheme();
 
-  return userDataColorScheme || systemColorScheme || "light";
+  if (userDataColorScheme != null) {
+    return userDataColorScheme;
+  }
+
+  if (systemColorScheme != "unspecified") {
+    return systemColorScheme;
+  }
+
+  return "light";
+}
+
+export function useColorScheme(): "light" | "dark" {
+  return useColorSchemeWithUserDataSignal(
+    useUserDataSignal() as Signal<UserData | undefined>,
+  );
 }

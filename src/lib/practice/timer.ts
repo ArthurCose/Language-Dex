@@ -51,7 +51,7 @@ export function useTimerSeconds(timer: Timer) {
   const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {
-    let timeout: NodeJS.Timeout | undefined;
+    let timeout: number | undefined;
 
     const resumeCallback = () => {
       const ms = timer.milliseconds();

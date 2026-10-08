@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from "react";
-import { useColorScheme as useSystemColorScheme } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ThemeContext } from "@/src/lib/contexts/theme-context";
@@ -14,6 +13,10 @@ import { clearLog, log, logError } from "@/src/lib/log";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import KeyboardDismisser from "@/src/lib/components/keyboard-dismisser";
 import { Signal, useSignal, useSignalLens } from "@/src/lib/hooks/use-signal";
+import {
+  useColorScheme,
+  useColorSchemeWithUserDataSignal,
+} from "@/src/lib/contexts/color-scheme";
 
 import "@/src/lib/i18n";
 import { useTranslation } from "react-i18next";
@@ -35,14 +38,8 @@ function PathLogger() {
 
 export default function RootLayout() {
   const userDataSignal = useSignal<UserData | undefined>(undefined);
-  const systemColorScheme = useSystemColorScheme();
   const userDataTheme = useSignalLens(userDataSignal, (data) => data?.theme);
-  const userDataColorScheme = useSignalLens(
-    userDataSignal,
-    (data) => data?.colorScheme,
-  );
-
-  const colorScheme = userDataColorScheme || systemColorScheme || "light";
+  const colorScheme = useColorSchemeWithUserDataSignal(userDataSignal);
   const [t] = useTranslation();
 
   // derive theme from user data and color scheme
