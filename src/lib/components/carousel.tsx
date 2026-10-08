@@ -8,6 +8,9 @@ import Animated, {
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
+const slidePercent = 50;
+const slideMs = 120;
+
 export default function Carousel({
   style,
   pageIndex,
@@ -29,7 +32,7 @@ export default function Carousel({
   const fromStyle = useAnimatedStyle(() => ({
     transform: [
       {
-        translateX: `${50 * progress.value * direction.value}%`,
+        translateX: `${slidePercent * progress.value * direction.value}%`,
       },
     ],
     opacity: 1 - progress.value,
@@ -37,7 +40,7 @@ export default function Carousel({
   const toStyle = useAnimatedStyle(() => ({
     transform: [
       {
-        translateX: `${50 + 50 * (1 - (progress.value + toOffset.value)) * -direction.value}%`,
+        translateX: `${slidePercent + slidePercent * (1 - (progress.value + toOffset.value)) * -direction.value}%`,
       },
     ],
     opacity: progress.value,
@@ -73,7 +76,7 @@ export default function Carousel({
       setAnimating(false);
     };
 
-    progress.value = withTiming(1, { duration: 120 }, (completed) => {
+    progress.value = withTiming(1, { duration: slideMs }, (completed) => {
       if (completed) {
         scheduleOnRN(onComplete);
       }
