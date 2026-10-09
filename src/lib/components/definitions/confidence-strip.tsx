@@ -31,7 +31,7 @@ function ConfidenceButton({
             ? undefined
             : styles.transparentIcon
         }
-        size={32}
+        size={38}
       />
     </Pressable>
   );

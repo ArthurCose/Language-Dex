@@ -96,7 +96,7 @@ function Definition({
         <View style={styles.zeroWidth}>
           <View style={styles.stickersContainer}>
             {item.confidence != 0 && (
-              <ConfidenceIcon confidence={item.confidence} size={24} />
+              <ConfidenceIcon confidence={item.confidence} size={28} />
             )}
 
             {item.pronunciationAudio != undefined && (

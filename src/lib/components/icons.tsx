@@ -231,17 +231,19 @@ export function RetryIcon(props: IconProps) {
   return <MaterialDesignIcons name="restore" {...props} />;
 }
 
-function createTextIcon(text: string) {
+function createTextIcon(text: string, scale?: number) {
   return (props: IconProps) => (
     <Text
       style={[
         {
           color: props.color,
-          fontSize: props.size,
-          width: props.size + 7,
-          height: props.size + 8,
+          fontSize: props.size * (scale ?? 1),
+          width: props.size,
+          height: props.size,
           textAlignVertical: "center",
           lineHeight: props.size,
+          textAlign: "center",
+          fontWeight: "bold",
         },
         props.style,
       ]}
@@ -251,10 +253,11 @@ function createTextIcon(text: string) {
   );
 }
 
-export const LowConfidenceIcon = createTextIcon("😵‍💫");
-export const NeutralConfidenceIcon = createTextIcon("😶");
-export const HighConfidenceIcon = createTextIcon("😊");
-export const HighestConfidenceIcon = createTextIcon("🤓");
+const EMOJI_SCALE = 28 / 32;
+export const LowConfidenceIcon = createTextIcon("😵‍💫", EMOJI_SCALE);
+export const NeutralConfidenceIcon = createTextIcon("😶", EMOJI_SCALE);
+export const HighConfidenceIcon = createTextIcon("😊", EMOJI_SCALE);
+export const HighestConfidenceIcon = createTextIcon("🤓", EMOJI_SCALE);
 
 export function ConfidenceIcon({
   confidence,
