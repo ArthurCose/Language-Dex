@@ -22,6 +22,7 @@ export default function VariantsEditor({
   const triggerRef = useRef<DropDownPrimitive.TriggerRef | null>(null);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [pendingSpelling, setPendingSpelling] = useState<string | null>(null);
+  const [editingExisting, setEditingExisting] = useState(false);
 
   const textStyle: TextStyle = {
     fontSize: 16,
@@ -31,6 +32,19 @@ export default function VariantsEditor({
     styles.wordPressable,
     { backgroundColor: theme.colors.variantBackground },
   ];
+
+  const submit = () => {
+    if (!setSpellings || pendingSpelling == null) {
+      return;
+    }
+    const newSpelling = pendingSpelling.trim();
+
+    if (newSpelling != "" && !spellings.includes(newSpelling)) {
+      const newSpellings = [...spellings, newSpelling];
+      newSpellings.sort();
+      setSpellings(newSpellings);
+    }
+  };
 
   return (
     <View style={styles.root}>
@@ -59,6 +73,7 @@ export default function VariantsEditor({
                     onPress={() => {
                       setSpellings?.(spellings.filter((w) => w != word));
                       setPendingSpelling(word);
+                      setEditingExisting(true);
                     }}
                   >
                     <Span>{t("Edit")}</Span>
@@ -85,15 +100,20 @@ export default function VariantsEditor({
             defaultValue={pendingSpelling}
             autoFocus
             onChangeText={setPendingSpelling}
-            onBlur={() => {
-              const newSpelling = pendingSpelling.trim();
+            submitBehavior={
+              editingExisting || pendingSpelling == ""
+                ? "blurAndSubmit"
+                : "submit"
+            }
+            onSubmitEditing={() => {
+              submit();
 
-              if (newSpelling != "" && !spellings.includes(newSpelling)) {
-                const newSpellings = [...spellings, newSpelling];
-                newSpellings.sort();
-                setSpellings(newSpellings);
+              if (!editingExisting) {
+                setPendingSpelling("");
               }
-
+            }}
+            onBlur={() => {
+              submit();
               setPendingSpelling(null);
             }}
           />
@@ -102,7 +122,10 @@ export default function VariantsEditor({
         {setSpellings && pendingSpelling == null && (
           <Pressable
             style={pressableStyle}
-            onPress={() => setPendingSpelling("")}
+            onPress={() => {
+              setPendingSpelling("");
+              setEditingExisting(false);
+            }}
             android_ripple={theme.ripples.transparentButton}
           >
             <Span style={textStyle}>+</Span>
