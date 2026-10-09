@@ -415,7 +415,9 @@ export async function listVariants(entryId: number) {
     },
   );
 
-  return variants.map(({ spelling }) => spelling);
+  const spellings = variants.map(({ spelling }) => spelling);
+  spellings.sort();
+  return spellings;
 }
 
 export async function setVariants(entryId: number, variants: string[]) {
