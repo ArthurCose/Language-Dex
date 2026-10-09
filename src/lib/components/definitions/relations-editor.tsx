@@ -27,7 +27,6 @@ import {
 import useWordEntries, {
   DictionaryEntryMap,
 } from "@/src/lib/hooks/use-word-entries";
-import usePracticeColors from "@/src/lib/hooks/use-practice-colors";
 import { useTranslation } from "react-i18next";
 import FloatingSwitcher from "../floating-switcher";
 import * as DropDownPrimitive from "@rn-primitives/dropdown-menu";
@@ -448,6 +447,8 @@ export function RelationsEditor({
   style: StyleProp<ViewStyle>;
 }) {
   const [t] = useTranslation();
+  const theme = useTheme();
+
   const [tab, setTab] = useState<TabName>("Synonyms");
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -469,7 +470,6 @@ export function RelationsEditor({
   );
   const entryMap = useWordEntries(activeDictionary, normalizedWords);
 
-  const colors = usePracticeColors();
   const loadingWords = useSignalValue(data.totalLoading) > 0;
 
   const synonymsId = useSignalValue(data.synonymsId);
@@ -489,8 +489,8 @@ export function RelationsEditor({
         {tab == "Synonyms" && (
           <RelationList
             style={styles.listWrapper}
-            color={colors.correct.color}
-            backgroundColor={colors.correct.backgroundColor}
+            color={theme.colors.synonymText}
+            backgroundColor={theme.colors.synonymBackground}
             entryMap={entryMap}
             words={synonyms}
             setWords={ifTruthy(!loadingWords, (words) =>
@@ -503,9 +503,9 @@ export function RelationsEditor({
         {tab == "Antonyms" && (
           <RelationList
             style={styles.listWrapper}
-            color={colors.mistake.color}
+            color={theme.colors.antonymText}
+            backgroundColor={theme.colors.antonymBackground}
             entryMap={entryMap}
-            backgroundColor={colors.mistake.backgroundColor}
             words={antonyms}
             setWords={ifTruthy(!loadingWords, (words) =>
               data.updateWords("Antonyms", words),

@@ -77,6 +77,10 @@ type Palette = {
   borders: string;
   definitionBorder: string;
   hintScore: string;
+  synonymText: string;
+  synonymBackground: string;
+  antonymText: string;
+  antonymBackground: string;
   primary: {
     default: string;
     light: string;
@@ -309,6 +313,10 @@ export const themeConstructors: {
         borders: "#303035",
         definitionBorder: "#09090b",
         hintScore: "#e8a200",
+        synonymText: "#0c0",
+        synonymBackground: "#0f04",
+        antonymText: "#f04",
+        antonymBackground: "#c136",
         ripples: {
           popup: "rgba(255,255,255,0.05)",
           primaryButton: "rgba(255,255,255,0.2)",
@@ -341,6 +349,10 @@ export const themeConstructors: {
       borders: "lightgrey",
       definitionBorder: "#eeeef2",
       hintScore: "rgba(255, 162, 0, 1)",
+      synonymText: "green",
+      synonymBackground: "#7E78",
+      antonymText: "#b14",
+      antonymBackground: "#b144",
       ripples: {
         popup: "rgba(0,0,0,0.25)",
         primaryButton: "rgba(255,255,255,0.3)",
