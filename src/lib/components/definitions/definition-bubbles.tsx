@@ -1,6 +1,6 @@
+import { useMemo } from "react";
 import { StyleSheet, Pressable, View } from "react-native";
 import { useTranslation } from "react-i18next";
-import * as DropDownPrimitive from "@rn-primitives/dropdown-menu";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { useSignalLens } from "@/src/lib/hooks/use-signal";
 import {
@@ -13,9 +13,11 @@ import { router } from "expo-router";
 import { logError } from "@/src/lib/log";
 import { useTheme } from "@/src/lib/contexts/theme-context";
 import { Span } from "@/src/lib/components/text";
-import { NavigationBarSpacer } from "../system-bar-spacers";
-import { useMemo } from "react";
-import { normalize } from "../../text-processing/normalization";
+import ContextMenu, {
+  ContextMenuPressable,
+  ContextMenuSeparator,
+} from "@/src/lib/components/context-menu";
+import { normalize } from "@/src/lib/text-processing/normalization";
 
 type DefinitionBubbleProps = {
   entry: DictionaryEntry;
@@ -82,85 +84,60 @@ export function DefinitionBubble({
   const text = entry.spelling;
 
   return (
-    <DropDownPrimitive.Portal>
-      <DropDownPrimitive.Overlay
-        style={StyleSheet.absoluteFill}
-        onPress={close}
+    <ContextMenu contrast={contrast} onClose={close}>
+      <Pressable
+        android_ripple={theme.ripples.popup}
+        pointerEvents="box-only"
+        disabled={readOnly}
+        onPress={() => {
+          router.navigate(`/words/existing/${encodeURIComponent(text)}`);
+          close();
+        }}
       >
-        <DropDownPrimitive.Content align="center">
-          <View
-            style={[
-              styles.popup,
-              theme.styles.dialog,
-              theme.styles.definitionBubble,
-              contrast && theme.styles.popupContrast,
-            ]}
-          >
-            <Pressable
-              style={[styles.bordered, theme.styles.definitionBorders]}
-              android_ripple={theme.ripples.popup}
-              pointerEvents="box-only"
-              disabled={readOnly}
-              onPress={() => {
-                router.navigate(`/words/existing/${encodeURIComponent(text)}`);
-                close();
-              }}
-            >
-              <Span style={[styles.wordTitle]}>{entry.spelling}</Span>
-            </Pressable>
+        <Span style={styles.wordTitle}>{entry.spelling}</Span>
+      </Pressable>
 
-            <Pressable
-              style={[
-                styles.definitionBlock,
-                styles.bordered,
-                theme.styles.definitionBorders,
-              ]}
-              android_ripple={theme.ripples.popup}
-              pointerEvents="box-only"
-              disabled={readOnly}
-              onPress={() => {
-                router.navigate(
-                  `/words/existing/${encodeURIComponent(
-                    text,
-                  )}/entry/${encodeURIComponent(entry.id)}`,
-                );
-                close();
-              }}
-            >
-              <DefinitionContent dictionary={dictionary} entry={entry} />
-            </Pressable>
+      <ContextMenuSeparator />
 
-            {onRemove ? (
-              <Pressable
-                style={styles.action}
-                android_ripple={theme.ripples.popup}
-                pointerEvents="box-only"
-                onPress={() => {
-                  onRemove();
-                  close();
-                }}
-              >
-                <Span>{t("Remove")}</Span>
-              </Pressable>
-            ) : (
-              <Pressable
-                style={styles.action}
-                android_ripple={theme.ripples.popup}
-                pointerEvents="box-only"
-                onPress={() => {
-                  Clipboard.setStringAsync(entry.spelling).catch(logError);
-                  close();
-                }}
-              >
-                <Span>{t("Copy")}</Span>
-              </Pressable>
-            )}
-          </View>
+      <Pressable
+        style={styles.definitionBlock}
+        android_ripple={theme.ripples.popup}
+        pointerEvents="box-only"
+        disabled={readOnly}
+        onPress={() => {
+          router.navigate(
+            `/words/existing/${encodeURIComponent(
+              text,
+            )}/entry/${encodeURIComponent(entry.id)}`,
+          );
+          close();
+        }}
+      >
+        <DefinitionContent dictionary={dictionary} entry={entry} />
+      </Pressable>
 
-          <NavigationBarSpacer />
-        </DropDownPrimitive.Content>
-      </DropDownPrimitive.Overlay>
-    </DropDownPrimitive.Portal>
+      <ContextMenuSeparator />
+
+      {onRemove ? (
+        <ContextMenuPressable
+          onPress={() => {
+            onRemove();
+            close();
+          }}
+        >
+          <Span>{t("Remove")}</Span>
+        </ContextMenuPressable>
+      ) : (
+        <ContextMenuPressable
+          onPress={() => {
+            Clipboard.setStringAsync(entry.spelling).catch(logError);
+            close();
+          }}
+        >
+          <Span>{t("Copy")}</Span>
+        </ContextMenuPressable>
+      )}
+    </ContextMenu>
   );
 }
 
@@ -225,118 +202,82 @@ export function DefinitionsBubble({
   }, [entryResult]);
 
   return (
-    <DropDownPrimitive.Portal>
-      <DropDownPrimitive.Overlay
-        style={StyleSheet.absoluteFill}
-        onPress={close}
-      >
-        <DropDownPrimitive.Content align="center">
-          <View
-            style={[
-              styles.popup,
-              theme.styles.dialog,
-              theme.styles.definitionBubble,
-            ]}
-          >
-            {entryBlocks &&
-              entryBlocks.map((block) => (
-                <View key={block.lowercaseSpelling}>
-                  <Pressable
-                    style={[styles.bordered, theme.styles.definitionBorders]}
-                    android_ripple={theme.ripples.popup}
-                    pointerEvents="box-only"
-                    onPress={() => {
-                      router.navigate(
-                        `/words/existing/${encodeURIComponent(block.spelling)}`,
-                      );
-                      close();
-                    }}
-                  >
-                    <Span style={[styles.wordTitle]}>{block.spelling}</Span>
-                  </Pressable>
-
-                  {block.entries.map((entry) => {
-                    return (
-                      <Pressable
-                        key={entry.id}
-                        style={[
-                          styles.definitionBlock,
-                          styles.bordered,
-                          theme.styles.definitionBorders,
-                        ]}
-                        android_ripple={theme.ripples.popup}
-                        pointerEvents="box-only"
-                        onPress={() => {
-                          router.navigate(
-                            `/words/existing/${encodeURIComponent(
-                              text,
-                            )}/entry/${encodeURIComponent(entry.id)}`,
-                          );
-                          close();
-                        }}
-                      >
-                        <DefinitionContent
-                          dictionary={dictionary}
-                          entry={entry}
-                        />
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              ))}
-
+    <ContextMenu onClose={close}>
+      {entryBlocks &&
+        entryBlocks.map((block) => (
+          <View key={block.lowercaseSpelling}>
             <Pressable
-              style={[
-                styles.action,
-                styles.bordered,
-                theme.styles.definitionBorders,
-              ]}
               android_ripple={theme.ripples.popup}
               pointerEvents="box-only"
               onPress={() => {
-                const wordParam = encodeURIComponent(text);
-                let params = "";
-
-                if (generateExample) {
-                  params = "example=" + encodeURIComponent(generateExample());
-                }
-
                 router.navigate(
-                  `/words/existing/${wordParam}/entry/add?${params}`,
+                  `/words/existing/${encodeURIComponent(block.spelling)}`,
                 );
                 close();
               }}
             >
-              <Span>{t("Add_Definition")}</Span>
+              <Span style={styles.wordTitle}>{block.spelling}</Span>
             </Pressable>
 
-            <Pressable
-              style={styles.action}
-              android_ripple={theme.ripples.popup}
-              pointerEvents="box-only"
-              onPress={() => {
-                Clipboard.setStringAsync(text).catch(logError);
-                close();
-              }}
-            >
-              <Span>{t("Copy")}</Span>
-            </Pressable>
+            <ContextMenuSeparator />
+
+            {block.entries.map((entry) => {
+              return (
+                <View key={entry.id}>
+                  <Pressable
+                    style={styles.definitionBlock}
+                    android_ripple={theme.ripples.popup}
+                    pointerEvents="box-only"
+                    onPress={() => {
+                      router.navigate(
+                        `/words/existing/${encodeURIComponent(
+                          text,
+                        )}/entry/${encodeURIComponent(entry.id)}`,
+                      );
+                      close();
+                    }}
+                  >
+                    <DefinitionContent dictionary={dictionary} entry={entry} />
+                  </Pressable>
+
+                  <ContextMenuSeparator />
+                </View>
+              );
+            })}
           </View>
+        ))}
 
-          <NavigationBarSpacer />
-        </DropDownPrimitive.Content>
-      </DropDownPrimitive.Overlay>
-    </DropDownPrimitive.Portal>
+      <ContextMenuPressable
+        onPress={() => {
+          const wordParam = encodeURIComponent(text);
+          let params = "";
+
+          if (generateExample) {
+            params = "example=" + encodeURIComponent(generateExample());
+          }
+
+          router.navigate(`/words/existing/${wordParam}/entry/add?${params}`);
+          close();
+        }}
+      >
+        <Span>{t("Add_Definition")}</Span>
+      </ContextMenuPressable>
+
+      <ContextMenuSeparator />
+
+      <ContextMenuPressable
+        onPress={() => {
+          Clipboard.setStringAsync(text).catch(logError);
+          close();
+        }}
+      >
+        <Span>{t("Copy")}</Span>
+      </ContextMenuPressable>
+    </ContextMenu>
   );
 }
 
 const styles = StyleSheet.create({
-  popup: {
-    marginHorizontal: 8,
-    marginVertical: 4,
-    minWidth: 100,
-    maxWidth: 256,
-  },
   wordTitle: {
     fontWeight: "bold",
     textAlign: "center",
@@ -354,17 +295,5 @@ const styles = StyleSheet.create({
   example: {
     marginTop: 4,
     paddingLeft: 12,
-  },
-  bordered: {
-    borderStyle: "solid",
-    borderWidth: 0,
-    borderBottomWidth: 1,
-  },
-  action: {
-    padding: 8,
-    paddingHorizontal: 16,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
   },
 });
