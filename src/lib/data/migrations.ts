@@ -19,20 +19,27 @@ const migrateUpList = [
       "UPDATE word_definition_data SET spelling = $spelling WHERE id = $id",
     );
 
-    for await (const { id, sharedId } of definitionIterator) {
-      const execResult = await selectSpelling.executeAsync<{
-        spelling: string;
-      }>({
-        $id: sharedId,
-      });
-      const result = await execResult.getFirstAsync();
-
-      if (result) {
-        await updateSpelling.executeAsync({
-          $id: id,
-          $spelling: result.spelling,
+    try {
+      for await (const { id, sharedId } of definitionIterator) {
+        const execResult = await selectSpelling.executeAsync<{
+          spelling: string;
+        }>({
+          $id: sharedId,
         });
+        const result = await execResult.getFirstAsync();
+
+        if (result) {
+          await updateSpelling.executeAsync({
+            $id: id,
+            $spelling: result.spelling,
+          });
+        }
       }
+    } finally {
+      await Promise.all([
+        selectSpelling.finalizeAsync(),
+        updateSpelling.finalizeAsync(),
+      ]);
     }
   },
   async (userData: UserData) => {
@@ -50,11 +57,15 @@ const migrateUpList = [
       "UPDATE word_shared_data SET insensitiveSpelling = $normalized WHERE id = $id",
     );
 
-    for await (const { id, spelling } of spellingIterator) {
-      await updateStatement.executeAsync({
-        $id: id,
-        $normalized: normalize(spelling),
-      });
+    try {
+      for await (const { id, spelling } of spellingIterator) {
+        await updateStatement.executeAsync({
+          $id: id,
+          $normalized: normalize(spelling),
+        });
+      }
+    } finally {
+      await updateStatement.finalizeAsync();
     }
   },
 ];
