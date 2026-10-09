@@ -81,6 +81,8 @@ type Palette = {
   synonymBackground: string;
   antonymText: string;
   antonymBackground: string;
+  variantText: string;
+  variantBackground: string;
   primary: {
     default: string;
     light: string;
@@ -300,7 +302,7 @@ export const themeConstructors: {
         scanInput: "#1a1a1f",
         definitionBackground: "#1a1a1f",
         popupContrast: "#1f1f24",
-        gameListing: "transparent",
+        gameListing: "#09090b",
         text: "#bbb",
         label: "#aaa",
         disabledText: "#777",
@@ -317,6 +319,8 @@ export const themeConstructors: {
         synonymBackground: "#0f04",
         antonymText: "#f04",
         antonymBackground: "#c136",
+        variantText: "#66e",
+        variantBackground: "#22f5",
         ripples: {
           popup: "rgba(255,255,255,0.05)",
           primaryButton: "rgba(255,255,255,0.2)",
@@ -353,6 +357,8 @@ export const themeConstructors: {
       synonymBackground: "#7E78",
       antonymText: "#b14",
       antonymBackground: "#b144",
+      variantText: "#227",
+      variantBackground: "#88f8",
       ripples: {
         popup: "rgba(0,0,0,0.25)",
         primaryButton: "rgba(255,255,255,0.3)",

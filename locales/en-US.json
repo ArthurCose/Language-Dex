@@ -119,7 +119,8 @@
     "example_placeholder": "Example",
     "notes_placeholder": "Notes",
 
-    "New": "New"
+    "New": "New",
+    "Edit": "Edit"
   },
   "dialogs": {
     "Cancel": "Cancel",
@@ -184,11 +185,13 @@
     "importing_words_stage": "Importing Words...",
     "importing_definitions_stage": "Importing Definitions...",
     "importing_relations_stage": "Importing Relations...",
+    "importing_variants_stage": "Importing Variants...",
 
     "exporting_metadata_stage": "Initializing...",
     "exporting_words_stage": "Exporting Words...",
     "exporting_definitions_stage": "Exporting Definitions...",
-    "exporting_relations_stage": "Exporting Relations..."
+    "exporting_relations_stage": "Exporting Relations...",
+    "exporting_variants_stage": "Exporting Variants..."
   },
   "development links": {
     "GitHub": "GitHub",

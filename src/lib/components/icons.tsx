@@ -119,6 +119,8 @@ export function WordRelationIcon(props: IconProps) {
   return <MaterialDesignIcons name="set-left-center" {...props} />;
 }
 
+export const VariantIcon = createTextIcon("≈", 1.1);
+
 export function SaveIcon(props: IconProps) {
   return <MaterialDesignIcons name="content-save-outline" {...props} />;
 }

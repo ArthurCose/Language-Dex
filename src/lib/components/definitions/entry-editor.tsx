@@ -16,6 +16,7 @@ import {
   PlayAudioIcon,
   SaveIcon,
   TrashIcon,
+  VariantIcon,
   WordRelationIcon,
 } from "@/src/lib/components/icons";
 import IconButton, {
@@ -35,9 +36,11 @@ import {
   deleteEntry,
   DictionaryWordStatKey,
   getFileObjectPath,
+  listVariants,
   maxConfidence,
   prepareNewPronunciation,
   resolveStatIncrease,
+  setVariants,
   updateStatistics,
   upsertEntry,
 } from "@/src/lib/data";
@@ -55,6 +58,8 @@ import ConfidenceStrip from "./confidence-strip";
 import Cat from "@/assets/svgs/Definition-Editor.svg";
 import CatInteraction from "@/src/lib/components/cat-interaction";
 import { normalize } from "../../text-processing/normalization";
+import VariantsEditor from "./variants-editor";
+import { shallowEqual } from "../../arrays";
 
 type Props = {
   normalizedWord?: string;
@@ -105,6 +110,8 @@ export default function EntryEditor(props: Props) {
   const [example, setExample] = useState(defaultExample);
   const [notes, setNotes] = useState(defaultNotes);
   const [relationsEditorData] = useState(() => new RelationsEditorData(entry));
+  const [defaultVariants, setDefaultVariants] = useState<string[]>([]);
+  const [variantSpellings, setVariantSpellings] = useState<string[]>([]);
   const relationsEdited = useSignalValue(relationsEditorData.modified);
 
   useEffect(() => {
@@ -118,6 +125,12 @@ export default function EntryEditor(props: Props) {
       setNotes(entry.notes);
       // uncomment and adjust if we can ever transition from one definition editor to another
       // setRelationsEditorData(new RelationsEditorData(definitionData));
+      listVariants(entry.id)
+        .then((spellings) => {
+          setVariantSpellings(spellings);
+          setDefaultVariants(spellings);
+        })
+        .catch(logError);
     }
   }, [entry]);
 
@@ -130,7 +143,8 @@ export default function EntryEditor(props: Props) {
     example != defaultExample ||
     notes != defaultNotes ||
     pronunciationUri != defaultPronunciationUri ||
-    relationsEdited;
+    relationsEdited ||
+    !shallowEqual(variantSpellings, defaultVariants);
 
   useBackHandler(() => {
     if (hasPendingChanges) {
@@ -216,6 +230,11 @@ export default function EntryEditor(props: Props) {
         id: entryId,
         spelling: spelling.trim(),
       });
+
+      // save variants
+      if (!shallowEqual(variantSpellings, defaultVariants)) {
+        setVariants(entryId, variantSpellings);
+      }
 
       // invalidate the old word
       if (migratingWords && props.normalizedWord != undefined) {
@@ -407,8 +426,21 @@ export default function EntryEditor(props: Props) {
             color={theme.colors.iconButton}
             size={32}
           />
-
           <RelationsEditor style={styles.input} data={relationsEditorData} />
+        </View>
+
+        <View style={theme.styles.separator} />
+
+        <View style={styles.row}>
+          <VariantIcon
+            style={styles.iconLabel}
+            color={theme.colors.iconButton}
+            size={32}
+          />
+          <VariantsEditor
+            spellings={variantSpellings}
+            setSpellings={setVariantSpellings}
+          />
         </View>
 
         <CatInteraction style={styles.cat}>
@@ -490,8 +522,8 @@ const styles = StyleSheet.create({
     height: 48,
   },
   iconLabel: {
-    paddingLeft: 4,
-    paddingTop: 6,
+    marginLeft: 4,
+    marginTop: 6,
   },
   textInput: {
     fontSize: 18,

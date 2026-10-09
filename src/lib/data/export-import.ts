@@ -30,7 +30,8 @@ export type ExportImportStage =
   | "metadata"
   | "words"
   | "definitions"
-  | "relations";
+  | "relations"
+  | "variants";
 
 /**
  * Creates a new sqlite file, overwriting any previously exported file.
@@ -102,6 +103,11 @@ CREATE TABLE word_definition_data (
 CREATE TABLE synonym_clusters (
   id         INTEGER PRIMARY KEY NOT NULL,
   antonymsId INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS word_variants (
+  entryId  INTEGER NOT NULL,
+  spelling TEXT NOT NULL
 );
 
 CREATE TABLE files (
@@ -274,6 +280,53 @@ CREATE TABLE files (
           }
         } finally {
           await statement.finalizeAsync();
+        }
+      })(),
+    );
+
+    const buildVariantsQueryString = (columns: string[]) => {
+      const variantsQuery = [
+        "SELECT",
+        columns.join(", "),
+        "FROM word_variants variant",
+        "JOIN word_definition_data entry",
+        "ON entryId = entry.id",
+      ];
+
+      if (dictionaryId != null) {
+        variantsQuery.push("WHERE entry.dictionaryId = $dictionaryId");
+      }
+
+      return variantsQuery.join(" ");
+    };
+
+    const variantCount = await extractCount(
+      db,
+      buildVariantsQueryString(["COUNT(*)"]),
+    );
+
+    await copyTable(
+      "variants",
+      "word_variants",
+      ["entryId", "spelling"],
+      variantCount,
+      (async function* () {
+        const variantBindParams: SQLite.SQLiteBindParams = {};
+
+        if (dictionaryId != null) {
+          variantBindParams["$dictionaryId"] = dictionaryId;
+        }
+
+        const variantResults = db.getEachAsync<{
+          id: number;
+          spelling: string;
+        }>(
+          buildVariantsQueryString(["entryId", "variant.spelling AS spelling"]),
+          variantBindParams,
+        );
+
+        for await (const result of variantResults) {
+          yield result;
         }
       })(),
     );
@@ -528,6 +581,7 @@ export async function importData(
     }
 
     // load definitions
+    const entryIdMap: { [importedId: number]: number } = {};
     const totalDefinitions = await extractCount(
       importDb,
       "SELECT COUNT(*) FROM word_definition_data",
@@ -536,6 +590,7 @@ export async function importData(
     const entryResults = importDb.getEachAsync<{
       dictionaryId: number;
       sharedId: number;
+      id: number;
       example?: string | null;
       synonymsId?: number | null;
       confidence: number;
@@ -583,8 +638,11 @@ export async function importData(
             bindParams["$" + key] = (result as { [key: string]: unknown })[key];
           }
 
-          await statement.executeAsync(bindParams);
+          // track id
+          const insertResult = await statement.executeAsync(bindParams);
+          entryIdMap[result.id] = insertResult.lastInsertRowId;
 
+          // update stats
           userData.stats.definitions! += 1;
           dictionary.stats.definitions! += 1;
 
@@ -599,6 +657,35 @@ export async function importData(
           }
 
           progressCallback("definitions", i, totalDefinitions);
+        }
+      },
+    );
+
+    // load variants
+    const totalVariants = await extractCount(
+      importDb,
+      "SELECT COUNT(*) FROM word_variants",
+    );
+
+    const variantResults = importDb.getEachAsync<{
+      entryId: number;
+      spelling: string;
+    }>("SELECT * FROM word_definition_data");
+
+    await bulkInsert(
+      "word_variants",
+      ["entryId", "spelling", "insensitiveSpelling"],
+      async (statement) => {
+        let i = 0;
+
+        for await (const result of variantResults) {
+          await statement.executeAsync({
+            $entryId: entryIdMap[result.entryId],
+            $spelling: result.spelling,
+            $insensitiveSpelling: normalize(result.spelling),
+          });
+
+          progressCallback("variants", ++i, totalVariants);
         }
       },
     );

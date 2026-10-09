@@ -55,22 +55,35 @@ export const wordOrderOptions: WordOrder[] = [
   "longest",
 ];
 
-export async function isValidWord(dictionaryId: number, word: string) {
-  const query = [
+const validWordQueries = [
+  [
     "SELECT spelling FROM word_shared_data",
     "WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $normalized",
-  ];
+  ],
+  [
+    "SELECT variant.spelling FROM word_variants variant",
+    "JOIN word_definition_data entry",
+    "ON variant.entryId = entry.id",
+    "WHERE entry.dictionaryId = $dictionaryId AND variant.insensitiveSpelling = $normalized",
+  ],
+];
 
-  const results = await db.getAllAsync<{ spelling: string }>(query.join(" "), {
-    $dictionaryId: dictionaryId,
-    $normalized: normalize(word),
-  });
-
+export async function isValidWord(dictionaryId: number, word: string) {
   const lowercased = word.toLowerCase();
 
-  for (const { spelling } of results) {
-    if (lowercased == spelling.toLowerCase()) {
-      return true;
+  for (const query of validWordQueries) {
+    const results = await db.getAllAsync<{ spelling: string }>(
+      query.join(" "),
+      {
+        $dictionaryId: dictionaryId,
+        $normalized: normalize(word),
+      },
+    );
+
+    for (const { spelling } of results) {
+      if (lowercased == spelling.toLowerCase()) {
+        return true;
+      }
     }
   }
 
@@ -193,24 +206,47 @@ export async function getWordEntries(
   const spellings = [];
   const entries: DictionaryEntry[] = [];
 
+  // find entries using headword
   const wordResults = await db.getAllAsync<{ id: number; spelling: string }>(
-    "SELECT id, spelling FROM word_shared_data WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $spelling ORDER BY spelling",
+    "SELECT id, spelling FROM word_shared_data WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $spelling",
     { $dictionaryId: dictionaryId, $spelling: normalizedSpelling },
   );
 
   for (const { id: sharedId, spelling } of wordResults) {
-    const entryResults = db.getEachAsync<DictionaryEntry>(
+    const entryResults = await db.getAllAsync<DictionaryEntry>(
       "SELECT * FROM word_definition_data WHERE sharedId = $id",
       { $id: sharedId },
     );
 
-    for await (const row of entryResults) {
+    for (const row of entryResults) {
       entries.push(row);
     }
 
     spellings.push(spelling);
   }
 
+  // find entries using variants
+  const variantResults = await db.getAllAsync<{
+    entryId: number;
+    spelling: string;
+  }>(
+    "SELECT entryId, spelling FROM word_variants WHERE insensitiveSpelling = $spelling",
+    { $spelling: normalizedSpelling },
+  );
+
+  for (const { entryId, spelling } of variantResults) {
+    const row = await db.getFirstAsync<DictionaryEntry>(
+      "SELECT * FROM word_definition_data WHERE sharedId = $id AND dictionaryId = $dictionaryId",
+      { $id: entryId, $dictionaryId: dictionaryId },
+    );
+
+    if (row && !entries.some((entry) => entry.id == row.id)) {
+      entries.push(row);
+      spellings.push(spelling);
+    }
+  }
+
+  // sort results
   entries.sort((a, b) => {
     if (a.sharedId == b.sharedId) {
       // if everything is equal, sort by order key
@@ -369,6 +405,35 @@ export async function prepareNewPronunciation(
   }
 
   return { pronunciationAudio, finalize };
+}
+
+export async function listVariants(entryId: number) {
+  const variants = await db.getAllAsync<{ spelling: string }>(
+    "SELECT spelling FROM word_variants WHERE entryId = $id",
+    {
+      $id: entryId,
+    },
+  );
+
+  return variants.map(({ spelling }) => spelling);
+}
+
+export async function setVariants(entryId: number, variants: string[]) {
+  await db.runAsync("DELETE FROM word_variants WHERE entryId = $id", {
+    $id: entryId,
+  });
+
+  const statement = await db.prepareAsync(
+    "INSERT INTO word_variants (entryId, spelling, insensitiveSpelling) VALUES ($id, $spelling, $normalized)",
+  );
+
+  for (const spelling of variants) {
+    await statement.executeAsync({
+      $id: entryId,
+      $spelling: spelling,
+      $normalized: normalize(spelling),
+    });
+  }
 }
 
 async function resolveNewOrderKey(sharedId: number) {

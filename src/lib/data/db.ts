@@ -118,6 +118,20 @@ CREATE TABLE IF NOT EXISTS synonym_clusters (
   id         INTEGER PRIMARY KEY NOT NULL,
   antonymsId INTEGER REFERENCES synonym_clusters(id) ON DELETE SET NULL
 );
+
+CREATE TABLE IF NOT EXISTS word_variants (
+  entryId             INTEGER NOT NULL REFERENCES word_definition_data(id) ON DELETE CASCADE,
+  spelling            TEXT NOT NULL,
+  insensitiveSpelling TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS word_variants_entry_index ON word_variants (
+  entryId
+);
+
+CREATE INDEX IF NOT EXISTS word_variants_spelling_index ON word_variants (
+  insensitiveSpelling
+);
 `);
 
   // CREATE TABLE IF NOT EXISTS scan_history (
