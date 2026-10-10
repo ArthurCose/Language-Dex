@@ -282,7 +282,7 @@ const wordSearchSelections = [
 ];
 
 export const WordSearchIcon = function () {
-  const styles = worSearchStyles;
+  const styles = wordSearchStyles;
   const [height, setHeight] = useState(0);
 
   const cellSize = height / wordSearchBoard.length;
@@ -319,28 +319,29 @@ export const WordSearchIcon = function () {
           </View>
         ))}
 
-      {wordSearchSelections.map(({ x, y, width, angle, color }, i) => (
-        <View
-          key={i}
-          style={[
-            selectionStyle,
-            {
-              borderColor: color,
-              width: cellSize * width,
-              transform: [
-                { translateX: x * cellSize },
-                { translateY: y * cellSize },
-                { rotate: angle },
-              ],
-            },
-          ]}
-        />
-      ))}
+      {cellSize > 0 &&
+        wordSearchSelections.map(({ x, y, width, angle, color }, i) => (
+          <View
+            key={i}
+            style={[
+              selectionStyle,
+              {
+                borderColor: color,
+                width: cellSize * width,
+                transform: [
+                  { translateX: x * cellSize },
+                  { translateY: y * cellSize },
+                  { rotate: angle },
+                ],
+              },
+            ]}
+          />
+        ))}
     </View>
   );
 };
 
-const worSearchStyles = StyleSheet.create({
+const wordSearchStyles = StyleSheet.create({
   container: {
     height: "100%",
     aspectRatio: 1,
