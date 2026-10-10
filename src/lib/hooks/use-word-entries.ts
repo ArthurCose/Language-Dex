@@ -10,7 +10,7 @@ type WordEntryState = {
     spellings: string[];
     entries: DictionaryEntry[];
   };
-  versionSignal: Signal<number>;
+  revisionSignal: Signal<number>;
 };
 
 export type DictionaryEntryMap = {
@@ -19,7 +19,7 @@ export type DictionaryEntryMap = {
 
 const cache: { [dictionary: number]: DictionaryEntryMap | undefined } = {};
 
-let entryVersionCounter = 0;
+let entryRevisionCounter = 0;
 
 function fetchEntries(
   dictionaryId: number,
@@ -31,8 +31,8 @@ function fetchEntries(
     cachedWord.loaded = true;
     cachedWord.result = result;
 
-    entryVersionCounter += 1;
-    cachedWord.versionSignal.set(entryVersionCounter);
+    entryRevisionCounter += 1;
+    cachedWord.revisionSignal.set(entryRevisionCounter);
   });
 }
 
@@ -41,7 +41,7 @@ export default function useWordEntries(
   normalizedWords: string[],
 ): DictionaryEntryMap {
   // only using this state to drive updates
-  const [_, setVersion] = useState(entryVersionCounter);
+  const [_, setRevision] = useState(entryRevisionCounter);
 
   if (!cache[dictionaryId]) {
     cache[dictionaryId] = {};
@@ -57,7 +57,7 @@ export default function useWordEntries(
         // add to cache
         cachedWord = {
           loaded: false,
-          versionSignal: new Signal(entryVersionCounter),
+          revisionSignal: new Signal(entryRevisionCounter),
         };
 
         // fetch entries
@@ -67,7 +67,7 @@ export default function useWordEntries(
       }
 
       // subscribe
-      cachedWord.versionSignal.subscribe(setVersion);
+      cachedWord.revisionSignal.subscribe(setRevision);
     }
 
     return () => {
@@ -76,7 +76,7 @@ export default function useWordEntries(
         const cachedWord = entryMap[word];
 
         if (cachedWord) {
-          cachedWord.versionSignal.unsubscribe(setVersion);
+          cachedWord.revisionSignal.unsubscribe(setRevision);
         }
       }
 
@@ -90,7 +90,7 @@ export default function useWordEntries(
             continue;
           }
 
-          if (cachedWord.versionSignal.subscriptionCount() == 0) {
+          if (cachedWord.revisionSignal.subscriptionCount() == 0) {
             delete entryMap[word];
           }
         }
@@ -128,10 +128,10 @@ export function useWordEntry(
   ];
 }
 
-const dictionaryVersionSignal = new Signal(0);
+const dictionaryRevisionSignal = new Signal(0);
 
-export function bumpDictionaryVersion() {
-  dictionaryVersionSignal.set(dictionaryVersionSignal.get() + 1);
+export function bumpDictionaryRevision() {
+  dictionaryRevisionSignal.set(dictionaryRevisionSignal.get() + 1);
 }
 
 export function invalidateWordEntries(dictionaryId: number, word: string) {
@@ -150,20 +150,20 @@ export function invalidateWordEntries(dictionaryId: number, word: string) {
   } else {
     cachedWord = {
       loaded: false,
-      versionSignal: new Signal(entryVersionCounter),
+      revisionSignal: new Signal(entryRevisionCounter),
     };
     entryMap[normalizedWord] = cachedWord;
   }
 
   fetchEntries(dictionaryId, normalizedWord, cachedWord)
-    .then(bumpDictionaryVersion)
+    .then(bumpDictionaryRevision)
     .catch(logError);
 }
 
-export function useDictionaryVersioning() {
-  return useSignalValue(dictionaryVersionSignal);
+export function useDictionaryRevision() {
+  return useSignalValue(dictionaryRevisionSignal);
 }
 
-export function useDictionaryVersionSignal() {
-  return dictionaryVersionSignal;
+export function useDictionaryRevisionSignal() {
+  return dictionaryRevisionSignal;
 }

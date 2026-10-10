@@ -10,7 +10,7 @@ import {
   prepareDictionaryUpdate,
 } from "../data";
 import ConfirmationDialog from "./confirmation-dialog";
-import { bumpDictionaryVersion } from "../hooks/use-word-entries";
+import { bumpDictionaryRevision } from "../hooks/use-word-entries";
 import { useSignalLens } from "../hooks/use-signal";
 
 type Props = {
@@ -130,7 +130,7 @@ export default function DictionaryDropdown({
 
           userDataSignal.set(userData);
 
-          bumpDictionaryVersion();
+          bumpDictionaryRevision();
 
           setDeleteRequested(false);
         }}

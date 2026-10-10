@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 import { Span } from "../text";
 import { Theme } from "@/src/lib/themes";
 import { Href, router } from "expo-router";
-import { useDictionaryVersioning } from "@/src/lib/hooks/use-word-entries";
+import { useDictionaryRevision } from "@/src/lib/hooks/use-word-entries";
 import { listGameWords, listWords } from "@/src/lib/data";
 import { logError } from "@/src/lib/log";
 import ListPopup from "../list-popup";
@@ -181,7 +181,7 @@ export default function () {
     userDataSignal,
     (data) => data.activeDictionary,
   );
-  const dictionaryVersion = useDictionaryVersioning();
+  const dictionaryRevision = useDictionaryRevision();
   const [matchStatus, setMatchStatus] = useState({ locked: true });
   const [unscrambleStatus, setUnscrambleStatus] = useState({ locked: true });
   const [guessStatus, setGuessStatus] = useState({ locked: true });
@@ -241,7 +241,7 @@ export default function () {
     testLock(setPronunciationStatus, listGameWords, activeDictionary, {
       limit: 5,
     });
-  }, [activeDictionary, dictionaryVersion]);
+  }, [activeDictionary, dictionaryRevision]);
 
   const lockCallback = (desc: string) => {
     setLockDescription(desc);

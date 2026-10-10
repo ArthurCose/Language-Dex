@@ -15,7 +15,7 @@ import { useTheme } from "@/src/lib/contexts/theme-context";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { UserData } from "@/src/lib/data/user";
 import { Signal, useSignal, useSignalValue } from "@/src/lib/hooks/use-signal";
-import { bumpDictionaryVersion } from "@/src/lib/hooks/use-word-entries";
+import { bumpDictionaryRevision } from "@/src/lib/hooks/use-word-entries";
 import { DictionaryData, importCsv, importData } from "@/src/lib/data";
 import Dialog, { DialogTitle } from "@/src/lib/components/dialog";
 import { Span } from "@/src/lib/components/text";
@@ -48,7 +48,7 @@ function wrapImportPromise(
       onComplete(t("An_error_occurred"));
     })
     .finally(() => {
-      bumpDictionaryVersion();
+      bumpDictionaryRevision();
     });
 }
 

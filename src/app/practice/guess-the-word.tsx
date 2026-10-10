@@ -47,7 +47,7 @@ import {
 import { SubMenuIconButton } from "@/src/lib/components/icon-button";
 import { toGraphemes } from "@/src/lib/practice/words";
 import useWordEntries, {
-  useDictionaryVersionSignal,
+  useDictionaryRevisionSignal,
 } from "@/src/lib/hooks/use-word-entries";
 import { normalize } from "@/src/lib/text-processing/normalization";
 import { DefinitionsBubble } from "@/src/lib/components/definitions/definition-bubbles";
@@ -321,9 +321,9 @@ export default function () {
     pendingGuessLocked || pendingGuess.length == 0 || gameState.over;
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const dictionaryVersionSignal = useDictionaryVersionSignal();
-  const [loadedDictionaryVersion, setDictionaryVersion] = useState(
-    dictionaryVersionSignal.get(),
+  const dictionaryRevisionSignal = useDictionaryRevisionSignal();
+  const [loadedRevision, setDictionaryRevision] = useState(
+    dictionaryRevisionSignal.get(),
   );
 
   const keyboardVisible = useKeyboardVisible();
@@ -475,7 +475,7 @@ export default function () {
         open={gameState.displayingResults}
         onClose={() => setGameState({ ...gameState, displayingResults: false })}
         onReplay={() => {
-          const version = dictionaryVersionSignal.get();
+          const revision = dictionaryRevisionSignal.get();
 
           const startNextGame = () => {
             const newState = initGameState();
@@ -484,12 +484,12 @@ export default function () {
             setPendingGuessLocked(false);
           };
 
-          if (loadedDictionaryVersion != version) {
+          if (loadedRevision != revision) {
             // need to reload the word list
             loadWords(activeDictionary)
               .then((words) => {
                 setAllWords(words);
-                setDictionaryVersion(version);
+                setDictionaryRevision(revision);
                 startNextGame();
               })
               .catch(logError);

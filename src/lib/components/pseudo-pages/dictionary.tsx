@@ -10,7 +10,7 @@ import { listWords, wordOrderOptions } from "@/src/lib/data";
 import { Span } from "../text";
 import { router } from "expo-router";
 import { logError } from "@/src/lib/log";
-import { useDictionaryVersioning } from "@/src/lib/hooks/use-word-entries";
+import { useDictionaryRevision } from "@/src/lib/hooks/use-word-entries";
 import SearchInput from "../search-input";
 import { normalize } from "../../text-processing/normalization";
 
@@ -88,7 +88,7 @@ export default function Dictionary() {
     [filteredWords, ascending],
   );
 
-  const dictionaryVersion = useDictionaryVersioning();
+  const dictionaryRevision = useDictionaryRevision();
 
   useEffect(() => {
     setAllWords([]);
@@ -133,7 +133,7 @@ export default function Dictionary() {
     return () => {
       cancelled = true;
     };
-  }, [userActiveDictionary, partOfSpeechFilter, orderBy, dictionaryVersion]);
+  }, [userActiveDictionary, partOfSpeechFilter, orderBy, dictionaryRevision]);
 
   // resolve parts of speech list
   const [partOfSpeechOptions, resolveWordFilterLabel] = useMemo(() => {

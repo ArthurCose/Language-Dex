@@ -15,7 +15,7 @@ import { useSignalValue } from "@/src/lib/hooks/use-signal";
 import { DictionaryStats, listWords, UserData } from "@/src/lib/data";
 import { Theme } from "@/src/lib/themes";
 import { logError } from "@/src/lib/log";
-import { useDictionaryVersioning } from "@/src/lib/hooks/use-word-entries";
+import { useDictionaryRevision } from "@/src/lib/hooks/use-word-entries";
 import { GameTitle } from "../practice/info";
 import IconButton from "../icon-button";
 import {
@@ -99,7 +99,7 @@ function IconWithStat({
 
 function StatsBlock({ theme, userData }: { theme: Theme; userData: UserData }) {
   const [t] = useTranslation();
-  const version = useDictionaryVersioning();
+  const revision = useDictionaryRevision();
 
   const [overallLongestWord, setOverallLongestWord] = useState<
     string | undefined
@@ -125,7 +125,7 @@ function StatsBlock({ theme, userData }: { theme: Theme; userData: UserData }) {
     })
       .then((words) => setOverallLongestWord(words[0]))
       .catch(logError);
-  }, [userData.activeDictionary, version]);
+  }, [userData.activeDictionary, revision]);
 
   let label, stats, longestWord;
 
