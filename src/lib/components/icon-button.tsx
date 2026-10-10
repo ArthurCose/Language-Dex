@@ -2,24 +2,36 @@ import {
   ColorValue,
   GestureResponderEvent,
   Pressable,
+  StyleProp,
   StyleSheet,
   View,
+  ViewStyle,
 } from "react-native";
 import { useTheme } from "../contexts/theme-context";
 
 type Props = {
+  style?: StyleProp<ViewStyle>;
+  pressableStyle?: StyleProp<ViewStyle>;
   icon: React.FunctionComponent<{ size: number; color?: ColorValue }>;
   onPress?: (event: GestureResponderEvent) => void;
   disabled?: boolean;
 };
 
-export default function IconButton({ icon: Icon, onPress, disabled }: Props) {
+export default function IconButton({
+  style,
+  pressableStyle,
+  icon: Icon,
+  onPress,
+  disabled,
+}: Props) {
   const theme = useTheme();
 
   return (
-    <View style={styles.container}>
+    <View style={style ? [styles.container, style] : styles.container}>
       <Pressable
-        style={styles.pressable}
+        style={
+          pressableStyle ? [styles.pressable, pressableStyle] : styles.pressable
+        }
         android_ripple={theme.ripples.transparentButton}
         pointerEvents="box-only"
         onPress={onPress}

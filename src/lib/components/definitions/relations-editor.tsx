@@ -475,7 +475,7 @@ export function RelationsEditor({
   const synonymsId = useSignalValue(data.synonymsId);
 
   return (
-    <View style={style}>
+    <View style={[styles.root, style]}>
       <FloatingSwitcher
         style={styles.switcher}
         items={["Synonyms", "Antonyms"] as TabName[]}
@@ -517,6 +517,8 @@ export function RelationsEditor({
         <View style={styles.options}>
           {(synonyms.length > 0 || antonyms.length > 0) && (
             <IconButton
+              style={styles.option}
+              pressableStyle={styles.optionPressable}
               icon={synonymsId != null ? UnlinkIcon : CloseIcon}
               onPress={() => data.unlink()}
               disabled={loadingWords}
@@ -540,8 +542,12 @@ export function RelationsEditor({
 }
 
 const styles = StyleSheet.create({
+  root: {
+    paddingBottom: 4,
+  },
   switcher: {
     margin: 8,
+    marginBottom: 4,
   },
   tabContent: {
     flexDirection: "row",
@@ -557,6 +563,12 @@ const styles = StyleSheet.create({
   options: {
     flexDirection: "column",
     paddingRight: 8,
+  },
+  option: {
+    marginBottom: -4,
+  },
+  optionPressable: {
+    padding: 6,
   },
   wordPressable: {
     overflow: "hidden",
