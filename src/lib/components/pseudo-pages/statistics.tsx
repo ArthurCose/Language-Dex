@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Share, ScrollView } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Share,
+  ScrollView,
+  StyleProp,
+  ViewStyle,
+} from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/src/lib/contexts/theme-context";
 import { Span } from "../text";
@@ -11,7 +18,15 @@ import { logError } from "@/src/lib/log";
 import { useDictionaryVersioning } from "@/src/lib/hooks/use-word-entries";
 import { GameTitle } from "../practice/info";
 import IconButton from "../icon-button";
-import { AllDictionariesIcon, DictionaryIcon, ShareIcon } from "../icons";
+import {
+  AllDictionariesIcon,
+  DefinitionIcon,
+  DictionaryIcon,
+  EducationIcon,
+  ExampleIcon,
+  MicrophoneIcon,
+  ShareIcon,
+} from "../icons";
 import { TFunction } from "i18next";
 
 import ReadSvg from "@/assets/svgs/Statistics-Read.svg";
@@ -57,6 +72,31 @@ function renderStatsList(
   ));
 }
 
+function IconWithStat({
+  style,
+  theme,
+  icon,
+  label,
+  value,
+}: {
+  style?: StyleProp<ViewStyle>;
+  theme: Theme;
+  icon: React.ReactNode;
+  label: string;
+  value: number | string;
+}) {
+  return (
+    <View style={[styles.iconWithStat, style]}>
+      {icon}
+
+      <View>
+        <Span style={theme.styles.poppingText}>{value}</Span>
+        <Span>{label}</Span>
+      </View>
+    </View>
+  );
+}
+
 function StatsBlock({ theme, userData }: { theme: Theme; userData: UserData }) {
   const [t] = useTranslation();
   const version = useDictionaryVersioning();
@@ -87,10 +127,9 @@ function StatsBlock({ theme, userData }: { theme: Theme; userData: UserData }) {
       .catch(logError);
   }, [userData.activeDictionary, version]);
 
-  let label, dictionaryId, stats, longestWord;
+  let label, stats, longestWord;
 
   if (viewingOverall) {
-    dictionaryId = userData.activeDictionary;
     stats = userData.stats;
     label = t("Overall");
     longestWord = overallLongestWord;
@@ -99,7 +138,6 @@ function StatsBlock({ theme, userData }: { theme: Theme; userData: UserData }) {
       (d) => d.id == userData.activeDictionary,
     )!;
 
-    dictionaryId = null;
     stats = dictionary.stats;
     label = dictionary.name;
     longestWord = activeLongestWord;
@@ -148,16 +186,12 @@ function StatsBlock({ theme, userData }: { theme: Theme; userData: UserData }) {
       </View>
 
       <View style={listBlockStyles}>
-        <View style={styles.list}>
-          <Span>
-            {t("label", { label: t("Longest_Word") })}{" "}
-            <Span style={theme.styles.poppingText}>
-              {longestWord != undefined ? longestWord : t("NA")}
-            </Span>
+        <Span style={styles.longestWord}>
+          {t("label", { label: t("Longest_Word") })}{" "}
+          <Span style={theme.styles.poppingText}>
+            {longestWord != undefined ? longestWord : t("NA")}
           </Span>
-
-          {renderStatsList(theme, t, stats, wordStats)}
-        </View>
+        </Span>
       </View>
 
       <View style={listBlockStyles}>
@@ -166,6 +200,42 @@ function StatsBlock({ theme, userData }: { theme: Theme; userData: UserData }) {
         </View>
 
         <ReadSvg style={styles.readSvg} width={100} height={50} />
+      </View>
+
+      <View style={styles.iconWithStatRow}>
+        <IconWithStat
+          style={listBlockStyles}
+          theme={theme}
+          icon={<DefinitionIcon size={32} color={theme.colors.disabledText} />}
+          label={t("Total_Definitions")}
+          value={stats.definitions ?? 0}
+        />
+
+        <IconWithStat
+          style={listBlockStyles}
+          theme={theme}
+          icon={<ExampleIcon size={32} color={theme.colors.disabledText} />}
+          label={t("Total_Examples")}
+          value={stats.totalExamples ?? 0}
+        />
+      </View>
+
+      <View style={styles.iconWithStatRow}>
+        <IconWithStat
+          style={listBlockStyles}
+          theme={theme}
+          icon={<MicrophoneIcon size={32} color={theme.colors.disabledText} />}
+          label={t("Total_Pronounced")}
+          value={stats.totalPronounced ?? 0}
+        />
+
+        <IconWithStat
+          style={listBlockStyles}
+          theme={theme}
+          icon={<EducationIcon size={32} color={theme.colors.disabledText} />}
+          label={t("Total_Max_Confidence")}
+          value={stats.documentedMaxConfidence ?? 0}
+        />
       </View>
 
       <View style={listBlockStyles}>
@@ -261,6 +331,24 @@ const styles = StyleSheet.create({
   list: {
     paddingVertical: 12,
     paddingHorizontal: 12,
+  },
+  iconWithStatRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  iconWithStat: {
+    flex: 1,
+    minWidth: 0,
+    alignItems: "center",
+    flexDirection: "row",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    gap: 12,
+  },
+  longestWord: {
+    alignContent: "center",
+    marginHorizontal: "auto",
+    padding: 12,
   },
   readSvg: {
     alignSelf: "center",
