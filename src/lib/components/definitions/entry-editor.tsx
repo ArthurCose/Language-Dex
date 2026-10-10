@@ -234,6 +234,7 @@ export default function EntryEditor(props: Props) {
       // save variants
       if (!shallowEqual(variantSpellings, defaultVariants)) {
         setVariants(entryId, variantSpellings);
+        setDefaultVariants(variantSpellings);
       }
 
       // invalidate the old word
