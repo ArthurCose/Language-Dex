@@ -336,7 +336,7 @@ export default function EntryEditor(props: Props) {
         <View style={styles.row}>
           <EducationIcon
             style={styles.iconLabel}
-            color={theme.colors.iconButton}
+            color={theme.colors.disabledText}
             size={32}
           />
 
@@ -356,7 +356,7 @@ export default function EntryEditor(props: Props) {
         <View style={styles.row}>
           <PartOfSpeechIcon
             style={styles.iconLabel}
-            color={theme.colors.iconButton}
+            color={theme.colors.disabledText}
             size={32}
           />
           <PartOfSpeechDropdown
@@ -372,7 +372,7 @@ export default function EntryEditor(props: Props) {
         <View style={styles.row}>
           <DefinitionIcon
             style={styles.iconLabel}
-            color={theme.colors.iconButton}
+            color={theme.colors.disabledText}
             size={32}
           />
           <CustomMultilineTextInput
@@ -390,7 +390,7 @@ export default function EntryEditor(props: Props) {
         <View style={styles.row}>
           <ExampleIcon
             style={styles.iconLabel}
-            color={theme.colors.iconButton}
+            color={theme.colors.disabledText}
             size={32}
           />
 
@@ -425,7 +425,7 @@ export default function EntryEditor(props: Props) {
         <View style={styles.row}>
           <NotesIcon
             style={styles.iconLabel}
-            color={theme.colors.iconButton}
+            color={theme.colors.disabledText}
             size={32}
           />
           <CustomMultilineTextInput
@@ -443,7 +443,7 @@ export default function EntryEditor(props: Props) {
         <View style={styles.row}>
           <WordRelationIcon
             style={styles.iconLabel}
-            color={theme.colors.iconButton}
+            color={theme.colors.disabledText}
             size={32}
           />
           <RelationsEditor style={styles.input} data={relationsEditorData} />
@@ -454,7 +454,7 @@ export default function EntryEditor(props: Props) {
         <View style={styles.row}>
           <VariantIcon
             style={styles.iconLabel}
-            color={theme.colors.iconButton}
+            color={theme.colors.disabledText}
             size={32}
           />
           <VariantsEditor
