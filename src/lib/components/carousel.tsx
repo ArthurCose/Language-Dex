@@ -8,8 +8,8 @@ import Animated, {
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
-const slidePercent = 50;
-const slideMs = 120;
+const slidePercent = 15;
+const slideMs = 100;
 
 export default function Carousel({
   style,
