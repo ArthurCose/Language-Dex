@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import * as DropDownPrimitive from "@rn-primitives/dropdown-menu";
 import { useTheme } from "@/src/lib/contexts/theme-context";
 import useWordEntries from "@/src/lib/hooks/use-word-entries";
-import { DefinitionsBubble } from "./definitions/definition-bubbles";
+import { DefinitionsPopover } from "./definitions/definition-popover";
 import { Span } from "./text";
 import {
   extractParagraph,
@@ -77,7 +77,7 @@ export default function ScannedWord({
       </DropDownPrimitive.Trigger>
 
       {open && (
-        <DefinitionsBubble
+        <DefinitionsPopover
           text={text}
           entryResult={entryResult}
           generateExample={() =>

@@ -30,7 +30,7 @@ import useWordEntries, {
 import { useTranslation } from "react-i18next";
 import FloatingSwitcher from "../floating-switcher";
 import * as DropDownPrimitive from "@rn-primitives/dropdown-menu";
-import { DefinitionBubble } from "./definition-bubbles";
+import { DefinitionPopover } from "./definition-popover";
 import { Span } from "../text";
 import SearchWordDialog from "./search-word-dialog";
 import IconButton from "../icon-button";
@@ -93,7 +93,7 @@ function RelationList({
             </DropDownPrimitive.Trigger>
 
             {word == selectedWord && entry && (
-              <DefinitionBubble
+              <DefinitionPopover
                 entry={entry}
                 readOnly
                 contrast

@@ -50,7 +50,7 @@ import useWordEntries, {
   useDictionaryRevisionSignal,
 } from "@/src/lib/hooks/use-word-entries";
 import { normalize } from "@/src/lib/text-processing/normalization";
-import { DefinitionsBubble } from "@/src/lib/components/definitions/definition-bubbles";
+import { DefinitionsPopover } from "@/src/lib/components/definitions/definition-popover";
 
 type Guess = {
   lowercased: string;
@@ -284,7 +284,7 @@ const GuessRow = React.memo(function ({
       </ScrollView>
 
       {open && (
-        <DefinitionsBubble
+        <DefinitionsPopover
           text={guess.lowercased}
           entryResult={exactResult}
           close={close}

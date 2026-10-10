@@ -19,7 +19,7 @@ import ContextMenu, {
 } from "@/src/lib/components/context-menu";
 import { normalize } from "@/src/lib/text-processing/normalization";
 
-type DefinitionBubbleProps = {
+type DefinitionPopoverProps = {
   entry: DictionaryEntry;
   readOnly: boolean;
   contrast?: boolean;
@@ -27,7 +27,7 @@ type DefinitionBubbleProps = {
   close: () => void;
 };
 
-type DefinitionsBubbleProps = {
+type DefinitionsPopoverProps = {
   text: string;
   entryResult?: {
     spellings: string[];
@@ -66,13 +66,13 @@ function DefinitionContent({
   );
 }
 
-export function DefinitionBubble({
+export function DefinitionPopover({
   entry,
   readOnly,
   contrast,
   onRemove,
   close,
-}: DefinitionBubbleProps) {
+}: DefinitionPopoverProps) {
   const theme = useTheme();
   const [t] = useTranslation();
   const userDataSignal = useUserDataSignal();
@@ -141,12 +141,12 @@ export function DefinitionBubble({
   );
 }
 
-export function DefinitionsBubble({
+export function DefinitionsPopover({
   text,
   entryResult,
   close,
   generateExample,
-}: DefinitionsBubbleProps) {
+}: DefinitionsPopoverProps) {
   const theme = useTheme();
   const [t] = useTranslation();
   const userDataSignal = useUserDataSignal();
