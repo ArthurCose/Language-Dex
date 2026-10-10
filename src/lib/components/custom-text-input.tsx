@@ -63,7 +63,7 @@ export function SignalledTextInput(props: SignalledTextInputProps) {
 type CustomMultilineTextInputProps = {
   verticalPadding: number;
   minHeight?: number;
-} & TextInputProps;
+} & Omit<TextInputProps, "scrollEnabled" | "multiline" | "textAlignVertical">;
 
 export function CustomMultilineTextInput(props: CustomMultilineTextInputProps) {
   const textInputRef = useBlurWhenKeyboardHides();
@@ -90,6 +90,7 @@ export function CustomMultilineTextInput(props: CustomMultilineTextInputProps) {
       scrollEnabled={false}
       onContentSizeChange={(e) => {
         setContentHeight(e.nativeEvent.contentSize.height);
+        props.onContentSizeChange?.(e);
       }}
     />
   );
