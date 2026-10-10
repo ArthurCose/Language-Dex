@@ -49,7 +49,7 @@ export default function () {
       setNormalizedWord={setNormalizedWord}
       entryId={entryId}
       setEntryId={setEntryId}
-      generatedExample={entryId == null ? params.example : undefined}
+      generatedExample={params.example}
     />
   );
 }

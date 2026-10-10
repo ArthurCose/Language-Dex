@@ -201,6 +201,16 @@ export function DefinitionsBubble({
     return blocks;
   }, [entryResult]);
 
+  const generateParams = () => {
+    let params = "";
+
+    if (generateExample) {
+      params = "example=" + encodeURIComponent(generateExample());
+    }
+
+    return params;
+  };
+
   return (
     <ContextMenu onClose={close}>
       {entryBlocks &&
@@ -229,10 +239,10 @@ export function DefinitionsBubble({
                     android_ripple={theme.ripples.popup}
                     pointerEvents="box-only"
                     onPress={() => {
+                      const wordParam = encodeURIComponent(text);
+                      const params = generateParams();
                       router.navigate(
-                        `/words/existing/${encodeURIComponent(
-                          text,
-                        )}/entry/${encodeURIComponent(entry.id)}`,
+                        `/words/existing/${wordParam}/entry/${entry.id}?${params}`,
                       );
                       close();
                     }}
@@ -250,12 +260,7 @@ export function DefinitionsBubble({
       <ContextMenuPressable
         onPress={() => {
           const wordParam = encodeURIComponent(text);
-          let params = "";
-
-          if (generateExample) {
-            params = "example=" + encodeURIComponent(generateExample());
-          }
-
+          const params = generateParams();
           router.navigate(`/words/existing/${wordParam}/entry/add?${params}`);
           close();
         }}

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, View, Text, ScrollView } from "react-native";
-import { useTheme } from "@/src/lib/contexts/theme-context";
+import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
+import { useTheme } from "@/src/lib/contexts/theme-context";
 import CustomTextInput, {
   CustomMultilineTextInput,
 } from "@/src/lib/components/custom-text-input";
-import { useTranslation } from "react-i18next";
 import {
   ArrowLeftIcon,
   DefinitionIcon,
@@ -14,6 +14,7 @@ import {
   NotesIcon,
   PartOfSpeechIcon,
   PlayAudioIcon,
+  PlusIcon,
   SaveIcon,
   TrashIcon,
   VariantIcon,
@@ -22,6 +23,7 @@ import {
 import IconButton, {
   SubMenuIconButton,
 } from "@/src/lib/components/icon-button";
+import { OutlineLabeledIconButton } from "@/src/lib/components/outlined-button";
 import {
   invalidateWordEntries,
   useWordEntry,
@@ -49,17 +51,17 @@ import SubMenuTopNav, {
   SubMenuActions,
 } from "@/src/lib/components/sub-menu-top-nav";
 import useBackHandler from "@/src/lib/hooks/use-back-handler";
+import ConfidenceStrip from "./confidence-strip";
 import PronunciationEditor from "./pronunciation-editor";
 import { useAudioPlayer } from "expo-audio";
 import { stripProtocol } from "@/src/lib/path";
+import { normalize } from "@/src/lib/text-processing/normalization";
+import { shallowEqual } from "@/src/lib/arrays";
 import { RelationsEditorData, RelationsEditor } from "./relations-editor";
-import ConfidenceStrip from "./confidence-strip";
+import VariantsEditor from "./variants-editor";
 
 import Cat from "@/assets/svgs/Definition-Editor.svg";
 import CatInteraction from "@/src/lib/components/cat-interaction";
-import { normalize } from "../../text-processing/normalization";
-import VariantsEditor from "./variants-editor";
-import { shallowEqual } from "../../arrays";
 
 type Props = {
   normalizedWord?: string;
@@ -140,7 +142,7 @@ export default function EntryEditor(props: Props) {
     confidence != defaultConfidence ||
     partOfSpeech != defaultPartOfSpeech ||
     definition != defaultDefinition ||
-    example != defaultExample ||
+    example != storedExample ||
     notes != defaultNotes ||
     pronunciationUri != defaultPronunciationUri ||
     relationsEdited ||
@@ -391,14 +393,31 @@ export default function EntryEditor(props: Props) {
             color={theme.colors.iconButton}
             size={32}
           />
-          <CustomMultilineTextInput
-            style={[styles.input, styles.textInput]}
-            verticalPadding={styles.textInput.paddingVertical}
-            minHeight={92}
-            placeholder={t("example_placeholder")}
-            value={example}
-            onChangeText={setExample}
-          />
+
+          <View style={styles.input}>
+            <CustomMultilineTextInput
+              style={styles.textInput}
+              verticalPadding={styles.textInput.paddingVertical}
+              minHeight={92}
+              placeholder={t("example_placeholder")}
+              value={example}
+              onChangeText={setExample}
+            />
+
+            {props.generatedExample != null &&
+              !example.includes(props.generatedExample) && (
+                <OutlineLabeledIconButton
+                  style={styles.floatingOutlinedButton}
+                  icon={PlusIcon}
+                  label={t("From_Reader")}
+                  onPress={() => {
+                    let newExample =
+                      example.trimEnd() + "\n\n" + props.generatedExample;
+                    setExample(newExample.trimStart());
+                  }}
+                />
+              )}
+          </View>
         </View>
 
         <View style={theme.styles.separator} />
@@ -534,6 +553,11 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+  },
+  floatingOutlinedButton: {
+    margin: 8,
+    marginTop: 0,
+    marginLeft: "auto",
   },
   row: {
     display: "flex",
