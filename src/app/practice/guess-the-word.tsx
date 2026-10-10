@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
+import * as DropDownPrimitive from "@rn-primitives/dropdown-menu";
 import { isValidWord, listWords, updateStatistics } from "@/src/lib/data";
 import { Grapheme } from "@akahuku/unistring";
 import { pickIndexBiased } from "@/src/lib/practice/random";
@@ -45,8 +46,18 @@ import {
 } from "@/src/lib/components/practice/docked-text-input";
 import { SubMenuIconButton } from "@/src/lib/components/icon-button";
 import { toGraphemes } from "@/src/lib/practice/words";
+import useWordEntries, {
+  useDictionaryVersionSignal,
+} from "@/src/lib/hooks/use-word-entries";
+import { normalize } from "@/src/lib/text-processing/normalization";
+import { DefinitionsBubble } from "@/src/lib/components/definitions/definition-bubbles";
 
-type Guess = { graphemes: Grapheme[]; pending: boolean; valid: boolean };
+type Guess = {
+  lowercased: string;
+  graphemes: Grapheme[];
+  pending: boolean;
+  valid: boolean;
+};
 
 type GameState = {
   over: boolean;
@@ -208,6 +219,7 @@ function GuessTail({ theme, guess, correctGraphemes }: GuessTailProps) {
 }
 
 type GuessRowProps = {
+  dictionaryId: number;
   theme: Theme;
   guess: Guess;
   correctGraphemes: Grapheme[];
@@ -215,29 +227,81 @@ type GuessRowProps = {
 
 const GuessRow = React.memo(function ({
   theme,
+  dictionaryId,
   guess,
   correctGraphemes,
 }: GuessRowProps) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<DropDownPrimitive.TriggerRef | null>(null);
+
+  const normalized = normalize(guess.lowercased);
+  const wordDeps = useMemo(() => [normalized], [guess]);
+  const entryMap = useWordEntries(dictionaryId, wordDeps);
+
+  const close = () => {
+    setOpen(false);
+    triggerRef.current?.close();
+  };
+
+  const entryResult = entryMap[normalized]?.result;
+  let exactResult;
+
+  if (entryResult) {
+    exactResult = {
+      entries: entryResult.entries.filter(
+        (entry) => entry.spelling.toLowerCase() == guess.lowercased,
+      ),
+      spellings: entryResult.spellings.filter(
+        (spelling) => spelling.toLowerCase() == guess.lowercased,
+      ),
+    };
+  }
+
   return (
-    <ScrollView contentContainerStyle={styles.guess} horizontal>
-      {guess.graphemes.map((_, i) => (
-        <GuessCharacter
-          key={i}
+    <DropDownPrimitive.Root>
+      <ScrollView contentContainerStyle={styles.guess} horizontal>
+        <DropDownPrimitive.Trigger
+          ref={triggerRef}
+          onPress={() => setOpen(true)}
+          style={styles.guess}
+        >
+          {guess.graphemes.map((_, i) => (
+            <GuessCharacter
+              key={i}
+              theme={theme}
+              guess={guess}
+              index={i}
+              correctGraphemes={correctGraphemes}
+            />
+          ))}
+        </DropDownPrimitive.Trigger>
+
+        <GuessTail
           theme={theme}
           guess={guess}
-          index={i}
           correctGraphemes={correctGraphemes}
         />
-      ))}
+      </ScrollView>
 
-      <GuessTail
-        theme={theme}
-        guess={guess}
-        correctGraphemes={correctGraphemes}
-      />
-    </ScrollView>
+      {open && (
+        <DefinitionsBubble
+          text={guess.lowercased}
+          entryResult={exactResult}
+          close={close}
+        />
+      )}
+    </DropDownPrimitive.Root>
   );
 });
+
+function loadWords(activeDictionary: number) {
+  return listWords(activeDictionary, {
+    ascending: true,
+    orderBy: "confidence",
+    minLength: 1,
+    belowMaxConfidence: true,
+  });
+}
 
 export default function () {
   const theme = useTheme();
@@ -257,15 +321,15 @@ export default function () {
     pendingGuessLocked || pendingGuess.length == 0 || gameState.over;
   const scrollViewRef = useRef<ScrollView>(null);
 
+  const dictionaryVersionSignal = useDictionaryVersionSignal();
+  const [loadedDictionaryVersion, setDictionaryVersion] = useState(
+    dictionaryVersionSignal.get(),
+  );
+
   const keyboardVisible = useKeyboardVisible();
 
   useEffect(() => {
-    listWords(activeDictionary, {
-      ascending: true,
-      orderBy: "confidence",
-      minLength: 1,
-      belowMaxConfidence: true,
-    })
+    loadWords(activeDictionary)
       .then((words) => {
         setAllWords(words);
 
@@ -295,6 +359,7 @@ export default function () {
     const guesses = [
       ...gameState.guesses,
       {
+        lowercased: lowerCaseGuess,
         graphemes: toGraphemes(lowerCaseGuess),
         pending: true,
         valid: false,
@@ -384,6 +449,7 @@ export default function () {
       >
         {gameState.guesses.map((guess, i) => (
           <GuessRow
+            dictionaryId={activeDictionary}
             key={i}
             theme={theme}
             guess={guess}
@@ -409,10 +475,29 @@ export default function () {
         open={gameState.displayingResults}
         onClose={() => setGameState({ ...gameState, displayingResults: false })}
         onReplay={() => {
-          const newState = initGameState();
-          startGame(newState, allWords);
-          setGameState(newState);
-          setPendingGuessLocked(false);
+          const version = dictionaryVersionSignal.get();
+
+          const startNextGame = () => {
+            const newState = initGameState();
+            startGame(newState, allWords);
+            setGameState(newState);
+            setPendingGuessLocked(false);
+          };
+
+          if (loadedDictionaryVersion != version) {
+            // need to reload the word list
+            loadWords(activeDictionary)
+              .then((words) => {
+                setAllWords(words);
+                setDictionaryVersion(version);
+                startNextGame();
+              })
+              .catch(logError);
+            return;
+          }
+
+          // we can start immediately
+          startNextGame();
         }}
       >
         <ResultsRow>

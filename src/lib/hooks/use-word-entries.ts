@@ -163,3 +163,7 @@ export function invalidateWordEntries(dictionaryId: number, word: string) {
 export function useDictionaryVersioning() {
   return useSignalValue(dictionaryVersionSignal);
 }
+
+export function useDictionaryVersionSignal() {
+  return dictionaryVersionSignal;
+}
