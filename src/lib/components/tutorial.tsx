@@ -17,6 +17,8 @@ const tutorialSteps = [
   { page: 1, textKey: "tutorial_end" },
 ];
 
+const previewTime = 1000;
+
 export default function Tutorial({
   setCurrentPage,
 }: {
@@ -49,7 +51,7 @@ export default function Tutorial({
     setTimeout(() => {
       setDescription(nextStep.textKey);
       setOpen(true);
-    }, 500);
+    }, previewTime);
   };
 
   return (
