@@ -74,6 +74,7 @@ type Palette = {
   iconButton: string;
   subMenuIconButton: string;
   subMenuIconButtonDisabled: string;
+  outlinedButton: string;
   borders: string;
   definitionBorder: string;
   hintScore: string;
@@ -312,6 +313,7 @@ export const themeConstructors: {
         iconButton: "#aaa",
         subMenuIconButton: "white",
         subMenuIconButtonDisabled: "grey",
+        outlinedButton: "#ddd",
         borders: "#303035",
         definitionBorder: "#09090b",
         hintScore: "#e8a200",
@@ -350,6 +352,7 @@ export const themeConstructors: {
       iconButton: "#444",
       subMenuIconButton: "#444",
       subMenuIconButtonDisabled: "#999",
+      outlinedButton: primary.default,
       borders: "lightgrey",
       definitionBorder: "#eeeef2",
       hintScore: "rgba(255, 162, 0, 1)",

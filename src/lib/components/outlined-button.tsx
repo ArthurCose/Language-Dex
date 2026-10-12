@@ -10,22 +10,21 @@ import { useTheme } from "@/src/lib/contexts/theme-context";
 import { Span } from "./text";
 
 export default function OutlinedButton({
+  color,
   style,
   children,
   onPress,
 }: {
+  color?: ColorValue;
   style?: StyleProp<ViewStyle>;
   onPress?: PressableProps["onPress"];
 } & React.PropsWithChildren) {
   const theme = useTheme();
+  color ??= theme.colors.primary.default;
 
   return (
     <Pressable
-      style={[
-        styles.outlinedButton,
-        { borderColor: theme.colors.iconButton },
-        style,
-      ]}
+      style={[styles.outlinedButton, { borderColor: color }, style]}
       android_ripple={theme.ripples.primaryButton}
       pointerEvents="box-only"
       onPress={onPress}
@@ -36,34 +35,33 @@ export default function OutlinedButton({
 }
 
 export function OutlineLabeledIconButton({
+  color,
   style,
   icon: Icon,
   label,
   onPress,
 }: {
+  color?: ColorValue;
   style?: StyleProp<ViewStyle>;
   icon: React.FunctionComponent<{ size: number; color?: ColorValue }>;
   label: string;
   onPress?: PressableProps["onPress"];
 }) {
   const theme = useTheme();
+  color ??= theme.colors.outlinedButton;
 
   return (
     <Pressable
-      style={[
-        styles.outlinedButton,
-        { borderColor: theme.colors.iconButton },
-        style,
-      ]}
+      style={[styles.outlinedButton, { borderColor: color }, style]}
       android_ripple={theme.ripples.primaryButton}
       pointerEvents="box-only"
       onPress={onPress}
     >
-      <Icon size={26} color={theme.colors.iconButton} />
+      <Icon size={26} color={color} />
 
       <Span
         style={{
-          color: theme.colors.iconButton,
+          color,
           textAlignVertical: "center",
           fontWeight: 500,
           paddingRight: 6,
