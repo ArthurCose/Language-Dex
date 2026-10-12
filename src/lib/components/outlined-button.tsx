@@ -3,6 +3,7 @@ import {
   Pressable,
   PressableProps,
   StyleProp,
+  StyleSheet,
   ViewStyle,
 } from "react-native";
 import { useTheme } from "@/src/lib/contexts/theme-context";
@@ -21,14 +22,8 @@ export default function OutlinedButton({
   return (
     <Pressable
       style={[
-        {
-          flexDirection: "row",
-          alignItems: "center",
-          borderWidth: 2,
-          borderColor: theme.colors.iconButton,
-          borderRadius: 8,
-          overflow: "hidden",
-        },
+        styles.outlinedButton,
+        { borderColor: theme.colors.iconButton },
         style,
       ]}
       android_ripple={theme.ripples.primaryButton}
@@ -54,7 +49,16 @@ export function OutlineLabeledIconButton({
   const theme = useTheme();
 
   return (
-    <OutlinedButton style={style} onPress={onPress}>
+    <Pressable
+      style={[
+        styles.outlinedButton,
+        { borderColor: theme.colors.iconButton },
+        style,
+      ]}
+      android_ripple={theme.ripples.primaryButton}
+      pointerEvents="box-only"
+      onPress={onPress}
+    >
       <Icon size={26} color={theme.colors.iconButton} />
 
       <Span
@@ -67,6 +71,16 @@ export function OutlineLabeledIconButton({
       >
         {label}
       </Span>
-    </OutlinedButton>
+    </Pressable>
   );
 }
+
+const styles = StyleSheet.create({
+  outlinedButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 2,
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+});
