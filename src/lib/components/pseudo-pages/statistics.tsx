@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   listBlock: {
     borderRadius: 8,
     borderWidth: 1,
-    marginBottom: 16,
+    marginBottom: 8,
     flexDirection: "row",
   },
   list: {
