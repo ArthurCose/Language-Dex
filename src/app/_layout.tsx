@@ -13,10 +13,7 @@ import { clearLog, log, logError } from "@/src/lib/log";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import KeyboardDismisser from "@/src/lib/components/keyboard-dismisser";
 import { Signal, useSignal, useSignalLens } from "@/src/lib/hooks/use-signal";
-import {
-  useColorScheme,
-  useColorSchemeWithUserDataSignal,
-} from "@/src/lib/contexts/color-scheme";
+import { useColorSchemeWithUserDataSignal } from "@/src/lib/contexts/color-scheme";
 
 import "@/src/lib/i18n";
 import { useTranslation } from "react-i18next";
