@@ -45,7 +45,7 @@ import {
   DockedTextInputSubmitButton,
 } from "@/src/lib/components/practice/docked-text-input";
 import { SubMenuIconButton } from "@/src/lib/components/icon-button";
-import { toGraphemes } from "@/src/lib/practice/words";
+import { toGraphemes } from "@/src/lib/text-processing/graphemes";
 import useWordEntries, {
   useDictionaryRevisionSignal,
 } from "@/src/lib/hooks/use-word-entries";

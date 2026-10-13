@@ -69,7 +69,7 @@ import {
   joinGraphemes,
   toGraphemes,
   toGraphemeStrings,
-} from "@/src/lib/practice/words";
+} from "@/src/lib/text-processing/graphemes";
 import useAnimationEffects from "@/src/lib/hooks/use-animation-effects";
 import { DefinitionBubble } from "@/src/lib/components/practice/definition-bubbles";
 import { useGameWordEntry } from "@/src/lib/hooks/use-game-word-entry";

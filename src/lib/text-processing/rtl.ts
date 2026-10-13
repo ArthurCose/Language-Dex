@@ -1,48 +1,4 @@
-import Unistring, { Grapheme } from "@akahuku/unistring";
-
-export function toGraphemeStrings(word: string) {
-  const graphemes: string[] = [];
-
-  Unistring(word).forEach((grapheme) => {
-    graphemes.push(grapheme.rawString);
-  });
-
-  if (graphemes.length > 0 && isRTL(graphemes[0])) {
-    graphemes.reverse();
-  }
-
-  return graphemes;
-}
-
-export function toGraphemes(word: string) {
-  const graphemes: Grapheme[] = [];
-
-  Unistring(word).forEach((grapheme) => {
-    graphemes.push(grapheme);
-  });
-
-  if (graphemes.length > 0 && isRTL(graphemes[0].rawString)) {
-    graphemes.reverse();
-  }
-
-  return graphemes;
-}
-
-export function joinGraphemes(graphemes: Grapheme[]) {
-  if (graphemes.length > 0 && isRTL(graphemes[0].rawString)) {
-    graphemes = graphemes.toReversed();
-  }
-
-  return graphemes.map((g) => g.rawString).join("");
-}
-
-export function joinGraphemeStrings(graphemes: string[]) {
-  if (graphemes.length > 0 && isRTL(graphemes[0])) {
-    graphemes = graphemes.toReversed();
-  }
-
-  return graphemes.join("");
-}
+import Unistring from "@akahuku/unistring";
 
 // https://www.unicode.org/Public/UNIDATA/extracted/DerivedBidiClass.txt
 const rtlRanges = [
@@ -75,9 +31,10 @@ const rtlRanges = [
   // # @missing: 1EF00..1EFFF; Right_To_Left
   [0x1e800, 0x1efff],
 ];
+
 export function isRTL(text: string): boolean {
   const codePoint = Unistring.getCodePointArray(text)[0];
   return rtlRanges.some(
-    (range) => codePoint >= range[0] && codePoint <= range[1]
+    (range) => codePoint >= range[0] && codePoint <= range[1],
   );
 }

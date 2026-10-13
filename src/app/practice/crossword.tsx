@@ -50,7 +50,8 @@ import {
   generateCrossword,
   BoardWordData,
 } from "@/src/lib/practice/crossword-generation";
-import { isRTL, toGraphemeStrings } from "@/src/lib/practice/words";
+import { isRTL } from "@/src/lib/text-processing/rtl";
+import { toGraphemeStrings } from "@/src/lib/text-processing/graphemes";
 import { pickIndexWithLenUnbiased } from "@/src/lib/practice/random";
 import HintPopup from "@/src/lib/components/practice/hint-popup";
 import { normalize } from "@/src/lib/text-processing/normalization";

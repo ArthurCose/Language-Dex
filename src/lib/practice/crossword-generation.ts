@@ -1,5 +1,5 @@
 import { pickIndexWithLenUnbiased, swapToEnd } from "./random";
-import { toGraphemeStrings } from "./words";
+import { toGraphemeStrings } from "@/src/lib/text-processing/graphemes";
 
 const maxTrialBoards = 5;
 const finalContestants = 3;

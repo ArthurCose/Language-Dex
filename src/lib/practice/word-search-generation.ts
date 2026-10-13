@@ -1,5 +1,6 @@
 import { pickIndexWithLenUnbiased, swap } from "./random";
-import { isRTL, toGraphemeStrings } from "./words";
+import { isRTL } from "@/src/lib/text-processing/rtl";
+import { toGraphemeStrings } from "@/src/lib/text-processing/graphemes";
 
 const excludedGlyphs = ["-", " ", "　"];
 

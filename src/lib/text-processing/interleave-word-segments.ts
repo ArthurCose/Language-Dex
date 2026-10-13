@@ -1,5 +1,5 @@
 import { SegmentationResult } from "@akahuku/unistring";
-import { isRTL } from "../practice/words";
+import { isRTL } from "./rtl";
 
 const newlineRegex = /[^\r\n]/;
 
