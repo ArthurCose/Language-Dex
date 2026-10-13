@@ -4,9 +4,7 @@ import { describe, expect, test } from "@jest/globals";
 describe("extractWords", () => {
   const extractWordStrings = (input: string) =>
     extractWords(input).map((s) => {
-      const substr = input
-        .slice(s.rawIndex, s.rawIndex + s.length)
-        .toLowerCase();
+      const substr = input.slice(s.rawIndex, s.rawIndex + s.length);
       expect(substr).toEqual(s.text);
       expect(s.length).toEqual(s.text.length);
 
@@ -31,8 +29,8 @@ describe("extractWords", () => {
     ]);
     // Welcome to Language Dex
     assertStrings("Language Dexへようこそ", [
-      "language",
-      "dex",
+      "Language",
+      "Dex",
       "へ",
       "ようこそ",
     ]);

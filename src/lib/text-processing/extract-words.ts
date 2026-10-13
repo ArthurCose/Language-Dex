@@ -20,8 +20,6 @@ for (const name of SCRIPT_WHITELIST) {
 const COMMON_SCRIPT_PROP = Unistring.SCRIPT["Common"];
 
 export default function extractWords(text: string) {
-  text = text.toLowerCase();
-
   const unistringSegments = Unistring.getWords(text, true);
 
   const scriptPropCache: { [codePoint: number]: number } = {};
