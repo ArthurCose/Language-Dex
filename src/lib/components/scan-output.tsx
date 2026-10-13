@@ -10,6 +10,7 @@ import { SegmentationResult } from "@akahuku/unistring";
 import { logError } from "../log";
 import { useSignalLens } from "../hooks/use-signal";
 import { normalize } from "../text-processing/normalization";
+import { memoizeUnary } from "../memoize";
 
 type Props = {
   text: string;
@@ -38,8 +39,9 @@ export default function ScanOutput({ text, updateStats }: Props) {
   const [segments, setSegments] = useState<SegmentationResult[]>([]);
 
   useEffect(() => {
-    const lowerCaseText = text.toLowerCase();
-    const segments = extractWords(lowerCaseText);
+    const memoizedNormalize = memoizeUnary(normalize);
+
+    const segments = extractWords(text);
     setSegments(segments);
 
     // update statistics
@@ -87,12 +89,12 @@ export default function ScanOutput({ text, updateStats }: Props) {
         for (const word of wordList) {
           // see if the input text matches the word
           const matchEndIndex = segment.rawIndex + word.length;
-          const matchSubstring = lowerCaseText.slice(
+          const matchSubstring = text.slice(
             segment.rawIndex,
             segment.rawIndex + word.length,
           );
 
-          if (matchSubstring != word.toLowerCase()) {
+          if (memoizedNormalize(matchSubstring) != memoizedNormalize(word)) {
             continue;
           }
 
