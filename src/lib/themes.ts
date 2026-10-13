@@ -189,11 +189,11 @@ function createSimpleTheme(colors: Palette): Theme {
         backgroundColor: colors.scanInput,
       },
       scanText: {
-        fontSize: 20,
-        lineHeight: 32,
+        fontSize: 18,
+        lineHeight: 30,
       },
       scanWordText: {
-        lineHeight: 26,
+        lineHeight: 22,
         marginRight: -0.5,
       },
       scanTextActive: {
@@ -201,7 +201,7 @@ function createSimpleTheme(colors: Palette): Theme {
       },
       scanWord: {
         marginTop: -8,
-        marginBottom: -8.5,
+        marginBottom: -7,
         borderBottomWidth: 2,
         borderColor: "transparent",
       },
