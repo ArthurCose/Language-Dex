@@ -1,10 +1,13 @@
 import Unistring, { SegmentationResult } from "@akahuku/unistring";
 import { memoizeUnary } from "../memoize";
 
-const UNKNOWN_OR_KANJI = 0;
-const HIRAGANA = Unistring.WBP["Hiragana"];
+const UNKNOWN_OR_KANJI = Unistring.WBP.Other;
+const HIRAGANA_WBP = Unistring.WBP.Hiragana;
+const ALETTER_WBP = Unistring.WBP.ALetter;
 
-const SCRIPT_WHITELIST = [
+const DIGIT_REGEX = /\d/;
+
+const SCRIPT_WHITELIST: (keyof typeof Unistring.WBP)[] = [
   "Other",
   "Hebrew_Letter",
   "Katakana",
@@ -55,7 +58,7 @@ export default function extractWords(text: string) {
         continue;
       }
     } else if (
-      segment.type == HIRAGANA &&
+      segment.type == HIRAGANA_WBP &&
       lastSegmentTailIndex == segment.index &&
       segment.text.length > 1
     ) {
@@ -80,6 +83,13 @@ export default function extractWords(text: string) {
       lastSegment = segment;
       words.push(particleSegment, newSegment);
       continue;
+    } else if (segment.type == ALETTER_WBP) {
+      const result = DIGIT_REGEX.exec(segment.text);
+
+      if (result) {
+        segment.text = segment.text.slice(0, result.index);
+        segment.length = segment.text.length;
+      }
     }
 
     if (segment.index == nextChainedIndex && lastSegment) {

@@ -44,4 +44,10 @@ describe("extractWords", () => {
     assertStrings("-a-", ["a"]);
     assertStrings("a-b-c a-b-c- -a-b-c", ["a-b-c", "a-b-c", "a-b-c"]);
   });
+
+  test("whitespace", () => {
+    assertStrings("abc\n\nd", ["abc", "d"]);
+    // unistring's script matching extension breaks with numbers appearing right after latin letters
+    assertStrings("a\n123b\nabc1\n\nd", ["a", "abc", "d"]);
+  });
 });
