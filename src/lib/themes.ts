@@ -28,9 +28,11 @@ export type Theme = {
     hintButton: ViewStyle;
     scanTextInput: ViewStyle;
     scanText: TextStyle;
+    scanWordText: TextStyle;
     scanTextActive: TextStyle;
     scanWord: ViewStyle;
     scanOldWord: ViewStyle;
+    scanUncertainWord: ViewStyle;
     scanNewWord: ViewStyle;
     definitionBubble: ViewStyle;
     definitionBorders: { borderColor: string };
@@ -188,15 +190,20 @@ function createSimpleTheme(colors: Palette): Theme {
       },
       scanText: {
         fontSize: 20,
-        marginRight: 1,
+        lineHeight: 32,
+      },
+      scanWordText: {
+        lineHeight: 26,
+        marginRight: -0.5,
       },
       scanTextActive: {
         color: colors.primary.default,
       },
       scanWord: {
+        marginTop: -8,
+        marginBottom: -8.5,
         borderBottomWidth: 2,
         borderColor: "transparent",
-        transform: [{ translateY: 8 }],
       },
       scanOldWord: {
         borderColor: colors.oldWord,

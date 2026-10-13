@@ -11,23 +11,12 @@ import { logError } from "../log";
 import { useSignalLens } from "../hooks/use-signal";
 import { normalize } from "../text-processing/normalization";
 import { memoizeUnary } from "../memoize";
+import interleaveWordSegments from "../text-processing/interleave-word-segments";
 
 type Props = {
   text: string;
   updateStats: boolean;
 };
-
-function reverseFrom<T>(list: T[], start: number) {
-  const end = list.length;
-  const middle = Math.floor((end - start) / 2) + start;
-
-  for (let i = start; i < middle; i++) {
-    const rightIndex = end - i + start - 1;
-    const temp = list[i];
-    list[i] = list[rightIndex];
-    list[rightIndex] = temp;
-  }
-}
 
 export default function ScanOutput({ text, updateStats }: Props) {
   const theme = useTheme();
@@ -145,103 +134,49 @@ export default function ScanOutput({ text, updateStats }: Props) {
   const textElement = useMemo(() => {
     // render segments into blocks
     // (blocks are faster to render than a single large list of words)
-    const textBlocks: React.ReactNode[][] = [[]];
-    let latestBlock: React.ReactNode[] = textBlocks[0];
-    let textI = 0;
-    let rtlStart;
+    const renderBlocks: React.ReactNode[][] = [];
+    const paragraphBlocks = interleaveWordSegments(text, segments);
+    let uniqueIndex = 0;
 
-    const scanTextStyles = [theme.styles.scanText, theme.styles.text];
+    for (const paragraphBlock of paragraphBlocks) {
+      const renderBlock: React.ReactNode[] = [];
 
-    for (const segment of segments) {
-      if (textI < segment.rawIndex) {
-        // render text between words
+      renderBlocks.push(renderBlock);
 
-        const betweenText = text.slice(textI, segment.rawIndex);
-        const newLineIndex = betweenText.indexOf("\n");
+      let needsSpace = false;
 
-        if (newLineIndex != -1) {
-          // split into another block
-
-          if (newLineIndex > 0) {
-            latestBlock.push(
-              <Text key={textI} style={scanTextStyles}>
-                {betweenText.slice(0, newLineIndex)}
-              </Text>,
-            );
-          }
-
-          // handle rtl
-          if (rtlStart != undefined) {
-            reverseFrom(latestBlock, rtlStart);
-            rtlStart = undefined;
-          }
-
-          // create new block
-          latestBlock = [];
-          textBlocks.push(latestBlock);
-
-          // push everything after the newline into the new block
-          latestBlock.push(
-            <Text key={textI + newLineIndex} style={scanTextStyles}>
-              {betweenText.slice(newLineIndex + 1)}
-            </Text>,
-          );
+      for (const segment of paragraphBlock) {
+        if (typeof segment == "string") {
+          renderBlock.push(segment);
+          needsSpace = false;
         } else {
-          // append to current block
-          latestBlock.push(
-            <Text key={textI} style={scanTextStyles}>
-              {betweenText}
-            </Text>,
+          if (needsSpace) {
+            renderBlock.push(
+              <View key={"space-" + uniqueIndex++} style={styles.spacer} />,
+            );
+          } else {
+            // prevent lines from collapsing by inserting invisible spaces
+            renderBlock.push("​");
+          }
+
+          // prevent two adjacent words from appearing as one solid word
+          needsSpace = true;
+
+          renderBlock.push(
+            <ScannedWord
+              key={segment.rawIndex}
+              dictionaryId={activeDictionary}
+              text={segment.text}
+              normalized={normalize(segment.text)}
+              excerptText={text}
+              excerptIndex={segment.rawIndex}
+            />,
           );
         }
-      } else if (textI > 0) {
-        latestBlock.push(
-          <View key={"spacer-" + textI} style={styles.spacer} />,
-        );
       }
-
-      const word = text.slice(
-        segment.rawIndex,
-        segment.rawIndex + segment.text.length,
-      );
-
-      if (isRTL(word)) {
-        if (rtlStart == undefined) {
-          rtlStart = latestBlock.length;
-        }
-      } else if (rtlStart != undefined) {
-        reverseFrom(latestBlock, rtlStart);
-        rtlStart = undefined;
-      }
-
-      latestBlock.push(
-        <ScannedWord
-          key={segment.rawIndex}
-          dictionaryId={activeDictionary}
-          text={word}
-          normalized={normalize(segment.text)}
-          excerptText={text}
-          excerptIndex={segment.rawIndex}
-        />,
-      );
-
-      textI = segment.rawIndex + segment.text.length;
     }
 
-    // render remaining text
-    if (textI < text.length) {
-      latestBlock.push(
-        <Text key={textI} style={scanTextStyles}>
-          {text.slice(textI)}
-        </Text>,
-      );
-    }
-
-    if (rtlStart != undefined) {
-      reverseFrom(latestBlock, rtlStart);
-    }
-
-    // resolve rtl for styling
+    // resolve RTL for styling
     const rtl = (segments[0] as SegmentationResult | undefined)
       ? isRTL(segments[0].text)
       : false;
@@ -251,14 +186,17 @@ export default function ScanOutput({ text, updateStats }: Props) {
         initialNumToRender={3}
         windowSize={5}
         style={styles.scrollView}
-        data={textBlocks}
+        data={renderBlocks}
         renderItem={({ item }) => (
           <View onStartShouldSetResponder={() => true}>
             <Text
-              style={{
-                textAlign: rtl ? "right" : "left",
-                flexWrap: "wrap",
-              }}
+              style={[
+                theme.styles.scanText,
+                theme.styles.text,
+                {
+                  textAlign: rtl ? "right" : "left",
+                },
+              ]}
             >
               {item}
             </Text>
@@ -282,6 +220,6 @@ const styles = StyleSheet.create({
     height: 32,
   },
   spacer: {
-    width: 3,
+    width: 2,
   },
 });

@@ -79,7 +79,12 @@ export default function ScannedWord({
         style={underlineStyles}
       >
         <Span
-          style={[theme.styles.scanText, open && theme.styles.scanTextActive]}
+          numberOfLines={1}
+          style={[
+            theme.styles.scanText,
+            theme.styles.scanWordText,
+            open && theme.styles.scanTextActive,
+          ]}
         >
           {text}
         </Span>
