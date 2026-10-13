@@ -37,11 +37,12 @@ export default function ScanOutput({ text, updateStats }: Props) {
     (data) => data.activeDictionary,
   );
   const [segments, setSegments] = useState<SegmentationResult[]>([]);
+  const [baseSegments, setBaseSegments] = useState<SegmentationResult[]>([]);
+  const memoizedNormalize = useMemo(() => memoizeUnary(normalize), [text]);
 
   useEffect(() => {
-    const memoizedNormalize = memoizeUnary(normalize);
-
     const segments = extractWords(text);
+    setBaseSegments(segments);
     setSegments(segments);
 
     // update statistics
@@ -53,18 +54,20 @@ export default function ScanOutput({ text, updateStats }: Props) {
         }),
       );
     }
+  }, [text]);
 
-    // second pass to detect compound words such as "ice cream"
+  // second pass to detect compound words such as "ice cream"
+  useEffect(() => {
     let cancelled = false;
 
     const promise = (async () => {
       const newSegments = [];
       let different = false;
 
-      outer: for (let i = 0; i < segments.length; i++) {
-        const segment = segments[i];
+      outer: for (let i = 0; i < baseSegments.length; i++) {
+        const segment = baseSegments[i];
 
-        if (i == segments.length - 1) {
+        if (i == baseSegments.length - 1) {
           newSegments.push(segment);
           break;
         }
@@ -73,7 +76,7 @@ export default function ScanOutput({ text, updateStats }: Props) {
           break;
         }
 
-        const nextSegment = segments[i + 1];
+        const nextSegment = baseSegments[i + 1];
 
         // find all words starting with the smallest compound word
         // sort by longest as we'll prefer matching the longest compound word
@@ -103,8 +106,8 @@ export default function ScanOutput({ text, updateStats }: Props) {
           let consumedSegments = 2;
           let length = segment.length + nextSegment.length;
 
-          for (let j = i + consumedSegments; j < segments.length; j++) {
-            const nextSegment = segments[j];
+          for (let j = i + consumedSegments; j < baseSegments.length; j++) {
+            const nextSegment = baseSegments[j];
 
             if (nextSegment.rawIndex >= matchEndIndex) {
               break;
@@ -137,7 +140,7 @@ export default function ScanOutput({ text, updateStats }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [text, activeDictionary]);
+  }, [segments, activeDictionary]);
 
   const textElement = useMemo(() => {
     // render segments into blocks
