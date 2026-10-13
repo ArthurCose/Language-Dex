@@ -12,7 +12,7 @@ export function swapRemove<T>(list: T[], index: number): T | undefined {
 
 export function findAndSwapRemove<T>(
   list: T[],
-  predicate: (value: T) => boolean
+  predicate: (value: T) => boolean,
 ): T | undefined {
   const index = list.findIndex(predicate);
 
@@ -21,4 +21,8 @@ export function findAndSwapRemove<T>(
   }
 
   return swapRemove(list, index);
+}
+
+export function shallowEqual(a: any[], b: any[]) {
+  return a.length == b.length && a.every((v, i) => Object.is(v, b[i]));
 }

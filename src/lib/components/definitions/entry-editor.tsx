@@ -56,7 +56,7 @@ import PronunciationEditor from "./pronunciation-editor";
 import { useAudioPlayer } from "expo-audio";
 import { stripProtocol } from "@/src/lib/path";
 import { normalize } from "@/src/lib/text-processing/normalization";
-import { shallowEqual } from "@/src/lib/arrays";
+import { shallowEqual } from "@/src/lib/structures/array";
 import { RelationsEditorData, RelationsEditor } from "./relations-editor";
 import VariantsEditor from "./variants-editor";
 
