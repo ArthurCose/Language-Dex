@@ -5,10 +5,22 @@ import {
   CsvTransformStream,
   encodeCsvField,
 } from "@/src/lib/text-processing/csv";
-import { upsertEntry, DictionaryEntryUpsertData } from "./dictionary-words";
+import {
+  upsertEntry,
+  DictionaryEntryUpsertData,
+  setVariants,
+} from "./dictionary-words";
 import { DictionaryData, PartOfSpeechData } from "./dictionary-meta";
 import { UserData } from "./user";
 import { recalculateWordStatistics } from "./stats";
+import { joinValues, splitValue } from "../text-processing/human-readable-csv";
+import { swapRemove } from "../structures/array";
+
+const fieldCsvSeparator = ", ";
+
+type ImportPartial = Partial<DictionaryEntryUpsertData> & {
+  variants?: string[];
+};
 
 export const csvColumns = [
   "id",
@@ -17,6 +29,7 @@ export const csvColumns = [
   "definition",
   "example",
   "notes",
+  "variants",
 ];
 
 const exportMap: { [key: string]: string } = {
@@ -26,6 +39,7 @@ const exportMap: { [key: string]: string } = {
   definition: "D",
   example: "E",
   notes: "N",
+  variants: "V",
 };
 
 const importMap = Object.fromEntries(
@@ -39,11 +53,12 @@ const translationMap: { [key: string]: string } = {
   definition: "Definition",
   example: "Example",
   notes: "Notes",
+  variants: "Variants",
 };
 
 type FieldUpsertPass = (
   dictionary: DictionaryData,
-  data: Partial<DictionaryEntryUpsertData>,
+  data: ImportPartial,
   value?: string,
 ) => void;
 
@@ -93,7 +108,26 @@ const fieldUpsertMap: { [key: string]: FieldUpsertPass } = {
   notes(_, data, value) {
     data.notes = value ?? "";
   },
+  variants(_, data, value) {
+    const values = splitValue(value ?? "", fieldCsvSeparator);
+    const existingValues: { [key: string]: boolean } = {};
+
+    for (let i = values.length - 1; i >= 0; i--) {
+      const value = values[i].trim();
+
+      if (value == "" || existingValues[value]) {
+        swapRemove(values, i);
+      } else {
+        values[i] = value;
+        existingValues[value] = true;
+      }
+    }
+
+    data.variants = values;
+  },
 };
+
+const externalColumns = ["variants"];
 
 /**
  * Creates a new csv file, overwriting any previously exported csv file.
@@ -118,8 +152,8 @@ export async function exportCsv(
 
   // resolve query
   const sourceQuery = [
-    "SELECT",
-    columns.join(", "),
+    "SELECT id, ",
+    columns.filter((c) => !externalColumns.includes(c)).join(", "),
     "FROM word_definition_data",
     "WHERE dictionaryId = $dictionaryId",
   ];
@@ -149,6 +183,21 @@ export async function exportCsv(
 
   for await (const result of sourceResults) {
     for (const key of columns) {
+      if (key == "variants") {
+        // special case for variants
+        const variants = await db.getAllAsync<{ spelling: string }>(
+          "SELECT spelling FROM word_variants WHERE entryId = $id",
+          { $id: result.id as number },
+        );
+        const values = variants.map((v) => v.spelling);
+
+        const valueString = joinValues(values, fieldCsvSeparator);
+        const encoded = encodeCsvField(valueString);
+        line.push(encoded);
+        continue;
+      }
+
+      // transform a field directly from the result
       const value = result[key];
       let valueString;
 
@@ -265,7 +314,7 @@ export async function importCsv({
 
   // trying to fit our logic into typescript
   // possibly room for performance improvements if we can avoid the Object.assign
-  const partialData: Partial<DictionaryEntryUpsertData> = {};
+  const partialData: ImportPartial = {};
   const updateData: DictionaryEntryUpsertData = {
     id: 0,
     spelling: "",
@@ -311,14 +360,26 @@ export async function importCsv({
       continue;
     }
 
+    let entryId;
+
     if (partialData.id != null) {
       // updating an existing word
       Object.assign(updateData, partialData);
-      await upsertEntry(dictionary.id, updateData);
+      entryId = await upsertEntry(dictionary.id, updateData);
     } else {
       // creating a new word
       Object.assign(insertData, partialData);
       await upsertEntry(dictionary.id, insertData);
+      entryId = insertData.id;
+
+      if (partialData.variants && partialData.variants.length == 0) {
+        // skip the slow setVariants call
+        partialData.variants = undefined;
+      }
+    }
+
+    if (entryId != undefined && partialData.variants) {
+      await setVariants(entryId, partialData.variants);
     }
   }
 

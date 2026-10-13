@@ -410,9 +410,7 @@ export async function prepareNewPronunciation(
 export async function listVariants(entryId: number) {
   const variants = await db.getAllAsync<{ spelling: string }>(
     "SELECT spelling FROM word_variants WHERE entryId = $id",
-    {
-      $id: entryId,
-    },
+    { $id: entryId },
   );
 
   const spellings = variants.map(({ spelling }) => spelling);
@@ -429,13 +427,19 @@ export async function setVariants(entryId: number, variants: string[]) {
     "INSERT INTO word_variants (entryId, spelling, insensitiveSpelling) VALUES ($id, $spelling, $normalized)",
   );
 
+  const promises = [];
+
   for (const spelling of variants) {
-    await statement.executeAsync({
-      $id: entryId,
-      $spelling: spelling,
-      $normalized: normalize(spelling),
-    });
+    promises.push(
+      statement.executeAsync({
+        $id: entryId,
+        $spelling: spelling,
+        $normalized: normalize(spelling),
+      }),
+    );
   }
+
+  await Promise.all(promises);
 }
 
 async function resolveNewOrderKey(sharedId: number) {
