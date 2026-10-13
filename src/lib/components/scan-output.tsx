@@ -137,7 +137,7 @@ export default function ScanOutput({ text, updateStats }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [text]);
+  }, [text, activeDictionary]);
 
   const textElement = useMemo(() => {
     // render segments into blocks
