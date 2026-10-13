@@ -1,4 +1,5 @@
 import Unistring, { SegmentationResult } from "@akahuku/unistring";
+import { memoizeUnary } from "../memoize";
 
 const UNKNOWN_OR_KANJI = 0;
 const HIRAGANA = Unistring.WBP["Hiragana"];
@@ -22,20 +23,7 @@ const COMMON_SCRIPT_PROP = Unistring.SCRIPT["Common"];
 export default function extractWords(text: string) {
   const unistringSegments = Unistring.getWords(text, true);
 
-  const scriptPropCache: { [codePoint: number]: number } = {};
-
-  function getScriptProp(codePoint: number) {
-    let prop = scriptPropCache[codePoint];
-
-    if (prop != undefined) {
-      return prop;
-    }
-
-    prop = Unistring.getScriptProp(codePoint);
-    scriptPropCache[codePoint] = prop;
-
-    return prop;
-  }
+  const getScriptProp = memoizeUnary(Unistring.getScriptProp);
 
   let lastSegment: SegmentationResult | undefined;
 
