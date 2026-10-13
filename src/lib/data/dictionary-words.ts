@@ -61,7 +61,7 @@ const validWordQueries = [
     "WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $normalized",
   ],
   [
-    "SELECT variant.spelling FROM word_variants variant",
+    "SELECT variant.spelling AS spelling FROM word_variants variant",
     "JOIN word_definition_data entry",
     "ON variant.entryId = entry.id",
     "WHERE entry.dictionaryId = $dictionaryId AND variant.insensitiveSpelling = $normalized",

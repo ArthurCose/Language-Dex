@@ -17,7 +17,6 @@ import ContextMenu, {
   ContextMenuPressable,
   ContextMenuSeparator,
 } from "@/src/lib/components/context-menu";
-import { normalize } from "@/src/lib/text-processing/normalization";
 
 type DefinitionPopoverProps = {
   entry: DictionaryEntry;
@@ -167,7 +166,6 @@ export function DefinitionsPopover({
     };
 
     const lowercasedText = text.toLowerCase();
-    const strictDiacritics = lowercasedText != normalize(text);
 
     const blocks: EntryBlock[] = [];
     let lastBlock: EntryBlock | undefined;
@@ -177,10 +175,6 @@ export function DefinitionsPopover({
 
       if (lastBlock?.lowercaseSpelling == lowercaseSpelling) {
         lastBlock.entries.push(entry);
-        continue;
-      }
-
-      if (strictDiacritics && lowercaseSpelling != lowercasedText) {
         continue;
       }
 
