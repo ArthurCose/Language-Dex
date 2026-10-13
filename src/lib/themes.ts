@@ -201,6 +201,9 @@ function createSimpleTheme(colors: Palette): Theme {
       scanOldWord: {
         borderColor: colors.oldWord,
       },
+      scanUncertainWord: {
+        borderStyle: "dotted",
+      },
       scanNewWord: {
         borderColor: colors.primary.default,
       },

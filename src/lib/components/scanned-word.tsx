@@ -47,12 +47,21 @@ export default function ScannedWord({
   const wordDeps = useMemo(() => [normalized], [normalized]);
   const entryMap = useWordEntries(dictionaryId, wordDeps);
   const entry = entryMap[normalized];
-  const entryResult = entry && entry.result;
+  const entryResult = entry?.result;
 
   const underlineStyles = [theme.styles.scanWord];
 
   if (entryResult && entryResult.entries.length > 0) {
     underlineStyles.push(theme.styles.scanOldWord);
+
+    const lowercased = text.toLowerCase();
+    const diacriticsMatch = entryResult.entries.every(
+      (e) => e.spelling.toLowerCase() != lowercased,
+    );
+
+    if (diacriticsMatch) {
+      underlineStyles.push(theme.styles.scanUncertainWord);
+    }
   } else if (entry?.loaded) {
     underlineStyles.push(theme.styles.scanNewWord);
   }
