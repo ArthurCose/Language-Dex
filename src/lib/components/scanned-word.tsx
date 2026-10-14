@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as DropDownPrimitive from "@rn-primitives/dropdown-menu";
 import { useTheme } from "@/src/lib/contexts/theme-context";
 import useWordEntries from "@/src/lib/hooks/use-word-entries";
@@ -9,6 +9,7 @@ import {
   extractSentence,
   extractTrailing,
 } from "@/src/lib/text-processing/extract-structures";
+import { isValidWord } from "../data";
 
 type Props = {
   dictionaryId: number;
@@ -44,27 +45,60 @@ export default function ScannedWord({
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<DropDownPrimitive.TriggerRef | null>(null);
 
+  const [checkedVariants, setCheckedVariants] = useState(false);
+  const [wordExists, setWordExists] = useState(false);
+
   const wordDeps = useMemo(() => [normalized], [normalized]);
   const entryMap = useWordEntries(dictionaryId, wordDeps);
   const entry = entryMap[normalized];
   const entryResult = entry?.result;
+
+  const diacriticsMatch = useMemo(() => {
+    const lowercased = text.toLowerCase();
+    const diacriticsMatch = entryResult?.entries.some(
+      (e) => e.spelling.toLowerCase() == lowercased,
+    );
+
+    return diacriticsMatch ?? false;
+  }, [normalized]);
 
   const underlineStyles = [theme.styles.scanWord];
 
   if (entryResult && entryResult.entries.length > 0) {
     underlineStyles.push(theme.styles.scanOldWord);
 
-    const lowercased = text.toLowerCase();
-    const diacriticsMatch = entryResult.entries.every(
-      (e) => e.spelling.toLowerCase() != lowercased,
-    );
-
-    if (diacriticsMatch) {
+    if (!diacriticsMatch && !wordExists) {
       underlineStyles.push(theme.styles.scanUncertainWord);
     }
   } else if (entry?.loaded) {
     underlineStyles.push(theme.styles.scanNewWord);
   }
+
+  // use isValidWord to check variants if diacritics failed to match
+  useEffect(() => {
+    if (!entryResult || diacriticsMatch) {
+      return;
+    }
+
+    setCheckedVariants(true);
+
+    let cancelled = false;
+
+    isValidWord(dictionaryId, text).then((isValid) => {
+      if (!cancelled) {
+        setWordExists(isValid);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [entryResult, checkedVariants]);
+
+  // cache invalidation
+  useEffect(() => {
+    setCheckedVariants(false);
+  }, [entryResult]);
 
   const close = () => {
     setOpen(false);
