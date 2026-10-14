@@ -11,6 +11,7 @@ import {
 import { deleteEmptySynonymCluster } from "./dictionary-clusters";
 import { copyExtension } from "../path";
 import { normalize } from "../text-processing/normalization";
+import { sortWords, compareWords } from "../text-processing/word-sorting";
 
 type FileName = string;
 
@@ -153,13 +154,15 @@ export async function listWords(
     query.push(whereClause.join(" AND "));
   }
 
-  let ordering = "DESC";
-  let invOrdering = "ASC";
+  let ordering: "ASC" | "DESC" = "DESC";
+  let invOrdering: "ASC" | "DESC" = "ASC";
 
   if (options.ascending == undefined || options.ascending) {
     ordering = "ASC";
     invOrdering = "DESC";
   }
+
+  let sortAlphabetically = false;
 
   switch (options.orderBy) {
     case "confidence":
@@ -176,7 +179,7 @@ export async function listWords(
       );
       break;
     default:
-      query.push(`ORDER BY word.spelling ${ordering}`);
+      sortAlphabetically = true;
   }
 
   if (options.limit != undefined) {
@@ -189,10 +192,11 @@ export async function listWords(
     bindParams,
   );
 
-  const output: string[] = [];
+  const output = results.map((row) => row.spelling);
 
-  for (const row of results) {
-    output.push(row.spelling);
+  if (sortAlphabetically) {
+    const multiplier = ordering == "ASC" ? 1 : -1;
+    output.sort((a, b) => compareWords(a, b) * multiplier);
   }
 
   return output;
@@ -414,7 +418,8 @@ export async function listVariants(entryId: number) {
   );
 
   const spellings = variants.map(({ spelling }) => spelling);
-  spellings.sort();
+  sortWords(spellings);
+
   return spellings;
 }
 

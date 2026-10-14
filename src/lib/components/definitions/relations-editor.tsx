@@ -43,6 +43,7 @@ import {
 } from "@/src/lib/structures/existence-set";
 import { findAndSwapRemove } from "@/src/lib/structures/array";
 import { normalize } from "../../text-processing/normalization";
+import { sortWords } from "../../text-processing/word-sorting";
 
 function ifTruthy<T>(condition: any, v: T) {
   if (condition) {
@@ -127,20 +128,6 @@ function RelationList({
   );
 }
 
-function sortWords(words: RelationWord[]) {
-  words.sort((a, b) => {
-    if (a.spelling < b.spelling) {
-      return -1;
-    }
-
-    if (a.spelling == b.spelling) {
-      return 0;
-    }
-
-    return 1;
-  });
-}
-
 type TabName = "Synonyms" | "Antonyms";
 export type RelationEditorSynonym = {
   id: number;
@@ -179,7 +166,7 @@ export class RelationsEditorData {
         .then((words: RelationEditorSynonym[]) => {
           // remove ourself from the synonym list
           findAndSwapRemove(words, (word) => word.id == this.entryId);
-          sortWords(words);
+          sortWords(words, (word) => word.spelling);
 
           for (const word of words) {
             word.synonymsId = synonymsId;
@@ -203,7 +190,7 @@ export class RelationsEditorData {
 
           return listWordsInSynonymCluster(clusterId).then(
             (words: RelationEditorSynonym[]) => {
-              sortWords(words);
+              sortWords(words, (word) => word.spelling);
 
               for (const word of words) {
                 word.synonymsId = clusterId;
@@ -300,10 +287,10 @@ export class RelationsEditorData {
       const set = createSetFromMapped(words, (w) => w.id);
       antonyms = antonyms.filter((w) => !set.has(w.id));
 
-      sortWords(words);
+      sortWords(words, (word) => word.spelling);
       appendSignal.set(words);
 
-      sortWords(antonyms);
+      sortWords(antonyms, (word) => word.spelling);
       antonymSignal.set(antonyms);
     };
 

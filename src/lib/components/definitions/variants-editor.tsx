@@ -9,6 +9,7 @@ import ContextMenu, {
   ContextMenuPressable,
   ContextMenuSeparator,
 } from "@/src/lib/components/context-menu";
+import { sortWords } from "@/src/lib/text-processing/word-sorting";
 
 export default function VariantsEditor({
   spellings,
@@ -41,7 +42,7 @@ export default function VariantsEditor({
 
     if (newSpelling != "" && !spellings.includes(newSpelling)) {
       const newSpellings = [...spellings, newSpelling];
-      newSpellings.sort();
+      sortWords(newSpellings);
       setSpellings(newSpellings);
     }
   };
