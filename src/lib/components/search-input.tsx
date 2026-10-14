@@ -25,6 +25,7 @@ export default function ({
   return (
     <View style={[styles.searchBar, theme.styles.searchInputContainer, style]}>
       <CustomTextInput
+        autoCapitalize="none"
         style={[styles.searchInput, theme.styles.searchInput]}
         placeholder={t("search_placeholder")}
         value={value}

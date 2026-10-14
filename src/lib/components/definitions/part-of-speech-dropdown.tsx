@@ -37,6 +37,7 @@ export default function PartOfSpeechDropdown({
     <>
       <EditableListPopup
         name={t("Part_of_Speech")}
+        autoCapitalize="none"
         label={
           dictionary.partsOfSpeech.find((item) => item.id == value)?.name ??
           t("Part_of_Speech")

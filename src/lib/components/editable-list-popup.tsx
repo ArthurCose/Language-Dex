@@ -8,6 +8,7 @@ import {
   StyleProp,
   ViewStyle,
   FlatList,
+  TextInputProps,
 } from "react-native";
 import {
   CancelEditIcon,
@@ -32,6 +33,7 @@ import { Signal, useSignal, useSignalValue } from "../hooks/use-signal";
 type Props<T> = {
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
+  autoCapitalize?: TextInputProps["autoCapitalize"];
   name: string;
   label: string;
   list: T[];
@@ -55,12 +57,19 @@ type Props<T> = {
 
 type EditableRowProps = {
   theme: Theme;
+  autoCapitalize: TextInputProps["autoCapitalize"];
   text: string;
   onRename?: (text: string) => void;
   onDelete?: () => void;
 };
 
-function EditableRow({ theme, text, onRename, onDelete }: EditableRowProps) {
+function EditableRow({
+  theme,
+  autoCapitalize,
+  text,
+  onRename,
+  onDelete,
+}: EditableRowProps) {
   const drag = useReorderableDrag();
   const [renaming, setRenaming] = useState(false);
   const renamingRef = useRef<string>("");
@@ -91,6 +100,7 @@ function EditableRow({ theme, text, onRename, onDelete }: EditableRowProps) {
         renaming ? (
           <CustomTextInput
             autoFocus
+            autoCapitalize={autoCapitalize}
             style={[styles.renameInput, styles.textInput]}
             onChangeText={(text) => {
               setCurrentText(text);
@@ -133,6 +143,7 @@ type BlurProps = {
 
 function EditableRowDummy({
   textSignal,
+  autoCapitalize,
   onRename,
   onDelete,
   onBlur,
@@ -149,6 +160,7 @@ function EditableRowDummy({
 
       <CustomTextInput
         autoFocus
+        autoCapitalize={autoCapitalize}
         style={[styles.renameInput, styles.textInput]}
         onChangeText={(text) => textSignal.set(text)}
         onBlur={() => {
@@ -168,16 +180,23 @@ function EditableRowDummy({
 
 type RowDummyProps = {
   textSignal: Signal<string>;
+  autoCapitalize: TextInputProps["autoCapitalize"];
   onRename?: (name: string) => void;
 } & BlurProps;
 
-function RowDummy({ textSignal, onRename, onBlur }: RowDummyProps) {
+function RowDummy({
+  textSignal,
+  autoCapitalize,
+  onRename,
+  onBlur,
+}: RowDummyProps) {
   const currentText = useSignalValue(textSignal);
 
   return (
     <View style={styles.rowStyle}>
       <CustomTextInput
         autoFocus
+        autoCapitalize={autoCapitalize}
         style={[styles.plainItem, styles.renameInput, styles.textInput]}
         onChangeText={(text) => textSignal.set(text)}
         onBlur={() => {
@@ -195,6 +214,7 @@ function RowDummy({ textSignal, onRename, onBlur }: RowDummyProps) {
 
 export default function EditableListPopup<T>({
   style,
+  autoCapitalize,
   labelStyle,
   name,
   label,
@@ -276,6 +296,7 @@ export default function EditableListPopup<T>({
               addingItem ? (
                 <EditableRowDummy
                   theme={theme}
+                  autoCapitalize={autoCapitalize}
                   textSignal={newItemTextSignal}
                   onRename={onAdd && ((name) => onAdd(name))}
                   onDelete={onDelete && (() => setAddingItem(false))}
@@ -299,6 +320,7 @@ export default function EditableListPopup<T>({
             renderItem={({ item }) => (
               <EditableRow
                 theme={theme}
+                autoCapitalize={autoCapitalize}
                 text={getItemText(item)}
                 onRename={onRename && ((name) => onRename(item, name))}
                 onDelete={onDelete && (() => onDelete(item))}
@@ -330,6 +352,7 @@ export default function EditableListPopup<T>({
             ListFooterComponent={
               addingItem ? (
                 <RowDummy
+                  autoCapitalize={autoCapitalize}
                   textSignal={newItemTextSignal}
                   onRename={onAdd && ((name) => onAdd(name))}
                   onBlur={() => setAddingItem(false)}

@@ -96,6 +96,7 @@ export default function VariantsEditor({
 
         {setSpellings && pendingSpelling != null && (
           <CustomTextInput
+            autoCapitalize="none"
             style={[pressableStyle, textStyle]}
             defaultValue={pendingSpelling}
             autoFocus

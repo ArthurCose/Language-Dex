@@ -309,6 +309,7 @@ export default function EntryEditor(props: Props) {
       <ScrollView contentContainerStyle={styles.scrollViewContentContainer}>
         <View style={styles.row}>
           <CustomTextInput
+            autoCapitalize="none"
             style={[styles.input, styles.word]}
             placeholder={t("spelling_placeholder")}
             value={spelling}

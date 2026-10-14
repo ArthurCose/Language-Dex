@@ -27,6 +27,7 @@ export function DockedTextInput(props: TextInputProps) {
 
   return (
     <CustomTextInput
+      autoCapitalize="none"
       {...props}
       style={[theme.styles.definitionBackground, styles.textInput, props.style]}
     />
