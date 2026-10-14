@@ -56,7 +56,7 @@ import PronunciationEditor from "./pronunciation-editor";
 import { useAudioPlayer } from "expo-audio";
 import { stripProtocol } from "@/src/lib/path";
 import { normalize } from "@/src/lib/text-processing/normalization";
-import { shallowEqual } from "@/src/lib/structures/array";
+import { deduplicateUnstable, shallowEqual } from "@/src/lib/structures/array";
 import { RelationsEditorData, RelationsEditor } from "./relations-editor";
 import VariantsEditor from "./variants-editor";
 
@@ -233,19 +233,31 @@ export default function EntryEditor(props: Props) {
         spelling: spelling.trim(),
       });
 
+      // track all variants for cache invalidation
+      const invalidateList = [];
+
       // save variants
       if (!shallowEqual(variantSpellings, defaultVariants)) {
-        setVariants(entryId, variantSpellings);
+        await setVariants(entryId, variantSpellings);
         setDefaultVariants(variantSpellings);
+
+        invalidateList.push(...defaultVariants);
+        invalidateList.push(...variantSpellings);
       }
 
       // invalidate the old word
       if (migratingWords && props.normalizedWord != undefined) {
-        invalidateWordEntries(activeDictionary, props.normalizedWord);
+        invalidateList.push(props.normalizedWord);
       }
 
       // invalidate the new word
-      invalidateWordEntries(activeDictionary, normalizedSpelling);
+      invalidateList.push(normalizedSpelling);
+
+      deduplicateUnstable(invalidateList);
+
+      for (const spelling of invalidateList) {
+        invalidateWordEntries(activeDictionary, spelling);
+      }
     } catch (e) {
       logError(e);
     }

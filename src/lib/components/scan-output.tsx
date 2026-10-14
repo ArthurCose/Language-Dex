@@ -12,6 +12,7 @@ import { useSignalLens } from "../hooks/use-signal";
 import { normalize } from "../text-processing/normalization";
 import { memoizeUnary } from "../memoize";
 import interleaveWordSegments from "../text-processing/interleave-word-segments";
+import { useDictionaryRevision } from "../hooks/use-word-entries";
 
 type Props = {
   text: string;
@@ -28,6 +29,9 @@ export default function ScanOutput({ text, updateStats }: Props) {
   const [segments, setSegments] = useState<SegmentationResult[]>([]);
   const [baseSegments, setBaseSegments] = useState<SegmentationResult[]>([]);
   const memoizedNormalize = useMemo(() => memoizeUnary(normalize), [text]);
+
+  // using the dictionary revision to rebuild resolved compound words
+  const dictionaryRevision = useDictionaryRevision();
 
   useEffect(() => {
     const segments = extractWords(text);
@@ -129,7 +133,7 @@ export default function ScanOutput({ text, updateStats }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [segments, activeDictionary]);
+  }, [segments, activeDictionary, dictionaryRevision]);
 
   const textElement = useMemo(() => {
     // render segments into blocks

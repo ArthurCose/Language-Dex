@@ -26,3 +26,19 @@ export function findAndSwapRemove<T>(
 export function shallowEqual(a: any[], b: any[]) {
   return a.length == b.length && a.every((v, i) => Object.is(v, b[i]));
 }
+
+/** Removes duplicate values, may reorder elements */
+export function deduplicateUnstable(list: any[]) {
+  for (let i = list.length - 1; i >= 0; i--) {
+    const a = list[i] as unknown;
+
+    for (let j = i - 1; j >= 0; j--) {
+      const b: any = list[j] as unknown;
+
+      if (Object.is(a, b)) {
+        swapRemove(list, i);
+        break;
+      }
+    }
+  }
+}
