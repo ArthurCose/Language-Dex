@@ -708,14 +708,14 @@ export async function deleteEntry(id: number) {
 export async function deleteWord(dictionaryId: number, word: string) {
   log("Deleting Word...");
 
-  word = normalize(word);
+  const normalizedWord = normalize(word);
 
   const possibleResults = await db.getAllAsync<{
     id: number;
     spelling: string;
   }>(
     "SELECT id, spelling FROM word_shared_data WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $normalized",
-    { $dictionaryId: dictionaryId, $normalized: word },
+    { $dictionaryId: dictionaryId, $normalized: normalizedWord },
   );
 
   // match by lowercase to make sure diacritics match
