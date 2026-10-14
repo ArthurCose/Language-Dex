@@ -1,0 +1,6 @@
+- New section in the word editor for alternate spellings, tenses, gender, and forms
+- New "+ From Reader" button to pull an example from the reader on existing words
+- Word definitions now appear when tapping on guesses in Guess the Word
+- Adjusted statistics menu
+- Fixed CSV import failing to create more than one new part of speech
+- Various read tab improvements
