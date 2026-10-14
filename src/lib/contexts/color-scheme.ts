@@ -16,11 +16,7 @@ export function useColorSchemeWithUserDataSignal(
     return userDataColorScheme;
   }
 
-  if (systemColorScheme != "unspecified") {
-    return systemColorScheme;
-  }
-
-  return "light";
+  return systemColorScheme ?? "light";
 }
 
 export function useColorScheme(): "light" | "dark" {

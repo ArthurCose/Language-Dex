@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { StyleProp, TextStyle, ViewStyle } from "react-native";
 import { useTranslation } from "react-i18next";
 import EditableListPopup from "../editable-list-popup";

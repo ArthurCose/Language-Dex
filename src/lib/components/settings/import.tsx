@@ -3,9 +3,9 @@ import {
   StyleSheet,
   Pressable,
   StyleProp,
-  TextInput,
   ViewStyle,
   ScrollView,
+  TextInputInstance,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import { useTranslation } from "react-i18next";
@@ -119,7 +119,7 @@ function ImportDestinationDialog({
   const [t] = useTranslation();
   const userDataSignal = useUserDataSignal();
   const userData = useSignalValue(userDataSignal);
-  const nameInputRef = useRef<TextInput | null>(null);
+  const nameInputRef = useRef<TextInputInstance | null>(null);
 
   const resolveDictionary = useSignalValue(resolveDictionarySignal);
   const [radioGroupValue, setRadioGroupValue] = useState(

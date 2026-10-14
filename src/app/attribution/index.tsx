@@ -1,4 +1,3 @@
-import React from "react";
 import { SectionList, StyleSheet } from "react-native";
 import {
   styles as attributionStyles,

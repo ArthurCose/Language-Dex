@@ -23,6 +23,10 @@ export const ShortAnswerIcon = React.memo(function () {
     <View
       style={styles.container}
       onLayout={(e) => {
+        if (typeof e.target != "object") {
+          return;
+        }
+
         e.target.measure((_x, _y, _w, h, _pageX, _pageY) => {
           const fontSize = h / 4;
 
@@ -86,6 +90,10 @@ export const UseInASentenceIcon = React.memo(function () {
     <View
       style={styles.container}
       onLayout={(e) => {
+        if (typeof e.target != "object") {
+          return;
+        }
+
         e.target.measure((_x, _y, _w, h, _pageX, _pageY) => {
           const iconSize = h * (4 / 5);
 
@@ -303,6 +311,10 @@ export const WordSearchIcon = function () {
     <View
       style={styles.container}
       onLayout={(e) => {
+        if (typeof e.target != "object") {
+          return;
+        }
+
         e.target.measure((_x, _y, _w, h, _pageX, _pageY) => {
           setHeight(h);
         });
@@ -416,6 +428,10 @@ export const PronunciationIcon = React.memo(function () {
     <View
       style={styles.container}
       onLayout={(e) => {
+        if (typeof e.target != "object") {
+          return;
+        }
+
         e.target.measure((_x, _y, _w, h, _pageX, _pageY) => {
           const iconSize = h * (4 / 5);
 

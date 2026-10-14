@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ScrollView, StyleSheet } from "react-native";
+import { ScrollView, ScrollViewInstance, StyleSheet } from "react-native";
 import * as DropDownPrimitive from "@rn-primitives/dropdown-menu";
 import { isValidWord, listWords, updateStatistics } from "@/src/lib/data";
 import { Grapheme } from "@akahuku/unistring";
@@ -319,7 +319,7 @@ export default function () {
   const [pendingGuessLocked, setPendingGuessLocked] = useState(false);
   const submitLocked =
     pendingGuessLocked || pendingGuess.length == 0 || gameState.over;
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<ScrollViewInstance>(null);
 
   const dictionaryRevisionSignal = useDictionaryRevisionSignal();
   const [loadedRevision, setDictionaryRevision] = useState(

@@ -5,12 +5,13 @@ import {
   TextInputProps,
   Text,
   StyleSheet,
+  TextInputInstance,
 } from "react-native";
 import { useTheme } from "@/src/lib/contexts/theme-context";
 import { Signal, useSignalValue } from "@/src/lib/hooks/use-signal";
 
 type CustomTextInputProps = TextInputProps & {
-  inputRef?: React.Ref<TextInput | null>;
+  inputRef?: React.Ref<TextInputInstance | null>;
 };
 
 export default function CustomTextInput(props: CustomTextInputProps) {
@@ -19,7 +20,7 @@ export default function CustomTextInput(props: CustomTextInputProps) {
   const inputRef = props.inputRef;
 
   const ref = inputRef
-    ? (ref: TextInput) => {
+    ? (ref: TextInputInstance) => {
         textInputRef.current = ref;
 
         if (typeof inputRef == "function") {
@@ -99,7 +100,7 @@ export function CustomMultilineTextInput(props: CustomMultilineTextInputProps) {
 }
 
 function useBlurWhenKeyboardHides() {
-  const textInputRef = useRef<TextInput>(null);
+  const textInputRef = useRef<TextInputInstance>(null);
 
   useEffect(() => {
     const keyboardDidHideListener = Keyboard.addListener(

@@ -3,7 +3,6 @@ import SubMenuTopNav, {
   SubMenuBackButton,
   SubMenuTitle,
 } from "@/src/lib/components/sub-menu-top-nav";
-import React from "react";
 import { useTranslation } from "react-i18next";
 import RouteRoot from "@/src/lib/components/route-root";
 import {

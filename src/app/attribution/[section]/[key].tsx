@@ -1,4 +1,3 @@
-import React from "react";
 import { FlatList, Linking, StyleSheet, View, ScrollView } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Span } from "@/src/lib/components/text";

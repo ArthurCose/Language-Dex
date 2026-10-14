@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import BottomListPopup from "@/src/lib/components/bottom-list-popup";
 import { useTranslation } from "react-i18next";

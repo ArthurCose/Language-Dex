@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View, VirtualizedList } from "react-native";
 import SubMenuTopNav, {
   SubMenuActions,
@@ -70,7 +70,7 @@ function Table({ table, visible }: { table: TableMeta; visible: boolean }) {
           ))}
         </View>
 
-        <VirtualizedList<TableRow>
+        <VirtualizedList
           data={rows}
           getItem={(rows, i) => rows[i]}
           getItemCount={(rows) => rows.length}

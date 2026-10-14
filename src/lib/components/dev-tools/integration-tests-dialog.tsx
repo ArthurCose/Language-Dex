@@ -87,7 +87,7 @@ export default function ({ style, android_ripple, children }: Props) {
       >
         <DialogTitle>Integration Tests</DialogTitle>
 
-        <VirtualizedList<LabeledTest>
+        <VirtualizedList
           data={TESTS}
           getItemCount={() => TESTS.length}
           getItem={(data, index) => data[index]}

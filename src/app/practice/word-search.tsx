@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ScrollView,
   View,
@@ -51,7 +51,6 @@ import {
   WordSearch,
   BoardWordData,
 } from "@/src/lib/practice/word-search-generation";
-import React from "react";
 import { PressableRef } from "@rn-primitives/types";
 import HintPopup from "@/src/lib/components/practice/hint-popup";
 import { normalize } from "@/src/lib/text-processing/normalization";

@@ -401,6 +401,10 @@ const ChipSlot = React.memo(function ({
 
           originalPos.value = pos;
 
+          if (typeof e.target != "object") {
+            return;
+          }
+
           e.target.measure((_x, _y, w, h, pageX, pageY) => {
             // not using setGameState, since we're modifying directly
             getGameState().graphemeBoxes[index] = {

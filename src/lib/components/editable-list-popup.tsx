@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   StyleProp,
   ViewStyle,
   FlatList,
+  VirtualizedListInstance,
   TextInputProps,
 } from "react-native";
 import {
@@ -234,7 +235,7 @@ export default function EditableListPopup<T>({
   const [open, setOpen] = useState(false);
   const [addingItem, setAddingItem] = useState(false);
   const reorderableListRef = useRef<FlatList<T> | null>(null);
-  const virtualListRef = useRef<VirtualizedList<T> | null>(null);
+  const virtualListRef = useRef<VirtualizedListInstance | null>(null);
 
   const newItemTextSignal = useSignal("");
 

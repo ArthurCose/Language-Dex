@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, View, Animated, useAnimatedValue } from "react-native";
 import RouteRoot from "@/src/lib/components/route-root";
 import SubMenuTopNav, {

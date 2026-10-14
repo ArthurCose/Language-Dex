@@ -484,6 +484,10 @@ export default function () {
       <Animated.View
         style={[styles.rows, opacityStyle]}
         onLayout={(e) => {
+          if (typeof e.target != "object") {
+            return;
+          }
+
           e.target.measure((_x, _y, w, h) => {
             w -= ROWS_PADDING + HORIZONTAL_GAP;
             h -= ROWS_PADDING + VERTICAL_GAP * 2;

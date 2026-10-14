@@ -1,6 +1,6 @@
+import React from "react";
 import { StyleProp, View, ViewStyle } from "react-native";
 import { useTheme } from "@/src/lib/contexts/theme-context";
-import React from "react";
 
 type PropsWithStyleAndChildren = {
   style?: StyleProp<ViewStyle>;
