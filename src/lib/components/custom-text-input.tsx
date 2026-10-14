@@ -33,7 +33,8 @@ export default function CustomTextInput(props: CustomTextInputProps) {
   return (
     <TextInput
       ref={ref}
-      selectionColor={theme.colors.primary.default}
+      selectionHandleColor={theme.colors.primary.default}
+      selectionColor={theme.colors.selectedText}
       placeholderTextColor={theme.colors.disabledText}
       {...props}
       style={props.style ? [theme.styles.text, props.style] : theme.styles.text}
@@ -73,7 +74,8 @@ export function CustomMultilineTextInput(props: CustomMultilineTextInputProps) {
   return (
     <TextInput
       ref={textInputRef}
-      selectionColor={theme.colors.primary.default}
+      selectionHandleColor={theme.colors.primary.default}
+      selectionColor={theme.colors.selectedText}
       placeholderTextColor={theme.colors.disabledText}
       {...props}
       style={[

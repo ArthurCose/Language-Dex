@@ -70,6 +70,7 @@ type Palette = {
   text: string;
   label: string;
   disabledText: string;
+  selectedText: string;
   oldWord: string;
   partOfSpeech: string;
   example: string;
@@ -319,6 +320,7 @@ export const themeConstructors: {
         text: "#bbb",
         label: "#aaa",
         disabledText: "#777",
+        selectedText: "#a3fb",
         oldWord: "#999",
         partOfSpeech: "grey",
         example: "grey",
@@ -358,6 +360,7 @@ export const themeConstructors: {
       text: "black",
       label: "#aaa",
       disabledText: "grey",
+      selectedText: "#a3f9",
       oldWord: "#999",
       partOfSpeech: "grey",
       example: "grey",
