@@ -38,7 +38,7 @@ Language Dex is not designed to be your sole learning tool, no app should be.
 It is aimed to be a supplementary practice and personal progress tracking app for any language you are learning.
 It can also be used as a general study app, as you can load custom vocabulary necessary for any subject.
 
-The intention behind having users add words themselves is to push users to research and interact more with the words being studied and to lean the user to write definitions in their own words.
+The intention behind having users add words themselves is to push users to research and interact more with the words being studied and to lean the user to write definitions in their own words. This is most noticeable through the Read tab, a tool to help with manual translation and word documentation.
 
 Below are reasonings for the pratice games included in Language Dex:
 
@@ -48,23 +48,23 @@ These are light practice games, aimed at getting you familiar with words you've 
 
 ### Guess the Word
 
-A fun Wordle inspired practice game that tests your vocabulary and spelling. Only words you've saved to your dictionary can be used to play, providing reason to add new words to your dictionary.
+A fun Wordle inspired practice game that tests your vocabulary and spelling. Only words you've saved to your dictionary can be used to play, providing motivation to add new words to your dictionary.
 
 ### Crossword + Short Answer
 
-Crossword is a lighter practice version of Short Answer with some initial character and word length hints.
+Crossword is a lighter practice version of Short Answer as it offers some initial character and word length hints.
 
-Short Answer tests you on words more directly, checking to see whether you can remember a word and its spelling using only the definition.
+Short Answer is a more direct test, checking to see whether you can remember a word and its spelling using only the definition.
 
 ### Word Search
 
-A similar, yet more difficult challenge to Definition Match, Unscramble, and Crossword puzzles, by requiring hidden words to be matched to definitions by color.
+A similar, yet more difficult challenge to Definition Match, Unscramble, and Crossword puzzles. While the words are in still in front of you similar to the other games, it won't tell you which are correctly matched by definition without getting them all correct.
 
 ### Use in a Sentence + Pronunciation
 
-Use in a Sentence is a difficult personal test to see your creative usage of a word, while Pronunciation is simple direct pronunciation practice for individual words.
+Use in a Sentence and Pronunciation act as ways to engage with words that aren't strictly focused on definitions or spelling.
 
-Completing these practice games for a word also allows you fill out the Example and Pronunciation sections of the word's data. Each have a way to directly compare with the existing data for you to choose the best version to keep.
+Completing these practice games for a word also allows you complete the relevant sections of the word's data. Each have a way to directly compare with the existing data for you to choose the best version to keep.
 
 ## Develop
 
