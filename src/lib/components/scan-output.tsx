@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { StyleSheet, Text, View, FlatList } from "react-native";
+import { StyleSheet, View, FlatList } from "react-native";
 import { useTheme } from "@/src/lib/contexts/theme-context";
 import extractWords from "@/src/lib/text-processing/extract-words";
 import { isRTL } from "@/src/lib/text-processing/rtl";
@@ -13,6 +13,7 @@ import { normalize } from "../text-processing/normalization";
 import { memoizeUnary } from "../memoize";
 import interleaveWordSegments from "../text-processing/interleave-word-segments";
 import { useDictionaryRevision } from "../hooks/use-word-entries";
+import { Span } from "./text";
 
 type Props = {
   text: string;
@@ -193,17 +194,16 @@ export default function ScanOutput({ text, updateStats }: Props) {
         data={renderBlocks}
         renderItem={({ item }) => (
           <View onStartShouldSetResponder={() => true}>
-            <Text
+            <Span
               style={[
                 theme.styles.scanText,
-                theme.styles.text,
                 {
                   textAlign: rtl ? "right" : "left",
                 },
               ]}
             >
               {item}
-            </Text>
+            </Span>
           </View>
         )}
         ListFooterComponent={() => <View style={styles.footer} />}
