@@ -427,19 +427,23 @@ export async function setVariants(entryId: number, variants: string[]) {
     "INSERT INTO word_variants (entryId, spelling, insensitiveSpelling) VALUES ($id, $spelling, $normalized)",
   );
 
-  const promises = [];
+  try {
+    const promises = [];
 
-  for (const spelling of variants) {
-    promises.push(
-      statement.executeAsync({
-        $id: entryId,
-        $spelling: spelling,
-        $normalized: normalize(spelling),
-      }),
-    );
+    for (const spelling of variants) {
+      promises.push(
+        statement.executeAsync({
+          $id: entryId,
+          $spelling: spelling,
+          $normalized: normalize(spelling),
+        }),
+      );
+    }
+
+    await Promise.all(promises);
+  } finally {
+    statement.finalizeAsync().catch(logError);
   }
-
-  await Promise.all(promises);
 }
 
 async function resolveNewOrderKey(sharedId: number) {
