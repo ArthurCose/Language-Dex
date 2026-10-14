@@ -56,7 +56,7 @@ Crossword is a lighter practice version of Short Answer with some initial charac
 
 Short Answer tests you on words more directly, checking to see whether you can remember a word and its spelling using only the definition.
 
-# Word Search
+### Word Search
 
 A similar, yet more difficult challenge to Definition Match, Unscramble, and Crossword puzzles, by requiring hidden words to be matched to definitions by color.
 
