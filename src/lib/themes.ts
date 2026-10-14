@@ -207,12 +207,14 @@ function createSimpleTheme(colors: Palette): Theme {
       },
       scanOldWord: {
         borderColor: colors.oldWord,
+        borderStyle: "solid",
       },
       scanUncertainWord: {
         borderStyle: "dotted",
       },
       scanNewWord: {
         borderColor: colors.primary.default,
+        borderStyle: "solid",
       },
       definitionBubble: {
         borderRadius: 8,
