@@ -236,7 +236,7 @@ export async function getWordEntries(
 
   for (const { entryId, spelling } of variantResults) {
     const row = await db.getFirstAsync<DictionaryEntry>(
-      "SELECT * FROM word_definition_data WHERE sharedId = $id AND dictionaryId = $dictionaryId",
+      "SELECT * FROM word_definition_data WHERE id = $id AND dictionaryId = $dictionaryId",
       { $id: entryId, $dictionaryId: dictionaryId },
     );
 
