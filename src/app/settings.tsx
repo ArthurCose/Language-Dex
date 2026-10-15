@@ -370,15 +370,15 @@ function DevelopmentSection({
         onPress={() => router.navigate("/dev-tools/logs")}
       />
 
-      <SettingsButton
-        theme={theme}
-        icon={Icons.TablesIcon}
-        label="View Tables"
-        onPress={() => router.navigate("/dev-tools/table-viewer")}
-      />
-
       {__DEV__ && (
         <>
+          <SettingsButton
+            theme={theme}
+            icon={Icons.TablesIcon}
+            label="View Tables"
+            onPress={() => router.navigate("/dev-tools/table-viewer")}
+          />
+
           <IntegrationTestsDialog
             style={styles.row}
             android_ripple={theme.ripples.transparentButton}
