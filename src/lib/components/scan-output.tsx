@@ -15,6 +15,8 @@ import interleaveWordSegments from "../text-processing/interleave-word-segments"
 import { useDictionaryRevision } from "../hooks/use-word-entries";
 import { Span } from "./text";
 
+const invisibleSpace = "​";
+
 type Props = {
   text: string;
   updateStats: boolean;
@@ -161,7 +163,7 @@ export default function ScanOutput({ text, updateStats }: Props) {
             );
           } else {
             // prevent lines from collapsing by inserting invisible spaces
-            renderBlock.push("​");
+            renderBlock.push(invisibleSpace);
           }
 
           // prevent two adjacent words from appearing as one solid word
@@ -179,6 +181,9 @@ export default function ScanOutput({ text, updateStats }: Props) {
           );
         }
       }
+
+      // prevent wrapped lines from collapsing by inserting invisible spaces
+      renderBlock.push(invisibleSpace);
     }
 
     // resolve RTL for styling

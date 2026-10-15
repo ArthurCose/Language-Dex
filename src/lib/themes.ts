@@ -30,10 +30,11 @@ export type Theme = {
     scanText: TextStyle;
     scanWordText: TextStyle;
     scanTextActive: TextStyle;
-    scanWord: ViewStyle;
-    scanOldWord: ViewStyle;
-    scanUncertainWord: ViewStyle;
-    scanNewWord: ViewStyle;
+    scannedTextPresable: ViewStyle;
+    scannedWord: TextStyle;
+    scannedOldWord: TextStyle;
+    scannedUncertainWord: TextStyle;
+    scannedNewWord: TextStyle;
     definitionBubble: ViewStyle;
     definitionBorders: { borderColor: string };
     definitionBackground: { backgroundColor: string };
@@ -200,20 +201,26 @@ function createSimpleTheme(colors: Palette): Theme {
       scanTextActive: {
         color: colors.primary.default,
       },
-      scanWord: {
-        marginTop: -8,
-        marginBottom: -7,
+      scannedTextPresable: {
+        // backgroundColor: "#0f05",
+        height: 30,
+        marginTop: -17,
+        marginBottom: -15,
+        paddingHorizontal: 2,
+        marginHorizontal: -2,
+      },
+      scannedWord: {
         borderBottomWidth: 2,
         borderColor: "transparent",
       },
-      scanOldWord: {
+      scannedOldWord: {
         borderColor: colors.oldWord,
         borderStyle: "solid",
       },
-      scanUncertainWord: {
+      scannedUncertainWord: {
         borderStyle: "dotted",
       },
-      scanNewWord: {
+      scannedNewWord: {
         borderColor: colors.primary.default,
         borderStyle: "solid",
       },

@@ -62,16 +62,16 @@ export default function ScannedWord({
     return diacriticsMatch ?? false;
   }, [normalized]);
 
-  const underlineStyles = [theme.styles.scanWord];
+  const underlineStyles = [theme.styles.scannedWord];
 
   if (entryResult && entryResult.entries.length > 0) {
-    underlineStyles.push(theme.styles.scanOldWord);
+    underlineStyles.push(theme.styles.scannedOldWord);
 
     if (!diacriticsMatch && !wordExists) {
-      underlineStyles.push(theme.styles.scanUncertainWord);
+      underlineStyles.push(theme.styles.scannedUncertainWord);
     }
   } else if (entry?.loaded) {
-    underlineStyles.push(theme.styles.scanNewWord);
+    underlineStyles.push(theme.styles.scannedNewWord);
   }
 
   // use isValidWord to check variants if diacritics failed to match
@@ -110,7 +110,7 @@ export default function ScannedWord({
       <DropDownPrimitive.Trigger
         ref={triggerRef}
         onPress={() => setOpen(true)}
-        style={underlineStyles}
+        style={theme.styles.scannedTextPresable}
       >
         <Span
           numberOfLines={1}
@@ -118,6 +118,7 @@ export default function ScannedWord({
             theme.styles.scanText,
             theme.styles.scanWordText,
             open && theme.styles.scanTextActive,
+            underlineStyles,
           ]}
         >
           {text}
