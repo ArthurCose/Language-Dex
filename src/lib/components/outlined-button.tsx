@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useTheme } from "@/src/lib/contexts/theme-context";
 import { Span } from "./text";
+import { IconProps } from "./icons";
 
 export default function OutlinedButton({
   color,
@@ -43,7 +44,7 @@ export function OutlineLabeledIconButton({
 }: {
   color?: ColorValue;
   style?: StyleProp<ViewStyle>;
-  icon: React.FunctionComponent<{ size: number; color?: ColorValue }>;
+  icon: React.ComponentType<IconProps>;
   label: string;
   onPress?: PressableProps["onPress"];
 }) {

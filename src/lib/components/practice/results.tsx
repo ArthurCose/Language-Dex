@@ -95,7 +95,7 @@ function ResultsIcon({
   icon: Icon,
   style,
 }: {
-  icon: React.FunctionComponent<IconProps>;
+  icon: React.ComponentType<IconProps>;
   style: StyleProp<TextStyle>;
 }) {
   return (

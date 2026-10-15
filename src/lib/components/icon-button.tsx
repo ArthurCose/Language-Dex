@@ -1,5 +1,4 @@
 import {
-  ColorValue,
   GestureResponderEvent,
   Pressable,
   StyleProp,
@@ -8,11 +7,12 @@ import {
   ViewStyle,
 } from "react-native";
 import { useTheme } from "../contexts/theme-context";
+import { IconProps } from "./icons";
 
 type Props = {
   style?: StyleProp<ViewStyle>;
   pressableStyle?: StyleProp<ViewStyle>;
-  icon: React.FunctionComponent<{ size: number; color?: ColorValue }>;
+  icon: React.ComponentType<IconProps>;
   onPress?: (event: GestureResponderEvent) => void;
   disabled?: boolean;
 };
