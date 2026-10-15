@@ -51,6 +51,7 @@ export default function ({ style, android_ripple, children }: Props) {
         pointerEvents="box-only"
         onPress={async () => {
           setOpen(true);
+          setCompleted(false);
 
           const results: TestResults = {};
 
