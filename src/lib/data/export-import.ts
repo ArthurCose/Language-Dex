@@ -85,6 +85,7 @@ CREATE TABLE word_shared_data (
 );
 
 CREATE TABLE word_definition_data (
+  id                 INTEGER NOT NULL,
   dictionaryId       INTEGER NOT NULL,
   sharedId           INTEGER NOT NULL REFERENCES word_shared_data(id),
   orderKey           INTEGER NOT NULL,
@@ -220,6 +221,7 @@ CREATE TABLE files (
     ]);
 
     await copyDictionaryTable("definitions", "word_definition_data", [
+      "id",
       "dictionaryId",
       "sharedId",
       "orderKey",
@@ -665,30 +667,40 @@ export async function importData(
     const totalVariants = await extractCount(
       importDb,
       "SELECT COUNT(*) FROM word_variants",
-    );
+    ).catch(() => 0);
 
-    const variantResults = importDb.getEachAsync<{
-      entryId: number;
-      spelling: string;
-    }>("SELECT * FROM word_definition_data");
+    // backwards compat test
+    if (totalVariants != 0) {
+      const variantResults = importDb.getEachAsync<{
+        entryId: number;
+        spelling: string;
+      }>("SELECT * FROM word_variants");
 
-    await bulkInsert(
-      "word_variants",
-      ["entryId", "spelling", "insensitiveSpelling"],
-      async (statement) => {
-        let i = 0;
+      await bulkInsert(
+        "word_variants",
+        ["entryId", "spelling", "insensitiveSpelling"],
+        async (statement) => {
+          let i = 0;
 
-        for await (const result of variantResults) {
-          await statement.executeAsync({
-            $entryId: entryIdMap[result.entryId],
-            $spelling: result.spelling,
-            $insensitiveSpelling: normalize(result.spelling),
-          });
+          for await (const result of variantResults) {
+            const entryId = entryIdMap[result.entryId];
 
-          progressCallback("variants", ++i, totalVariants);
-        }
-      },
-    );
+            if (entryId == null) {
+              // skip bad export from older versions
+              continue;
+            }
+
+            await statement.executeAsync({
+              $entryId: entryIdMap[result.entryId],
+              $spelling: result.spelling,
+              $insensitiveSpelling: normalize(result.spelling),
+            });
+
+            progressCallback("variants", ++i, totalVariants);
+          }
+        },
+      );
+    }
 
     log(`Import completed in ${performance.now() - startTime}ms`);
   } finally {
