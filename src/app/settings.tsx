@@ -121,19 +121,21 @@ function SettingsButton({
 
 const pageList = pages.map((page) => page.label);
 
+type IconMap = { [key: string]: React.ComponentType<Icons.IconProps> };
+const themeIcons: IconMap = {
+  dark: Icons.DarkThemeIcon,
+  light: Icons.LightThemeIcon,
+};
+
 function CustomizationSection() {
   const theme = useTheme();
   const [t] = useTranslation();
   const userDataSignal = useUserDataSignal();
   const userData = useSignalValue(userDataSignal);
 
-  let themeIcon = Icons.AutoThemeIcon;
-
-  if (userData.colorScheme == "dark") {
-    themeIcon = Icons.DarkThemeIcon;
-  } else if (userData.colorScheme == "light") {
-    themeIcon = Icons.LightThemeIcon;
-  }
+  const themeIcon = userData.colorScheme
+    ? themeIcons[userData.colorScheme]
+    : Icons.AutoThemeIcon;
 
   return (
     <>
