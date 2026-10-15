@@ -2,7 +2,7 @@ import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/src/lib/contexts/theme-context";
-import { CloseIcon, ConfirmReadyIcon, EditIcon } from "../icons";
+import { CheckIcon, CloseIcon, EditIcon } from "../icons";
 import CustomTextInput, {
   TextInputCharacterCount,
 } from "@/src/lib/components/custom-text-input";
@@ -82,7 +82,7 @@ export default function Read() {
               {confirmed ? (
                 <EditIcon size={40} color="white" />
               ) : (
-                <ConfirmReadyIcon size={40} color="white" />
+                <CheckIcon size={40} color="white" />
               )}
             </CircleButton>
           </View>

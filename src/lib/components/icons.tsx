@@ -1,5 +1,8 @@
 import { ColorValue, StyleProp, TextStyle, Text } from "react-native";
-import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons";
+import {
+  MaterialDesignIcons,
+  MaterialDesignIconsIconName,
+} from "@react-native-vector-icons/material-design-icons";
 
 export type IconProps = {
   color?: ColorValue;
@@ -7,230 +10,8 @@ export type IconProps = {
   style?: StyleProp<TextStyle>;
 };
 
-export function DictionaryIcon(props: IconProps) {
-  return <MaterialDesignIcons name="book" {...props} />;
-}
-
-export function ScanIcon(props: IconProps) {
-  return <MaterialDesignIcons name="text-search" {...props} />;
-}
-
-export function PracticeIcon(props: IconProps) {
-  return <MaterialDesignIcons name="weight-lifter" {...props} />;
-}
-
-export function StatisticsIcon(props: IconProps) {
-  return <MaterialDesignIcons name="chart-bar" {...props} />;
-}
-
-export function ProfileIcon(props: IconProps) {
-  return <MaterialDesignIcons name="account-outline" {...props} />;
-}
-
-export function SettingsIcon(props: IconProps) {
-  return <MaterialDesignIcons name="cog" {...props} />;
-}
-
-export function HistoryIcon(props: IconProps) {
-  return <MaterialDesignIcons name="history" {...props} />;
-}
-
-export function ConfirmReadyIcon(props: IconProps) {
-  return <MaterialDesignIcons name="check" {...props} />;
-}
-
-export function CameraIcon(props: IconProps) {
-  return <MaterialDesignIcons name="camera" {...props} />;
-}
-
-export function PlusIcon(props: IconProps) {
-  return <MaterialDesignIcons name="plus" {...props} />;
-}
-
-export function CloseIcon(props: IconProps) {
-  return <MaterialDesignIcons name="close" {...props} />;
-}
-
-export function UnlinkIcon(props: IconProps) {
-  return <MaterialDesignIcons name="link-off" {...props} />;
-}
-
-export function EditIcon(props: IconProps) {
-  return <MaterialDesignIcons name="pencil" {...props} />;
-}
-
-export function CancelEditIcon(props: IconProps) {
-  return <MaterialDesignIcons name="pencil-off" {...props} />;
-}
-
-export function DropdownIcon(props: IconProps) {
-  return <MaterialDesignIcons name="menu-down" {...props} />;
-}
-
-export function ArrowUpIcon(props: IconProps) {
-  return <MaterialDesignIcons name="arrow-up" {...props} />;
-}
-
-export function ArrowDownIcon(props: IconProps) {
-  return <MaterialDesignIcons name="arrow-down" {...props} />;
-}
-
-export function ArrowLeftIcon(props: IconProps) {
-  return <MaterialDesignIcons name="arrow-left" {...props} />;
-}
-
-export function ArrowRightIcon(props: IconProps) {
-  return <MaterialDesignIcons name="arrow-right" {...props} />;
-}
-
-export function ChevronUpIcon(props: IconProps) {
-  return <MaterialDesignIcons name="chevron-up" {...props} />;
-}
-
-export function ChevronDownIcon(props: IconProps) {
-  return <MaterialDesignIcons name="chevron-down" {...props} />;
-}
-
-export function CheckIcon(props: IconProps) {
-  return <MaterialDesignIcons name="check" {...props} />;
-}
-
-export function TextboxIcon(props: IconProps) {
-  return <MaterialDesignIcons name="form-textbox" {...props} />;
-}
-
-export function PartOfSpeechIcon(props: IconProps) {
-  return <MaterialDesignIcons name="shape" {...props} />;
-}
-
-export function DefinitionIcon(props: IconProps) {
-  return <MaterialDesignIcons name="text" {...props} />;
-}
-
-export function ExampleIcon(props: IconProps) {
-  return <MaterialDesignIcons name="format-quote-open" {...props} />;
-}
-
-export function NotesIcon(props: IconProps) {
-  return <MaterialDesignIcons name="alert-box-outline" {...props} />;
-}
-
-export function WordRelationIcon(props: IconProps) {
-  return <MaterialDesignIcons name="set-left-center" {...props} />;
-}
-
-export const VariantIcon = createTextIcon("≈", 1.1);
-
-export function SaveIcon(props: IconProps) {
-  return <MaterialDesignIcons name="content-save-outline" {...props} />;
-}
-
-export function TrashIcon(props: IconProps) {
-  return <MaterialDesignIcons name="delete-outline" {...props} />;
-}
-
-export function CopyIcon(props: IconProps) {
-  return <MaterialDesignIcons name="content-copy" {...props} />;
-}
-
-export function DragVerticalIcon(props: IconProps) {
-  return <MaterialDesignIcons name="drag-horizontal-variant" {...props} />;
-}
-
-export function DragVerticalLongIcon(props: IconProps) {
-  return <MaterialDesignIcons name="drag-vertical" {...props} />;
-}
-
-export function LockIcon(props: IconProps) {
-  return <MaterialDesignIcons name="lock" {...props} />;
-}
-
-export function LinkIcon(props: IconProps) {
-  return <MaterialDesignIcons name="link-variant" {...props} />;
-}
-
-export function TimerIcon(props: IconProps) {
-  return <MaterialDesignIcons name="timer-outline" {...props} />;
-}
-
-export function ShuffleIcon(props: IconProps) {
-  return <MaterialDesignIcons name="shuffle" {...props} />;
-}
-
-export function IncorrectIcon(props: IconProps) {
-  return <MaterialDesignIcons name="close" {...props} />;
-}
-
-export function CorrectIcon(props: IconProps) {
-  return <MaterialDesignIcons name="check" {...props} />;
-}
-
-export function ShareIcon(props: IconProps) {
-  return <MaterialDesignIcons name="share-variant" {...props} />;
-}
-
-export function AllDictionariesIcon(props: IconProps) {
-  return <MaterialDesignIcons name="bookshelf" {...props} />;
-}
-
-export function PracticeResultsIcon(props: IconProps) {
-  return <MaterialDesignIcons name="medal-outline" {...props} />;
-}
-
-export function HintIcon(props: IconProps) {
-  return <MaterialDesignIcons name="lightbulb-on-outline" {...props} />;
-}
-
-export function ConcedeIcon(props: IconProps) {
-  return <MaterialDesignIcons name="flag-variant-outline" {...props} />;
-}
-
-export function QuestionMarkIcon(props: IconProps) {
-  return <MaterialDesignIcons name="help" {...props} />;
-}
-
-export function ScoreIcon(props: IconProps) {
-  return <MaterialDesignIcons name="star-outline" {...props} />;
-}
-
-export function UnlockedIcon(props: IconProps) {
-  return <MaterialDesignIcons name="lock-open-variant" {...props} />;
-}
-
-export function SentencePracticeIcon(props: IconProps) {
-  return <MaterialDesignIcons name="tooltip-text-outline" {...props} />;
-}
-
-export function MicrophoneIcon(props: IconProps) {
-  return <MaterialDesignIcons name="microphone" {...props} />;
-}
-
-export function PlayAudioIcon(props: IconProps) {
-  return <MaterialDesignIcons name="volume-high" {...props} />;
-}
-
-export function RecordIcon(props: IconProps) {
-  return <MaterialDesignIcons name="microphone" {...props} />;
-}
-
-export function StopRecordingIcon(props: IconProps) {
-  return <MaterialDesignIcons name="stop" {...props} />;
-}
-
-export function EducationIcon(props: IconProps) {
-  return <MaterialDesignIcons name="school" {...props} />;
-}
-
-export function ThumbUpIcon(props: IconProps) {
-  return <MaterialDesignIcons name="thumb-up-outline" {...props} />;
-}
-
-export function ThumbDownIcon(props: IconProps) {
-  return <MaterialDesignIcons name="thumb-down-outline" {...props} />;
-}
-
-export function RetryIcon(props: IconProps) {
-  return <MaterialDesignIcons name="restore" {...props} />;
+function createMaterialDesignIcon(name: MaterialDesignIconsIconName) {
+  return (props: IconProps) => <MaterialDesignIcons name={name} {...props} />;
 }
 
 function createTextIcon(text: string, scale?: number) {
@@ -256,10 +37,15 @@ function createTextIcon(text: string, scale?: number) {
 }
 
 const EMOJI_SCALE = 28 / 32;
-export const LowConfidenceIcon = createTextIcon("😵‍💫", EMOJI_SCALE);
-export const NeutralConfidenceIcon = createTextIcon("😶", EMOJI_SCALE);
-export const HighConfidenceIcon = createTextIcon("😊", EMOJI_SCALE);
-export const HighestConfidenceIcon = createTextIcon("🤓", EMOJI_SCALE);
+function createEmojiIcon(text: string) {
+  return createTextIcon(text, EMOJI_SCALE);
+}
+
+// confidence icons
+export const LowConfidenceIcon = createEmojiIcon("😵‍💫");
+export const NeutralConfidenceIcon = createEmojiIcon("😶");
+export const HighConfidenceIcon = createEmojiIcon("😊");
+export const HighestConfidenceIcon = createEmojiIcon("🤓");
 
 export function ConfidenceIcon({
   confidence,
@@ -279,3 +65,81 @@ export function ConfidenceIcon({
 
   return <Icon {...props} />;
 }
+
+// bottom nav icons
+export const DictionaryIcon = createMaterialDesignIcon("book");
+export const ScanIcon = createMaterialDesignIcon("text-search");
+export const PracticeIcon = createMaterialDesignIcon("weight-lifter");
+export const StatisticsIcon = createMaterialDesignIcon("chart-bar");
+
+// read tab icons
+export const HistoryIcon = createMaterialDesignIcon("history");
+
+// general icons
+export const SettingsIcon = createMaterialDesignIcon("cog");
+export const SaveIcon = createMaterialDesignIcon("content-save-outline");
+export const TrashIcon = createMaterialDesignIcon("delete-outline");
+export const CheckIcon = createMaterialDesignIcon("check");
+export const PlusIcon = createMaterialDesignIcon("plus");
+export const CopyIcon = createMaterialDesignIcon("content-copy");
+export const LinkIcon = createMaterialDesignIcon("link-variant");
+export const UnlinkIcon = createMaterialDesignIcon("link-off");
+export const EditIcon = createMaterialDesignIcon("pencil");
+export const CancelEditIcon = createMaterialDesignIcon("pencil-off");
+export const CloseIcon = createMaterialDesignIcon("close");
+export const DragVerticalIcon = createMaterialDesignIcon(
+  "drag-horizontal-variant",
+);
+export const DragVerticalLongIcon = createMaterialDesignIcon("drag-vertical");
+
+// arrows
+export const ArrowUpIcon = createMaterialDesignIcon("arrow-up");
+export const ArrowDownIcon = createMaterialDesignIcon("arrow-down");
+export const ArrowLeftIcon = createMaterialDesignIcon("arrow-left");
+export const ArrowRightIcon = createMaterialDesignIcon("arrow-right");
+export const ChevronUpIcon = createMaterialDesignIcon("chevron-up");
+export const ChevronDownIcon = createMaterialDesignIcon("chevron-down");
+export const DropdownIcon = createMaterialDesignIcon("menu-down");
+
+// entry editor
+export const EducationIcon = createMaterialDesignIcon("school");
+export const PartOfSpeechIcon = createMaterialDesignIcon("shape");
+export const DefinitionIcon = createMaterialDesignIcon("text");
+export const ExampleIcon = createMaterialDesignIcon("format-quote-open");
+export const NotesIcon = createMaterialDesignIcon("alert-box-outline");
+export const WordRelationIcon = createMaterialDesignIcon("set-left-center");
+export const VariantIcon = createTextIcon("≈", 1.1);
+
+// game icons
+export const PracticeResultsIcon = createMaterialDesignIcon("medal-outline");
+export const ScoreIcon = createMaterialDesignIcon("star-outline");
+export const TimerIcon = createMaterialDesignIcon("timer-outline");
+export const CorrectIcon = createMaterialDesignIcon("check");
+export const IncorrectIcon = createMaterialDesignIcon("close");
+export const HintIcon = createMaterialDesignIcon("lightbulb-on-outline");
+export const ConcedeIcon = createMaterialDesignIcon("flag-variant-outline");
+export const ThumbUpIcon = createMaterialDesignIcon("thumb-up-outline");
+export const ThumbDownIcon = createMaterialDesignIcon("thumb-down-outline");
+export const RetryIcon = createMaterialDesignIcon("restore");
+export const ShuffleIcon = createMaterialDesignIcon("shuffle");
+export const QuestionMarkIcon = createMaterialDesignIcon("help");
+
+// practice list icons
+export const LockIcon = createMaterialDesignIcon("lock");
+export const UnlockedIcon = createMaterialDesignIcon("lock-open-variant");
+export const SentencePracticeIcon = createMaterialDesignIcon(
+  "tooltip-text-outline",
+);
+
+// audio icons
+export const MicrophoneIcon = createMaterialDesignIcon("microphone");
+export const PlayAudioIcon = createMaterialDesignIcon("volume-high");
+export const RecordIcon = createMaterialDesignIcon("microphone");
+export const StopRecordingIcon = createMaterialDesignIcon("stop");
+
+// stats icons
+export const AllDictionariesIcon = createMaterialDesignIcon("bookshelf");
+export const ShareIcon = createMaterialDesignIcon("share-variant");
+
+// unused
+// export const TextboxIcon = createMaterialDesignIcon("form-textbox");

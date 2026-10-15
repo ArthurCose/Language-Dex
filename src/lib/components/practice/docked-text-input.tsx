@@ -9,7 +9,7 @@ import {
   Text,
 } from "react-native";
 import CustomTextInput from "../custom-text-input";
-import { ConfirmReadyIcon, HintIcon } from "../icons";
+import { CheckIcon, HintIcon } from "../icons";
 
 type DockedTextInputContainerProps = {
   style?: StyleProp<ViewStyle>;
@@ -56,7 +56,7 @@ export function DockedTextInputSubmitButton({
       android_ripple={theme.ripples.primaryButton}
       pointerEvents="box-only"
     >
-      <ConfirmReadyIcon color={theme.colors.primary.contrast} size={30} />
+      <CheckIcon color={theme.colors.primary.contrast} size={30} />
     </Pressable>
   );
 }
