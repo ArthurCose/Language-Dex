@@ -141,6 +141,28 @@ function CustomizationSection() {
     <>
       <ListPopup
         style={styles.row}
+        list={["light", "dark"]}
+        getItemText={(value) => getColorSchemeText(t, value)}
+        defaultItemText={t("System")}
+        keyExtractor={(value) => value}
+        onSelect={(value?: UserData["colorScheme"]) => {
+          if (value != userData.colorScheme) {
+            const updatedData = { ...userData };
+            updatedData.colorScheme = value;
+            userDataSignal.set(updatedData);
+          }
+        }}
+      >
+        <SettingsButtonContents
+          theme={theme}
+          icon={themeIcon}
+          label={t("Theme")}
+          valueLabel={getColorSchemeText(t, userData.colorScheme)}
+        />
+      </ListPopup>
+
+      <ListPopup
+        style={styles.row}
         list={pageList}
         getItemText={(value) => t(value)}
         keyExtractor={(value) => value}
@@ -161,28 +183,6 @@ function CustomizationSection() {
               ? t(userData.home)
               : t("Dictionary")
           }
-        />
-      </ListPopup>
-
-      <ListPopup
-        style={styles.row}
-        list={["light", "dark"]}
-        getItemText={(value) => getColorSchemeText(t, value)}
-        defaultItemText={t("System")}
-        keyExtractor={(value) => value}
-        onSelect={(value?: UserData["colorScheme"]) => {
-          if (value != userData.colorScheme) {
-            const updatedData = { ...userData };
-            updatedData.colorScheme = value;
-            userDataSignal.set(updatedData);
-          }
-        }}
-      >
-        <SettingsButtonContents
-          theme={theme}
-          icon={themeIcon}
-          label={t("Theme")}
-          valueLabel={getColorSchemeText(t, userData.colorScheme)}
         />
       </ListPopup>
     </>
