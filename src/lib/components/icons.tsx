@@ -76,7 +76,6 @@ export const StatisticsIcon = createMaterialDesignIcon("chart-bar");
 export const HistoryIcon = createMaterialDesignIcon("history");
 
 // general icons
-export const SettingsIcon = createMaterialDesignIcon("cog");
 export const SaveIcon = createMaterialDesignIcon("content-save-outline");
 export const TrashIcon = createMaterialDesignIcon("delete-outline");
 export const CheckIcon = createMaterialDesignIcon("check");
@@ -140,6 +139,24 @@ export const StopRecordingIcon = createMaterialDesignIcon("stop");
 // stats icons
 export const AllDictionariesIcon = createMaterialDesignIcon("bookshelf");
 export const ShareIcon = createMaterialDesignIcon("share-variant");
+
+// settings icons
+export const SettingsIcon = createMaterialDesignIcon("cog");
+export const LightThemeIcon = createMaterialDesignIcon("brightness-7");
+export const DarkThemeIcon = createMaterialDesignIcon("brightness-3");
+export const AutoThemeIcon = createMaterialDesignIcon("brightness-6");
+export const HomeIcon = createMaterialDesignIcon("home");
+export const SortIcon = createMaterialDesignIcon("sort-variant");
+export const ImportIcon = createMaterialDesignIcon("call-received");
+export const ExportIcon = createMaterialDesignIcon("call-made");
+export const PrivacyPolicyIcon = createMaterialDesignIcon("shield-lock");
+export const LogsIcon = createMaterialDesignIcon("text-box-outline");
+export const TablesIcon = createMaterialDesignIcon("table");
+export const GitHubIcon = createMaterialDesignIcon("github");
+export const LicenseIcon = createMaterialDesignIcon("scale-balance");
+export const DonateIcon = createMaterialDesignIcon("heart");
+export const TestIcon = createMaterialDesignIcon("test-tube");
+export const GenerateIcon = createMaterialDesignIcon("dice-5");
 
 // unused
 // export const TextboxIcon = createMaterialDesignIcon("form-textbox");

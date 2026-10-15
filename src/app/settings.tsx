@@ -7,7 +7,7 @@ import { Span } from "@/src/lib/components/text";
 import { useTheme } from "@/src/lib/contexts/theme-context";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Linking, Pressable, ScrollView, StyleSheet } from "react-native";
 import ListPopup from "@/src/lib/components/list-popup";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { upsertEntry, UserData, wordOrderOptions } from "@/src/lib/data";
@@ -32,6 +32,8 @@ import {
 import IntegrationTestsDialog from "@/src/lib/components/dev-tools/integration-tests-dialog";
 import ExportPopup from "../lib/components/settings/export";
 import ImportPopup from "../lib/components/settings/import";
+import { Theme } from "../lib/themes";
+import * as Icons from "../lib/components/icons";
 
 type LongTaskMeta = {
   open: boolean;
@@ -72,6 +74,51 @@ function throttle<T extends any[]>(
   };
 }
 
+type SettingsButtonContentsProps = {
+  theme: Theme;
+  icon: React.ComponentType<Icons.IconProps>;
+  label: string;
+  valueLabel?: string;
+};
+
+function SettingsButtonContents({
+  theme,
+  icon: Icon,
+  label,
+  valueLabel,
+}: SettingsButtonContentsProps) {
+  return (
+    <>
+      <Icon size={24} color={theme.colors.iconButton} />
+      <Span style={styles.label}>{label}</Span>
+      {valueLabel != null && (
+        <Span style={[styles.value, theme.styles.disabledText]}>
+          {valueLabel}
+        </Span>
+      )}
+    </>
+  );
+}
+
+function SettingsButton({
+  theme,
+  onPress,
+  ...contentProps
+}: {
+  onPress: () => void;
+} & SettingsButtonContentsProps) {
+  return (
+    <Pressable
+      style={styles.row}
+      android_ripple={theme.ripples.transparentButton}
+      pointerEvents="box-only"
+      onPress={onPress}
+    >
+      <SettingsButtonContents theme={theme} {...contentProps} />
+    </Pressable>
+  );
+}
+
 const pageList = pages.map((page) => page.label);
 
 function CustomizationSection() {
@@ -80,8 +127,41 @@ function CustomizationSection() {
   const userDataSignal = useUserDataSignal();
   const userData = useSignalValue(userDataSignal);
 
+  let themeIcon = Icons.AutoThemeIcon;
+
+  if (userData.colorScheme == "dark") {
+    themeIcon = Icons.DarkThemeIcon;
+  } else if (userData.colorScheme == "light") {
+    themeIcon = Icons.LightThemeIcon;
+  }
+
   return (
     <>
+      <ListPopup
+        style={styles.row}
+        list={pageList}
+        getItemText={(value) => t(value)}
+        keyExtractor={(value) => value}
+        onSelect={(value?: string) => {
+          if (value != userData.home) {
+            const updatedData = { ...userData };
+            updatedData.home = value;
+            userDataSignal.set(updatedData);
+          }
+        }}
+      >
+        <SettingsButtonContents
+          theme={theme}
+          icon={Icons.HomeIcon}
+          label={t("Default_View")}
+          valueLabel={
+            userData.home != undefined && pageList.includes(userData.home)
+              ? t(userData.home)
+              : t("Dictionary")
+          }
+        />
+      </ListPopup>
+
       <ListPopup
         style={styles.row}
         list={["light", "dark"]}
@@ -96,36 +176,13 @@ function CustomizationSection() {
           }
         }}
       >
-        <Span style={styles.label}>{t("Theme")}</Span>
-        <Span style={[styles.value, theme.styles.disabledText]}>
-          {getColorSchemeText(t, userData.colorScheme)}
-        </Span>
+        <SettingsButtonContents
+          theme={theme}
+          icon={themeIcon}
+          label={t("Theme")}
+          valueLabel={getColorSchemeText(t, userData.colorScheme)}
+        />
       </ListPopup>
-
-      <View style={theme.styles.separator} />
-
-      <ListPopup
-        style={styles.row}
-        list={pageList}
-        getItemText={(value) => t(value)}
-        keyExtractor={(value) => value}
-        onSelect={(value?: string) => {
-          if (value != userData.home) {
-            const updatedData = { ...userData };
-            updatedData.home = value;
-            userDataSignal.set(updatedData);
-          }
-        }}
-      >
-        <Span style={styles.label}>{t("Default_View")}</Span>
-        <Span style={[styles.value, theme.styles.disabledText]}>
-          {userData.home != undefined && pageList.includes(userData.home)
-            ? t(userData.home)
-            : t("Dictionary")}
-        </Span>
-      </ListPopup>
-
-      <View style={theme.styles.separator} />
     </>
   );
 }
@@ -180,16 +237,18 @@ function DictionariesSection({
           }
         }}
       >
-        <Span style={styles.label}>{t("Default_Order")}</Span>
-        <Span style={[styles.value, theme.styles.disabledText]}>
-          {userData.dictionaryOrder != undefined &&
-          wordOrderOptions.includes(userData.dictionaryOrder)
-            ? t(userData.dictionaryOrder)
-            : t(wordOrderOptions[0])}
-        </Span>
+        <SettingsButtonContents
+          theme={theme}
+          icon={Icons.SortIcon}
+          label={t("Default_Order")}
+          valueLabel={
+            userData.dictionaryOrder != undefined &&
+            wordOrderOptions.includes(userData.dictionaryOrder)
+              ? t(userData.dictionaryOrder)
+              : t(wordOrderOptions[0])
+          }
+        />
       </ListPopup>
-
-      <View style={theme.styles.separator} />
 
       <ImportPopup
         style={styles.row}
@@ -197,10 +256,12 @@ function DictionariesSection({
         onProgress={onProgress}
         onComplete={onComplete}
       >
-        <Span style={styles.label}>{t("Import_Dictionaries")}</Span>
+        <SettingsButtonContents
+          theme={theme}
+          icon={Icons.ImportIcon}
+          label={t("Import_Dictionaries")}
+        />
       </ImportPopup>
-
-      <View style={theme.styles.separator} />
 
       <ExportPopup
         style={styles.row}
@@ -208,10 +269,12 @@ function DictionariesSection({
         onProgress={onProgress}
         onComplete={onComplete}
       >
-        <Span style={styles.label}>{t("Export_Dictionaries")}</Span>
+        <SettingsButtonContents
+          theme={theme}
+          icon={Icons.ExportIcon}
+          label={t("Export_Dictionaries")}
+        />
       </ExportPopup>
-
-      <View style={theme.styles.separator} />
     </>
   );
 }
@@ -227,10 +290,10 @@ function HelpSection() {
         {t("Help")}
       </Span>
 
-      <Pressable
-        style={styles.row}
-        android_ripple={theme.ripples.transparentButton}
-        pointerEvents="box-only"
+      <SettingsButton
+        theme={theme}
+        icon={Icons.RetryIcon}
+        label={t("Replay_Tutorial")}
         onPress={() => {
           router.back();
           userDataSignal.set({
@@ -238,26 +301,18 @@ function HelpSection() {
             completedTutorial: false,
           });
         }}
-      >
-        <Span style={styles.label}>{t("Replay_Tutorial")}</Span>
-      </Pressable>
+      />
 
-      <View style={theme.styles.separator} />
-
-      <Pressable
-        style={styles.row}
-        android_ripple={theme.ripples.transparentButton}
-        pointerEvents="box-only"
+      <SettingsButton
+        theme={theme}
+        icon={Icons.PrivacyPolicyIcon}
+        label={t("Privacy_Policy")}
         onPress={() => {
           Linking.openURL(
             "https://arthurcose.dev/legal/language-dex/privacy-policy.html",
           ).catch(logError);
         }}
-      >
-        <Span style={styles.label}>{t("Privacy_Policy")}</Span>
-      </Pressable>
-
-      <View style={theme.styles.separator} />
+      />
     </>
   );
 }
@@ -277,90 +332,66 @@ function DevelopmentSection({
         {t("Development")}
       </Span>
 
-      <Pressable
-        style={styles.row}
-        android_ripple={theme.ripples.transparentButton}
-        pointerEvents="box-only"
+      <SettingsButton
+        icon={Icons.GitHubIcon}
+        theme={theme}
+        label={t("GitHub")}
         onPress={() => {
           Linking.openURL("https://github.com/arthurcose/language-dex").catch(
             logError,
           );
         }}
-      >
-        <Span style={styles.label}>{t("GitHub")}</Span>
-      </Pressable>
+      />
 
       <>
-        <View style={theme.styles.separator} />
-
-        <Pressable
-          style={styles.row}
-          android_ripple={theme.ripples.transparentButton}
-          pointerEvents="box-only"
+        <SettingsButton
+          icon={Icons.DonateIcon}
+          theme={theme}
+          label={t("Ko-fi")}
           onPress={() => {
             Linking.openURL("https://ko-fi.com/arthurcose").catch(logError);
           }}
-        >
-          <Span style={styles.label}>{t("Ko-fi")}</Span>
-        </Pressable>
+        />
       </>
 
-      <View style={theme.styles.separator} />
-
-      <Pressable
-        style={styles.row}
-        android_ripple={theme.ripples.transparentButton}
-        pointerEvents="box-only"
+      <SettingsButton
+        icon={Icons.LicenseIcon}
+        theme={theme}
+        label={t("Third_Party_Licenses")}
         onPress={() => router.navigate("/attribution")}
-      >
-        <Span style={styles.label}>{t("Third_Party_Licenses")}</Span>
-      </Pressable>
+      />
 
-      <View style={theme.styles.separator} />
+      <SettingsButton
+        theme={theme}
+        icon={Icons.LogsIcon}
+        label={t("View_Logs")}
+        onPress={() => router.navigate("/dev-tools/logs")}
+      />
 
-      <View style={styles.buttonRow}>
-        <Pressable
-          style={__DEV__ ? styles.rowButton : styles.rowButtonFull}
-          android_ripple={theme.ripples.transparentButton}
-          pointerEvents="box-only"
-          onPress={() => router.navigate("/dev-tools/logs")}
-        >
-          <Span style={styles.label}>{t("View_Logs")}</Span>
-        </Pressable>
-
-        {__DEV__ && (
-          <>
-            <View style={theme.styles.verticalSeparator} />
-
-            <Pressable
-              style={styles.rowButton}
-              android_ripple={theme.ripples.transparentButton}
-              pointerEvents="box-only"
-              onPress={() => router.navigate("/dev-tools/table-viewer")}
-            >
-              <Span style={styles.label}>View Tables</Span>
-            </Pressable>
-          </>
-        )}
-      </View>
+      <SettingsButton
+        theme={theme}
+        icon={Icons.TablesIcon}
+        label="View Tables"
+        onPress={() => router.navigate("/dev-tools/table-viewer")}
+      />
 
       {__DEV__ && (
         <>
-          <View style={theme.styles.separator} />
-
           <IntegrationTestsDialog
             style={styles.row}
             android_ripple={theme.ripples.transparentButton}
           >
-            <Span style={styles.label}>Integration Tests</Span>
+            <SettingsButtonContents
+              theme={theme}
+              icon={Icons.TestIcon}
+              label="Integration Tests"
+            />
           </IntegrationTestsDialog>
 
-          <View style={theme.styles.separator} />
-
-          <Pressable
-            style={styles.row}
-            android_ripple={theme.ripples.transparentButton}
-            pointerEvents="box-only"
+          <SettingsButton
+            icon={Icons.GenerateIcon}
+            theme={theme}
+            label="Generate Large Dictionary"
             onPress={() => {
               const totalWords = 5000;
 
@@ -436,13 +467,9 @@ function DevelopmentSection({
 
               longTask().catch(logError);
             }}
-          >
-            <Span style={styles.label}>Generate Large Dictionary</Span>
-          </Pressable>
+          />
         </>
       )}
-
-      <View style={theme.styles.separator} />
     </>
   );
 }
@@ -518,33 +545,17 @@ export default function () {
 
 const styles = StyleSheet.create({
   row: {
+    gap: 4,
     flexDirection: "row",
     padding: 16,
-    paddingLeft: 24,
-  },
-  buttonRow: {
-    flexDirection: "row",
-  },
-  rowButton: {
-    flex: 1,
     alignItems: "center",
-    padding: 16,
-  },
-  rowButtonFull: {
     flex: 1,
-    flexDirection: "row",
-    padding: 16,
-    paddingLeft: 24,
   },
   label: {
     fontSize: 18,
   },
   value: {
     fontSize: 18,
-    marginLeft: "auto",
-  },
-  valueIcon: {
-    alignSelf: "center",
     marginLeft: "auto",
   },
   sectionHeader: {
