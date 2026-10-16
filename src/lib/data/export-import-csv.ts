@@ -174,7 +174,7 @@ export async function exportCsv(
   const translatedColumns = columns.map(
     (c) => `${translate(translationMap[c])} (${exportMap[c]})`,
   );
-  file.write(translatedColumns.join(",") + "\r\n");
+  await file.write(translatedColumns.join(",") + "\r\n");
 
   // append results
   const line = [];
@@ -212,7 +212,7 @@ export async function exportCsv(
       line.push(encoded);
     }
 
-    file.write(line.join(",") + "\r\n", writeOptions);
+    await file.write(line.join(",") + "\r\n", writeOptions);
     line.length = 0;
 
     i++;
