@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/src/lib/contexts/theme-context";
-import { Span } from "../text";
+import { SignalledSpan, Span } from "../text";
 import { useUserDataSignal } from "@/src/lib/contexts/user-data-context";
 import { useSignalValue } from "@/src/lib/hooks/use-signal";
 import { DictionaryStats, listWords, UserData } from "@/src/lib/data";
@@ -33,7 +33,9 @@ import ReadSvg from "@/assets/svgs/Statistics-Read.svg";
 import PracticeSvg from "@/assets/svgs/Statistics-Practice.svg";
 import Cat1 from "@/assets/svgs/Statistics-1.svg";
 import Cat2 from "@/assets/svgs/Statistics-2.svg";
-import CatInteraction from "@/src/lib/components/cat-interaction";
+import CatInteraction, {
+  patCountSignal,
+} from "@/src/lib/components/cat-interaction";
 
 type StatsList = [string, keyof DictionaryStats][];
 const wordStats: StatsList = [
@@ -249,7 +251,7 @@ function StatsBlock({ theme, userData }: { theme: Theme; userData: UserData }) {
   );
 }
 
-function PatsBlock({ theme, userData }: { theme: Theme; userData: UserData }) {
+function PatsBlock({ theme }: { theme: Theme; userData: UserData }) {
   const [t] = useTranslation();
 
   return (
@@ -270,9 +272,10 @@ function PatsBlock({ theme, userData }: { theme: Theme; userData: UserData }) {
       >
         <Span>
           <Span>{t("label", { label: t("Total_Pats") })} </Span>
-          <Span style={theme.styles.poppingText}>
-            {userData.stats.totalPats ?? 0}
-          </Span>
+          <SignalledSpan
+            style={theme.styles.poppingText}
+            signal={patCountSignal}
+          />
         </Span>
       </View>
     </View>

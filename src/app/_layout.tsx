@@ -14,6 +14,7 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import KeyboardDismisser from "@/src/lib/components/keyboard-dismisser";
 import { Signal, useSignal, useSignalLens } from "@/src/lib/hooks/use-signal";
 import { useColorSchemeWithUserDataSignal } from "@/src/lib/contexts/color-scheme";
+import { patCountSignal } from "@/src/lib/components/cat-interaction";
 
 import "@/src/lib/i18n";
 import { useTranslation } from "react-i18next";
@@ -56,6 +57,9 @@ export default function RootLayout() {
     launchCleanup()
       .then(async () => {
         const userData = await loadUserData(t);
+
+        // init pat count
+        patCountSignal.set(userData.stats.totalPats ?? 0);
 
         // load userData before initializing db to allow the user data to perform migrations
         // before applying incompatible queries

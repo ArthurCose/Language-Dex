@@ -8,6 +8,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 import { useUserDataSignal } from "../contexts/user-data-context";
+import { Signal } from "../hooks/use-signal";
 
 let idCounter: number = 0;
 
@@ -63,7 +64,11 @@ const Heart = React.memo(function ({ startX, startY, onComplete }: HeartData) {
   );
 });
 
-type Props = { style?: StyleProp<ViewStyle> } & React.PropsWithChildren;
+export const patCountSignal = new Signal(0);
+
+type Props = {
+  style?: StyleProp<ViewStyle>;
+} & React.PropsWithChildren;
 
 export default function CatInteraction({ style, children }: Props) {
   const [hearts, setHearts] = useState<HeartData[]>([]);
@@ -108,6 +113,7 @@ export default function CatInteraction({ style, children }: Props) {
 
         setHearts((hearts) => [...hearts, data]);
         setInteractionCount((count) => count + 1);
+        patCountSignal.add(1);
       }}
     >
       {children}
