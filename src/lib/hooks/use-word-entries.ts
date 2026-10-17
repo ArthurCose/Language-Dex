@@ -102,7 +102,7 @@ export default function useWordEntries(
 }
 
 export function useWordEntry(
-  dicitonaryId: number,
+  dictionaryId: number,
   normalizedWord?: string,
   entryId?: number,
 ): [boolean, DictionaryEntry?] {
@@ -110,7 +110,7 @@ export function useWordEntry(
     () => (normalizedWord != undefined ? [normalizedWord] : []),
     [normalizedWord],
   );
-  const entryMap = useWordEntries(dicitonaryId, words);
+  const entryMap = useWordEntries(dictionaryId, words);
 
   if (normalizedWord == undefined || entryId == undefined) {
     return [true];
