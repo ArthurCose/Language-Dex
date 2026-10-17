@@ -1,0 +1,5 @@
+- Modernized the settings menu
+- Increased the touch target size for words in the Read tab
+- Pat counter now shows the live count
+- Fixed DB export failing to link word variants
+- Fixed removed accents in words added through the Read tab

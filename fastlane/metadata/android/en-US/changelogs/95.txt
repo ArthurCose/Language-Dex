@@ -1,4 +1,0 @@
-- Increased the touch target size for words in the Read tab
-- Modernized the settings menu
-- Fixed DB export failing to link word variants
-- Pat counter now shows the live count
