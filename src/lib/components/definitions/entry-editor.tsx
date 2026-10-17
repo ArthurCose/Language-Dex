@@ -64,6 +64,7 @@ import Cat from "@/assets/svgs/Definition-Editor.svg";
 import CatInteraction from "@/src/lib/components/cat-interaction";
 
 type Props = {
+  lowercasedWord?: string;
   normalizedWord?: string;
   setNormalizedWord: (word: string) => void;
   entryId?: number;
@@ -91,7 +92,7 @@ export default function EntryEditor(props: Props) {
   const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
 
   // defaults
-  const defaultSpelling = entry?.spelling ?? props.normalizedWord ?? "";
+  const defaultSpelling = entry?.spelling ?? props.lowercasedWord ?? "";
   const defaultPronunciationUri =
     getFileObjectPath(entry?.pronunciationAudio) ?? null;
   const defaultConfidence = entry?.confidence ?? 0;

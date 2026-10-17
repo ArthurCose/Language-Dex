@@ -45,6 +45,7 @@ export default function () {
 
   return (
     <EntryEditor
+      lowercasedWord={params.word?.toLowerCase()}
       normalizedWord={normalizedWord}
       setNormalizedWord={setNormalizedWord}
       entryId={entryId}
