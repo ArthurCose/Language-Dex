@@ -154,76 +154,88 @@ export async function exportCsv(
   // create file
   const file = Paths.cache.createFile("export.csv", "text/csv");
 
-  // resolve count
-  const sourceTotal = await extractCount(
-    db,
-    "SELECT COUNT(*) FROM word_definition_data WHERE dictionaryId = $dictionaryId",
-    sourceParams,
+  // prepare some statements
+  const variantsStatement = await db.prepareAsync(
+    "SELECT spelling FROM word_variants WHERE entryId = $id",
   );
 
-  // resolve query
-  const sourceQuery = [
-    "SELECT id, ",
-    columns.filter((c) => !externalColumns.includes(c)).join(", "),
-    "FROM word_definition_data",
-    "WHERE dictionaryId = $dictionaryId",
-  ];
+  try {
+    // resolve count
+    const sourceTotal = await extractCount(
+      db,
+      "SELECT COUNT(*) FROM word_definition_data WHERE dictionaryId = $dictionaryId",
+      sourceParams,
+    );
 
-  sourceQuery.push(`ORDER BY spelling ASC`);
+    // resolve query
+    const sourceQuery = [
+      "SELECT id, ",
+      columns.filter((c) => !externalColumns.includes(c)).join(", "),
+      "FROM word_definition_data",
+      "WHERE dictionaryId = $dictionaryId",
+    ];
 
-  const queryString = sourceQuery.join(" ");
-  const sourceResults = db.getEachAsync<{ [key: string]: unknown }>(
-    queryString,
-    sourceParams,
-  );
+    sourceQuery.push(`ORDER BY spelling ASC`);
 
-  // write header
-  const translatedColumns = columns.map(
-    (c) => `${translate(translationMap[c])} (${exportMap[c]})`,
-  );
-  await file.write(translatedColumns.join(",") + "\r\n");
+    const queryString = sourceQuery.join(" ");
+    const sourceResults = db.getEachAsync<{ [key: string]: unknown }>(
+      queryString,
+      sourceParams,
+    );
 
-  // append results
-  const line = [];
-  const writeOptions = { append: true };
-  let i = 0;
+    // write header
+    const translatedColumns = columns.map(
+      (c) => `${translate(translationMap[c])} (${exportMap[c]})`,
+    );
+    await file.write(translatedColumns.join(",") + "\r\n");
 
-  for await (const result of sourceResults) {
-    for (const key of columns) {
-      if (key == "variants") {
-        // special case for variants
-        const variants = await db.getAllAsync<{ spelling: string }>(
-          "SELECT spelling FROM word_variants WHERE entryId = $id",
-          { $id: result.id as number },
-        );
-        const values = variants.map((v) => v.spelling);
+    // append results
+    const line = [];
+    const writeOptions = { append: true };
+    let i = 0;
 
-        const valueString = joinValues(values, fieldCsvSeparator);
+    for await (const result of sourceResults) {
+      for (const key of columns) {
+        if (key == "variants") {
+          // special case for variants
+          const statementResult = await variantsStatement.executeAsync<{
+            spelling: string;
+          }>({
+            $id: result.id as number,
+          });
+          const variants = await statementResult.getAllAsync();
+          const values = variants.map((v) => v.spelling);
+
+          const valueString = joinValues(values, fieldCsvSeparator);
+          const encoded = encodeCsvField(valueString);
+          line.push(encoded);
+          continue;
+        }
+
+        // transform a field directly from the result
+        const value = result[key];
+        let valueString;
+
+        if (key == "partOfSpeech") {
+          const s =
+            typeof value == "number" ? partOfSpeechMap[value] : undefined;
+          valueString = s ?? "";
+        } else {
+          valueString = value?.toString() ?? "";
+        }
+
         const encoded = encodeCsvField(valueString);
         line.push(encoded);
-        continue;
       }
 
-      // transform a field directly from the result
-      const value = result[key];
-      let valueString;
+      await file.write(line.join(",") + "\r\n", writeOptions);
+      line.length = 0;
 
-      if (key == "partOfSpeech") {
-        const s = typeof value == "number" ? partOfSpeechMap[value] : undefined;
-        valueString = s ?? "";
-      } else {
-        valueString = value?.toString() ?? "";
-      }
-
-      const encoded = encodeCsvField(valueString);
-      line.push(encoded);
+      i++;
+      progressCallback(i, sourceTotal);
     }
-
-    await file.write(line.join(",") + "\r\n", writeOptions);
-    line.length = 0;
-
-    i++;
-    progressCallback(i, sourceTotal);
+  } finally {
+    await variantsStatement.finalizeAsync();
   }
 
   return file.uri;
