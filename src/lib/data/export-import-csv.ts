@@ -147,8 +147,19 @@ export async function exportCsv(
     partOfSpeechMap[data.id] = data.name;
   }
 
+  const sourceParams: SQLite.SQLiteBindParams = {
+    $dictionaryId: dictionary.id,
+  };
+
   // create file
   const file = Paths.cache.createFile("export.csv", "text/csv");
+
+  // resolve count
+  const sourceTotal = await extractCount(
+    db,
+    "SELECT COUNT(*) FROM word_definition_data WHERE dictionaryId = $dictionaryId",
+    sourceParams,
+  );
 
   // resolve query
   const sourceQuery = [
@@ -157,14 +168,10 @@ export async function exportCsv(
     "FROM word_definition_data",
     "WHERE dictionaryId = $dictionaryId",
   ];
-  const sourceParams: SQLite.SQLiteBindParams = {
-    $dictionaryId: dictionary.id,
-  };
 
   sourceQuery.push(`ORDER BY spelling ASC`);
 
   const queryString = sourceQuery.join(" ");
-  const sourceTotal = await extractCount(db, queryString, sourceParams);
   const sourceResults = db.getEachAsync<{ [key: string]: unknown }>(
     queryString,
     sourceParams,
