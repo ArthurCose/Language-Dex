@@ -26,6 +26,17 @@
         }
       ],
       "homepage": "https://pictogrammers.com/"
+    },
+    {
+      "name": "Material Icons",
+      "licenseExpression": "Apache-2.0",
+      "licenses": [
+        {
+          "expression": "(Apache-2.0 AND MIT)",
+          "file": "licenses/material-icons.txt"
+        }
+      ],
+      "homepage": "https://fonts.google.com/icons"
     }
   ],
   "overrides": {

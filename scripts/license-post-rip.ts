@@ -11,8 +11,10 @@ const iconsList: ResolvedPackageCompressed[][] = [];
 const namespaceMap: { [key: string]: ResolvedPackageCompressed[] | undefined } =
   {};
 
+const icons = ["Pictogrammers", "Material Icons"];
+
 function mergeNamespace(name: string, list: ResolvedPackageCompressed[]) {
-  if (name == "Pictogrammers") {
+  if (icons.includes(name)) {
     iconsList.push(list);
   } else {
     npmList.push(list);
