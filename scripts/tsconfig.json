@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "module": "es2020",
+    "strict": true,
+    "types": ["node"]
+  },
+  "include": ["**/*.ts"]
+}
