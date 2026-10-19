@@ -190,9 +190,12 @@ export async function exportCsv(
     await file.write(translatedColumns.join(",") + "\r\n");
 
     // append results
-    const line = [];
+    const lines = [];
+    const currentLine = [];
     const writeOptions = { append: true };
     let i = 0;
+    // JS uses UTF-16 strings, so not exactly bytes, but close
+    let bufferedChars = 0;
 
     for await (const result of sourceResults) {
       for (const key of columns) {
@@ -208,7 +211,7 @@ export async function exportCsv(
 
           const valueString = joinValues(values, fieldCsvSeparator);
           const encoded = encodeCsvField(valueString);
-          line.push(encoded);
+          currentLine.push(encoded);
           continue;
         }
 
@@ -217,23 +220,36 @@ export async function exportCsv(
         let valueString;
 
         if (key == "partOfSpeech") {
-          const s =
+          const partOfSpeechString =
             typeof value == "number" ? partOfSpeechMap[value] : undefined;
-          valueString = s ?? "";
+          valueString = partOfSpeechString ?? "";
         } else {
           valueString = value?.toString() ?? "";
         }
 
         const encoded = encodeCsvField(valueString);
-        line.push(encoded);
+        currentLine.push(encoded);
       }
 
-      await file.write(line.join(",") + "\r\n", writeOptions);
-      line.length = 0;
+      // append line
+      const lineString = currentLine.join(",");
+      lines.push(lineString);
+      currentLine.length = 0;
+
+      bufferedChars += lineString.length + 2;
+
+      // write line when we reach the buffer threshold
+      if (bufferedChars > 1024 * 8) {
+        await file.write(lines.join("\r\n"), writeOptions);
+        lines.length = 0;
+        bufferedChars = 0;
+      }
 
       i++;
       progressCallback(i, sourceTotal);
     }
+
+    await file.write(lines.join("\r\n"), writeOptions);
   } finally {
     await variantsStatement.finalizeAsync();
   }
