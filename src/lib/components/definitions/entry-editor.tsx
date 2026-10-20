@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StyleSheet, View, Text, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
@@ -148,12 +148,15 @@ export default function EntryEditor(props: Props) {
     relationsEdited ||
     !shallowEqual(variantSpellings, defaultVariants);
 
+  const pendingChangesRef = useRef(hasPendingChanges);
+  pendingChangesRef.current = hasPendingChanges;
+
   useBackHandler(() => {
-    if (hasPendingChanges) {
+    if (pendingChangesRef.current) {
       setDiscardDialogOpen(true);
       return true;
     }
-  }, [hasPendingChanges]);
+  }, []);
 
   const save = async () => {
     setSaving(true);

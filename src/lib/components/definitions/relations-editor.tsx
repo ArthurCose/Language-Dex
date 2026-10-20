@@ -340,6 +340,10 @@ export class RelationsEditorData {
   }
 
   async save(entry: RelationEditorSynonym) {
+    if (!this.modified.get()) {
+      return;
+    }
+
     this.modified.set(false);
 
     await this.#saveClusters(entry);
