@@ -153,3 +153,16 @@ export async function extractCount(
 
   return result?.["COUNT(*)"] ?? 0;
 }
+
+export async function extractCountFromPreparedStatement(
+  statement: SQLite.SQLiteStatement,
+  params?: SQLite.SQLiteBindParams,
+) {
+  const results = params
+    ? await statement.executeAsync<{ "COUNT(*)": number }>(params)
+    : await statement.executeAsync<{ "COUNT(*)": number }>();
+
+  const result = await results.getFirstAsync();
+
+  return result?.["COUNT(*)"] ?? 0;
+}

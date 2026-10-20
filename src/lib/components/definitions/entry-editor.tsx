@@ -42,7 +42,6 @@ import {
   maxConfidence,
   prepareNewPronunciation,
   resolveStatIncrease,
-  setVariants,
   updateStatistics,
   upsertEntry,
 } from "@/src/lib/data";
@@ -183,6 +182,7 @@ export default function EntryEditor(props: Props) {
         example,
         notes,
         confidence,
+        variants: variantSpellings,
       });
 
       if (entryId == null) {
@@ -237,9 +237,8 @@ export default function EntryEditor(props: Props) {
       // track all variants for cache invalidation
       const invalidateList = [];
 
-      // save variants
+      // invalidate variants
       if (!shallowEqual(variantSpellings, defaultVariants)) {
-        await setVariants(entryId, variantSpellings);
         setDefaultVariants(variantSpellings);
 
         invalidateList.push(...defaultVariants);

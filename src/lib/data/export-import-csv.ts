@@ -6,15 +6,17 @@ import {
   encodeCsvField,
 } from "@/src/lib/text-processing/csv";
 import {
-  upsertEntry,
   DictionaryEntryUpsertData,
-  setVariants,
+  UpsertCopyKey,
+  bulkEntryUpsert,
+  upsertCopyCheckList,
 } from "./dictionary-words";
 import { DictionaryData, PartOfSpeechData } from "./dictionary-meta";
 import { UserData } from "./user";
 import { recalculateWordStatistics } from "./stats";
 import { joinValues, splitValue } from "../text-processing/human-readable-csv";
 import { swapRemove } from "../structures/array";
+import { createFileReadStream } from "../structures/file-stream";
 
 const fieldCsvSeparator = ", ";
 
@@ -302,8 +304,7 @@ export async function importCsv({
   const totalBytes = Math.max(file.size, 1);
   let bytesRead = 0;
 
-  const stream = file
-    .readableStream()
+  const stream = createFileReadStream(file)
     .pipeThrough(
       new TransformStream({
         transform(chunk, controller) {
@@ -315,7 +316,6 @@ export async function importCsv({
     )
     .pipeThrough(new TextDecoderStream())
     .pipeThrough(new CsvTransformStream());
-
   const iterator = stream.values();
 
   // resolving field order based on header
@@ -333,13 +333,23 @@ export async function importCsv({
 
   // create a field upsert pass for each relevant field
   const passes: [number, FieldUpsertPass][] = [];
+  const upsertCopyKeys: UpsertCopyKey[] = [];
 
   for (let i = 0; i < cols.length; i++) {
     const key = cols[i];
     const upsertPass = fieldUpsertMap[key];
 
-    if (upsertPass != null) {
-      passes.push([i, upsertPass]);
+    if (upsertPass == null) {
+      continue;
+    }
+
+    passes.push([i, upsertPass]);
+
+    // see if this is an upsert copy key
+    const copyKey = key as UpsertCopyKey;
+
+    if (upsertCopyCheckList.includes(copyKey)) {
+      upsertCopyKeys.push(copyKey);
     }
   }
 
@@ -364,59 +374,46 @@ export async function importCsv({
 
   let nextPartOfSpeechId = dictionary.nextPartOfSpeechId;
 
-  for await (const row of iterator) {
-    for (const [i, pass] of passes) {
-      pass(dictionary, partialData, row[i]);
-    }
+  await bulkEntryUpsert(dictionary.id, upsertCopyKeys, async (upsert) => {
+    for await (const row of iterator) {
+      for (const [i, pass] of passes) {
+        pass(dictionary, partialData, row[i]);
+      }
 
-    if (nextPartOfSpeechId != dictionary.nextPartOfSpeechId) {
-      nextPartOfSpeechId = dictionary.nextPartOfSpeechId;
+      if (nextPartOfSpeechId != dictionary.nextPartOfSpeechId) {
+        nextPartOfSpeechId = dictionary.nextPartOfSpeechId;
+        // save user data before upserting the word
+        userData = {
+          ...userData,
+          dictionaries: userData.dictionaries.map((d) => {
+            if (d.id == dictionary.id) {
+              dictionary = {
+                ...d,
+                partsOfSpeech: [...d.partsOfSpeech],
+              };
+              return dictionary;
+            }
+            return d;
+          }),
+        };
+        saveUserData(userData);
+      }
 
-      // save user data before upserting the word
-      userData = {
-        ...userData,
-        dictionaries: userData.dictionaries.map((d) => {
-          if (d.id == dictionary.id) {
-            dictionary = {
-              ...d,
-              partsOfSpeech: [...d.partsOfSpeech],
-            };
-            return dictionary;
-          }
+      if (partialData.spelling == null || partialData.spelling == "") {
+        continue;
+      }
 
-          return d;
-        }),
-      };
-
-      saveUserData(userData);
-    }
-
-    if (partialData.spelling == null || partialData.spelling == "") {
-      continue;
-    }
-
-    let entryId;
-
-    if (partialData.id != null) {
-      // updating an existing word
-      Object.assign(updateData, partialData);
-      entryId = await upsertEntry(dictionary.id, updateData);
-    } else {
-      // creating a new word
-      Object.assign(insertData, partialData);
-      await upsertEntry(dictionary.id, insertData);
-      entryId = insertData.id;
-
-      if (partialData.variants && partialData.variants.length == 0) {
-        // skip the slow setVariants call
-        partialData.variants = undefined;
+      if (partialData.id != null) {
+        // updating an existing word
+        Object.assign(updateData, partialData);
+        await upsert(updateData);
+      } else {
+        // creating a new word
+        Object.assign(insertData, partialData);
+        await upsert(insertData);
       }
     }
-
-    if (entryId != undefined && partialData.variants) {
-      await setVariants(entryId, partialData.variants);
-    }
-  }
+  });
 
   userData = { ...userData };
   await recalculateWordStatistics(userData);

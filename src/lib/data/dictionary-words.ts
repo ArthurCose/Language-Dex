@@ -1,7 +1,7 @@
 import * as FileSystem from "expo-file-system/legacy";
 import * as SQLite from "expo-sqlite";
 import Unistring from "@akahuku/unistring";
-import { db, extractCount } from "./db";
+import { db, extractCountFromPreparedStatement } from "./db";
 import { log, logError } from "../log";
 import {
   createNewFileObjectId,
@@ -12,6 +12,7 @@ import { deleteEmptySynonymCluster } from "./dictionary-clusters";
 import { copyExtension } from "../path";
 import { normalize } from "../text-processing/normalization";
 import { sortWords, compareWords } from "../text-processing/word-sorting";
+import { deduplicateUnstable } from "../structures/array";
 
 type FileName = string;
 
@@ -33,19 +34,13 @@ export type DictionaryEntry = {
   updatedAt: number;
 };
 
-export type DictionaryEntryUpsertData =
-  | (Partial<
-      Omit<
-        DictionaryEntry,
-        "id" | "sharedId" | "createdAt" | "updatedAt" | "orderKey"
-      >
-    > & { id: number })
-  | (Omit<
-      DictionaryEntry,
-      "id" | "sharedId" | "createdAt" | "updatedAt" | "orderKey"
-    > & {
-      id?: undefined;
-    });
+export type DictionaryEntryUpsertData = Partial<
+  Omit<
+    DictionaryEntry,
+    "id" | "sharedId" | "createdAt" | "updatedAt" | "orderKey"
+  >
+> &
+  ({ id: number } | { id?: undefined }) & { variants?: string[] };
 
 export type WordOrder = "alphabetical" | "latest" | "confidence" | "longest";
 
@@ -267,32 +262,49 @@ export async function getWordEntries(
   return { spellings, entries };
 }
 
-async function getOrCreateWordId(
-  txn: SQLite.SQLiteDatabase,
-  dictionaryId: number,
-  word: string,
-  options?: { confidence: number; time: number },
-) {
-  const normalizedWord = normalize(word);
-
-  const possibleResults = await txn.getAllAsync<{
-    id: number;
-    spelling: string;
-  }>(
-    "SELECT id, spelling FROM word_shared_data WHERE insensitiveSpelling = $normalized AND dictionaryId = $dictionaryId",
-    {
-      $normalized: normalizedWord,
-      $dictionaryId: dictionaryId,
-    },
+async function prepareGetSharedId() {
+  const statement = await db.prepareAsync(
+    "SELECT id, spelling FROM word_shared_data WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $normalized",
   );
 
-  const lowercasedWord = word.toLowerCase();
+  return {
+    async getSharedId(dictionaryId: number, word: string) {
+      const normalizedWord = normalize(word);
 
-  for (const { id, spelling } of possibleResults) {
-    if (lowercasedWord == spelling.toLowerCase()) {
-      return id;
-    }
+      const executeResult = await statement.executeAsync<{
+        id: number;
+        spelling: string;
+      }>({ $dictionaryId: dictionaryId, $normalized: normalizedWord });
+      const possibleResults = await executeResult.getAllAsync();
+
+      // match by lowercase to make sure diacritics match
+      const lowercase = word.toLowerCase();
+      const result = possibleResults.find(
+        (result) => result.spelling.toLowerCase() == lowercase,
+      );
+
+      return result?.id;
+    },
+    finalizeAsync() {
+      return statement.finalizeAsync();
+    },
+  };
+}
+
+async function getSharedId(dictionaryId: number, word: string) {
+  const finder = await prepareGetSharedId();
+
+  try {
+    const id = await finder.getSharedId(dictionaryId, word);
+
+    return id;
+  } finally {
+    await finder.finalizeAsync();
   }
+}
+
+async function prepareGetOrCreateWordId(txn: SQLite.SQLiteDatabase) {
+  const sharedWordFinder = await prepareGetSharedId();
 
   const keys = [
     "dictionaryId",
@@ -305,68 +317,63 @@ async function getOrCreateWordId(
     "updatedAt",
   ];
 
-  const time = options?.time ?? Date.now();
+  const statementString = [
+    "INSERT INTO word_shared_data (",
+    keys.join(", "),
+    ") VALUES (",
+    keys.map((k) => "$" + k).join(", "),
+    ")",
+  ].join("");
 
-  const result = await txn.runAsync(
-    [
-      "INSERT INTO word_shared_data (",
-      keys.join(", "),
-      ") VALUES (",
-      keys.map((k) => "$" + k).join(", "),
-      ")",
-    ].join(""),
-    {
-      $dictionaryId: dictionaryId,
-      $spelling: word,
-      $insensitiveSpelling: normalizedWord,
-      $graphemeCount: Unistring(word).length,
-      $minConfidence: options?.confidence ?? 0,
-      $latestAt: time,
-      $createdAt: time,
-      $updatedAt: time,
+  const statement = await txn.prepareAsync(statementString);
+
+  return {
+    async getOrCreateWordId(
+      dictionaryId: number,
+      word: string,
+      options?: { confidence: number; time: number },
+    ) {
+      const sharedId = await sharedWordFinder.getSharedId(dictionaryId, word);
+
+      if (sharedId != null) {
+        return sharedId;
+      }
+
+      const time = options?.time ?? Date.now();
+
+      const result = await statement.executeAsync({
+        $dictionaryId: dictionaryId,
+        $spelling: word,
+        $insensitiveSpelling: normalize(word),
+        $graphemeCount: Unistring(word).length,
+        $minConfidence: options?.confidence ?? 0,
+        $latestAt: time,
+        $createdAt: time,
+        $updatedAt: time,
+      });
+
+      return result.lastInsertRowId;
     },
-  );
-
-  return result.lastInsertRowId;
+    finalizeAsync() {
+      return Promise.all([
+        sharedWordFinder.finalizeAsync(),
+        statement.finalizeAsync(),
+      ]);
+    },
+  };
 }
 
+const sharedDataUpdateString = [
+  "UPDATE word_shared_data",
+  "SET spelling = firstSpelling, minConfidence = newMinConfidence, latestAt = newLatestAt",
+  "FROM",
+  "(SELECT MIN(confidence) AS newMinConfidence, MAX(createdAt) as newLatestAt FROM word_definition_data WHERE sharedId = $id),",
+  "(SELECT spelling AS firstSpelling FROM word_definition_data WHERE sharedId = $id AND orderKey = 0)",
+  "WHERE id = $id",
+].join(" ");
+
 async function updateSharedData(txn: SQLite.SQLiteDatabase, sharedId: number) {
-  const sharedDataResult = await txn.getFirstAsync<{
-    spelling: string;
-    createdAt: number;
-  }>("SELECT spelling, createdAt FROM word_shared_data WHERE id = $id", {
-    $id: sharedId,
-  });
-
-  if (!sharedDataResult) {
-    return;
-  }
-
-  const statsResult = await txn.getFirstAsync<{
-    "MIN(confidence)": number;
-    "MAX(createdAt)": number;
-  }>(
-    "SELECT MIN(confidence), MAX(createdAt) FROM word_definition_data WHERE sharedId = $sharedId",
-    { $sharedId: sharedId },
-  );
-
-  // use the first entry's capitalization
-  const spellingResult = await txn.getFirstAsync<{
-    spelling: string;
-  }>(
-    "SELECT spelling FROM word_definition_data WHERE sharedId = $sharedId AND orderKey = 0",
-    { $sharedId: sharedId },
-  );
-
-  await txn.runAsync(
-    "UPDATE word_shared_data SET spelling = $spelling, minConfidence = $minConfidence, latestAt = $latestAt WHERE id = $id",
-    {
-      $id: sharedId,
-      $spelling: spellingResult?.spelling ?? sharedDataResult.spelling,
-      $minConfidence: statsResult?.["MIN(confidence)"] ?? 0,
-      $latestAt: statsResult?.["MAX(createdAt)"] ?? sharedDataResult.createdAt,
-    },
-  );
+  await txn.runAsync(sharedDataUpdateString, { $id: sharedId });
 }
 
 export async function prepareNewPronunciation(
@@ -423,185 +430,277 @@ export async function listVariants(entryId: number) {
   return spellings;
 }
 
-export async function setVariants(entryId: number, variants: string[]) {
-  await db.runAsync("DELETE FROM word_variants WHERE entryId = $id", {
-    $id: entryId,
-  });
+export type UpsertCopyKey = Exclude<
+  keyof DictionaryEntryUpsertData,
+  | "id"
+  | "sharedId"
+  | "dictionaryId"
+  | "orderKey"
+  | "createdAt"
+  | "updatedAt"
+  | "variants"
+  | "synonymsId"
+>;
 
-  const statement = await db.prepareAsync(
-    "INSERT INTO word_variants (entryId, spelling, insensitiveSpelling) VALUES ($id, $spelling, $normalized)",
-  );
-
-  try {
-    const promises = [];
-
-    for (const spelling of variants) {
-      promises.push(
-        statement.executeAsync({
-          $id: entryId,
-          $spelling: spelling,
-          $normalized: normalize(spelling),
-        }),
-      );
-    }
-
-    await Promise.all(promises);
-  } finally {
-    statement.finalizeAsync().catch(logError);
-  }
-}
-
-async function resolveNewOrderKey(sharedId: number) {
-  return await extractCount(
-    db,
-    "SELECT COUNT(*) FROM word_definition_data WHERE sharedId = $sharedId",
-    { $sharedId: sharedId },
-  );
-}
+export const upsertCopyCheckList: UpsertCopyKey[] = [
+  "spelling",
+  "confidence",
+  "partOfSpeech",
+  "pronunciationAudio",
+  "definition",
+  "example",
+  "notes",
+];
 
 export async function upsertEntry(
   dictionaryId: number,
   entry: DictionaryEntryUpsertData,
 ): Promise<number | undefined> {
-  log("Upserting Entry...");
+  const copyList: UpsertCopyKey[] = [];
 
-  const time = Date.now();
-
-  const copyList: (keyof DictionaryEntryUpsertData)[] = [
-    "spelling",
-    "confidence",
-    "partOfSpeech",
-    "pronunciationAudio",
-    "definition",
-    "example",
-    "notes",
-  ];
-
-  const setList = ["dictionaryId", "sharedId", "updatedAt"];
-  const setParams: SQLite.SQLiteBindParams = {
-    $dictionaryId: dictionaryId,
-    $updatedAt: time,
-  };
-
-  // copy values from definition data into params and append to the set list
-  for (const key of copyList) {
+  for (const key of upsertCopyCheckList) {
     const value = entry[key];
 
-    if (value === undefined) {
-      continue;
+    if (value !== undefined) {
+      copyList.push(key);
     }
-
-    setParams["$" + key] = value;
-    setList.push(key);
   }
 
-  // grab old data for updating
-  // needs to happen before resolving the shared word to avoid creating garbage
-  let oldDataResult: {
-    sharedId: number;
-    orderKey: number;
-    spelling: string;
-  } | null = null;
+  let id;
+  await bulkEntryUpsert(dictionaryId, copyList, async (upsert) => {
+    id = await upsert(entry);
+  });
 
-  let spelling = entry.spelling;
+  return id;
+}
 
-  if (entry.id != undefined) {
-    // fetch old sharedId to see if we switched words
-    const query =
-      "SELECT sharedId, orderKey, spelling FROM word_definition_data WHERE id = $id";
-    oldDataResult = await db.getFirstAsync(query, {
-      $id: entry.id,
-    });
+export async function bulkEntryUpsert(
+  dictionaryId: number,
+  copyList: UpsertCopyKey[],
+  upsertScope: (
+    upsert: (entry: DictionaryEntryUpsertData) => Promise<number | undefined>,
+    txn: SQLite.SQLiteDatabase,
+  ) => Promise<void>,
+) {
+  log("Upserting Entries...");
 
-    if (!oldDataResult) {
-      // exit early to avoid creating a shared word
-      log("Failed to match entry by ID...");
-      return;
-    }
+  const time = Date.now();
+  const updateList = [
+    ...copyList,
+    "orderKey",
+    "dictionaryId",
+    "sharedId",
+    "updatedAt",
+  ] as string[];
 
-    spelling ??= oldDataResult.spelling;
-  }
+  const insertList = [...updateList, "confidence", "createdAt"];
 
-  if (spelling == null) {
-    // exit early to avoid creating a shared word
-    logError("Invalid state: Missing spelling for entry upsert!");
-    return;
-  }
-
-  let id: number | null = null;
+  // avoid duplicate confidence
+  deduplicateUnstable(insertList);
 
   await db.withExclusiveTransactionAsync(async (txn) => {
-    // grab the shared word
-    const sharedId = await getOrCreateWordId(txn, dictionaryId, spelling, {
-      confidence: entry.confidence ?? 0,
-      time,
-    });
-    setParams.$sharedId = sharedId;
+    const updateStatement = await txn.prepareAsync(
+      [
+        "UPDATE word_definition_data SET",
+        updateList.map((k) => k + " = $" + k).join(", "),
+        "WHERE id = $id",
+      ].join(" "),
+    );
 
-    if (entry.id != undefined) {
-      // update
-      log("Upsert is Updating.");
+    const sharedDataUpdateStatement = await txn.prepareAsync(
+      sharedDataUpdateString,
+    );
 
-      if (!oldDataResult) {
-        // unnecessary due to the check above, but makes TS happy
+    const insertStatement = await txn.prepareAsync(
+      [
+        "INSERT INTO word_definition_data (",
+        insertList.join(", "),
+        ") VALUES (",
+        insertList.map((k) => "$" + k).join(", "),
+        ")",
+      ].join(" "),
+    );
+
+    const countEntriesStatement = await txn.prepareAsync(
+      "SELECT COUNT(*) FROM word_definition_data WHERE sharedId = $sharedId",
+    );
+
+    const queryOldDataStatement = await txn.prepareAsync(
+      "SELECT sharedId, orderKey, spelling FROM word_definition_data WHERE id = $id",
+    );
+
+    const sharedWordResolver = await prepareGetOrCreateWordId(txn);
+
+    const deleteVariantsStatement = await txn.prepareAsync(
+      "DELETE FROM word_variants WHERE entryId = $id",
+    );
+
+    const insertVariantsStatement = await txn.prepareAsync(
+      "INSERT INTO word_variants (entryId, spelling, insensitiveSpelling) VALUES ($id, $spelling, $normalized)",
+    );
+
+    let updates = 0;
+    let inserts = 0;
+    let failed = 0;
+
+    const upsert = async (entry: DictionaryEntryUpsertData) => {
+      const setParams: SQLite.SQLiteBindParams = {
+        $dictionaryId: dictionaryId,
+        $updatedAt: time,
+      };
+
+      // copy values from definition data into params and append to the set list
+      for (const key of copyList) {
+        const value = entry[key];
+
+        if (value === undefined) {
+          throw new Error("Entry upsert failed: missing " + key);
+        }
+
+        setParams["$" + key] = value;
+      }
+
+      // grab old data for updating
+      // needs to happen before resolving the shared word to avoid creating garbage
+      type OldDataResult = {
+        sharedId: number;
+        orderKey: number;
+        spelling: string;
+      };
+      let oldDataResult: OldDataResult | null = null;
+
+      let spelling = entry.spelling;
+
+      if (entry.id != undefined) {
+        // fetch old sharedId to see if we switched words
+        const oldDataResults =
+          await queryOldDataStatement.executeAsync<OldDataResult>({
+            $id: entry.id,
+          });
+        oldDataResult = await oldDataResults.getFirstAsync();
+
+        if (!oldDataResult) {
+          // exit early to avoid creating a shared word
+          log("Failed to match entry by ID...");
+          failed++;
+          return;
+        }
+
+        spelling ??= oldDataResult.spelling;
+      }
+
+      if (spelling == null) {
+        // exit early to avoid creating a shared word
+        logError("Invalid state: Missing spelling for entry upsert!");
+        failed++;
         return;
       }
 
-      setParams.$id = entry.id;
+      let id: number | null = null;
 
-      setList.push("orderKey");
-      setParams.$orderKey = await resolveNewOrderKey(sharedId);
-
-      await txn.runAsync(
-        [
-          "UPDATE word_definition_data SET",
-          setList.map((k) => k + " = $" + k).join(", "),
-          "WHERE id = $id",
-        ].join(" "),
-        setParams,
+      // grab the shared word
+      const sharedId = await sharedWordResolver.getOrCreateWordId(
+        dictionaryId,
+        spelling,
+        {
+          confidence: entry.confidence ?? 0,
+          time,
+        },
       );
 
-      // update old shared data to complete switching words
-      await removedEntryCleanup(
-        txn,
-        oldDataResult.sharedId,
-        oldDataResult.orderKey,
+      setParams.$sharedId = sharedId;
+      setParams.$orderKey = await extractCountFromPreparedStatement(
+        countEntriesStatement,
       );
 
-      // update current shared data
-      await updateSharedData(txn, sharedId);
+      if (entry.id != undefined) {
+        // update
 
-      log("Upsert Complete!");
-      id = entry.id;
-    } else {
-      log("Upsert is Inserting.");
+        if (!oldDataResult) {
+          // unnecessary due to the check above, but makes TS happy
+          return;
+        }
 
-      // copy properties only required by inserting
-      setList.push("sharedId", "createdAt", "orderKey");
-      setParams.$createdAt = time;
-      setParams.$orderKey = await resolveNewOrderKey(sharedId);
+        id = entry.id;
+        setParams.$id = id;
 
-      const result = await txn.runAsync(
-        [
-          "INSERT INTO word_definition_data (",
-          setList.join(", "),
-          ") VALUES (",
-          setList.map((k) => "$" + k).join(", "),
-          ")",
-        ].join(" "),
-        setParams,
-      );
+        await updateStatement.executeAsync(setParams);
 
-      log("Upsert Complete!");
-      id = result.lastInsertRowId;
+        // update old shared data to complete switching words
+        if (oldDataResult.sharedId != sharedId) {
+          await removedEntryCleanup(
+            txn,
+            oldDataResult.sharedId,
+            oldDataResult.orderKey,
+          );
+        }
+
+        // update current shared data
+        await sharedDataUpdateStatement.executeAsync({ $id: sharedId });
+
+        // delete old variants
+        if (entry.variants) {
+          await deleteVariantsStatement.executeAsync({
+            $id: id,
+          });
+        }
+
+        updates++;
+      } else {
+        // copy properties only required by inserting
+        setParams.$createdAt = time;
+        // ensure confidence for inserts
+        setParams.$confidence ??= 0;
+
+        const result = await insertStatement.executeAsync(setParams);
+
+        id = result.lastInsertRowId;
+        inserts++;
+      }
+
+      if (id == null) {
+        throw new Error("Entry upsert failed");
+      }
+
+      if (entry.variants && entry.variants.length > 0) {
+        const promises = [];
+
+        for (const spelling of entry.variants) {
+          promises.push(
+            insertVariantsStatement.executeAsync({
+              $id: id,
+              $spelling: spelling,
+              $normalized: normalize(spelling),
+            }),
+          );
+        }
+
+        await Promise.all(promises);
+      }
+
+      return id;
+    };
+
+    try {
+      await upsertScope(upsert, txn);
+    } catch (err) {
+      failed++;
+      throw err;
+    } finally {
+      log(`Upsert: ${inserts} inserted, ${updates} updated, ${failed} failed`);
+
+      await Promise.all([
+        updateStatement.finalizeAsync(),
+        sharedDataUpdateStatement.finalizeAsync(),
+        insertStatement.finalizeAsync(),
+        queryOldDataStatement.finalizeAsync(),
+        countEntriesStatement.finalizeAsync(),
+        sharedWordResolver.finalizeAsync(),
+        deleteVariantsStatement.finalizeAsync(),
+        insertVariantsStatement.finalizeAsync(),
+      ]);
     }
   });
-
-  if (id == null) {
-    throw new Error("Entry upsert failed");
-  }
-
-  return id;
 }
 
 export async function updateEntryOrderKey(
@@ -674,7 +773,7 @@ export async function deleteEntry(id: number) {
     pronunciationAudio?: string | null;
     synonymsId?: number | null;
   }>(
-    "SELECT sharedId,orderKey,pronunciationAudio,synonymsId FROM word_definition_data WHERE id = $id",
+    "SELECT sharedId, orderKey, pronunciationAudio, synonymsId FROM word_definition_data WHERE id = $id",
     {
       $id: id,
     },
@@ -708,27 +807,11 @@ export async function deleteEntry(id: number) {
 export async function deleteWord(dictionaryId: number, word: string) {
   log("Deleting Word...");
 
-  const normalizedWord = normalize(word);
+  const sharedId = await getSharedId(dictionaryId, word);
 
-  const possibleResults = await db.getAllAsync<{
-    id: number;
-    spelling: string;
-  }>(
-    "SELECT id, spelling FROM word_shared_data WHERE dictionaryId = $dictionaryId AND insensitiveSpelling = $normalized",
-    { $dictionaryId: dictionaryId, $normalized: normalizedWord },
-  );
-
-  // match by lowercase to make sure diacritics match
-  const lowercase = word.toLowerCase();
-  const result = possibleResults.find(
-    (result) => result.spelling.toLowerCase() == lowercase,
-  );
-
-  if (!result) {
+  if (sharedId == null) {
     return;
   }
-
-  const sharedId = result.id;
 
   // delete associated data
   const rows = db.getEachAsync<{
